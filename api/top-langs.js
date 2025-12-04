@@ -37,13 +37,19 @@ export default async (req, res) => {
     size_weight,
     count_weight,
     custom_title,
-    locale,
+    locale: rawLocale,
     border_radius,
     border_color,
     disable_animations,
     hide_progress,
     stats_format,
   } = req.query;
+
+  // Only allow supported locales - validate and sanitize to prevent XSS
+  const locale =
+    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
+      ? rawLocale.toLowerCase()
+      : undefined;
 
   // Validate username is provided
   if (!username) {
@@ -82,22 +88,8 @@ export default async (req, res) => {
     return access.result;
   }
 
-  if (locale && !isLocaleAvailable(locale)) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Locale not found",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
-  }
+  // Locale is already validated above - invalid locales default to null
+  // No need to check again or reflect user input in error messages
 
   if (
     layout !== undefined &&
@@ -172,7 +164,7 @@ export default async (req, res) => {
         langs_count,
         border_radius,
         border_color,
-        locale: locale ? locale.toLowerCase() : null,
+        locale,
         disable_animations: parseBoolean(disable_animations),
         hide_progress: parseBoolean(hide_progress),
         stats_format,

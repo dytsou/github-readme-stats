@@ -10,7 +10,7 @@ import { renderError } from "../src/common/render.js";
 import { CACHE_TTL, DURATIONS } from "../src/common/cache.js";
 
 /**
- * @type {import("../src/fetchers/stats").StatsData}
+ * @type {import("../src/fetchers/types").StatsData}
  */
 const stats = {
   name: "Anurag Hazra",
@@ -382,7 +382,7 @@ describe("Test /api/", () => {
     );
   });
 
-  it("should render error card when wrong locale is provided", async () => {
+  it("should silently ignore invalid locale and render card normally", async () => {
     const { req, res } = faker({ locale: "asdf" }, data_stats);
 
     await api(req, res);
@@ -391,12 +391,13 @@ describe("Test /api/", () => {
       "Content-Type",
       "image/svg+xml; charset=utf-8",
     );
-    expect(res.send).toHaveBeenCalledWith(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Language not found",
-      }),
-    );
+    // Invalid locale is silently ignored (defaults to undefined)
+    // Request should continue normally and render the card
+    expect(res.send).toHaveBeenCalled();
+    const sentData = res.send.mock.calls[0][0];
+    expect(sentData).toContain("<svg");
+    expect(sentData).not.toContain("Language not found");
+    expect(sentData).not.toContain("Something went wrong");
   });
 
   it("should render error card when include_all_commits true and upstream API fails", async () => {

@@ -34,7 +34,7 @@ export default async (req, res) => {
     hide_title,
     hide_progress,
     custom_title,
-    locale,
+    locale: rawLocale,
     layout,
     langs_count,
     hide,
@@ -44,6 +44,12 @@ export default async (req, res) => {
     display_format,
     disable_animations,
   } = req.query;
+
+  // Only allow supported locales - validate and sanitize to prevent XSS
+  const locale =
+    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
+      ? rawLocale.toLowerCase()
+      : undefined;
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
@@ -63,22 +69,8 @@ export default async (req, res) => {
     return access.result;
   }
 
-  if (locale && !isLocaleAvailable(locale)) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Language not found",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
-  }
+  // Locale is already validated above - invalid locales default to undefined
+  // No need to check again or reflect user input in error messages
 
   try {
     const stats = await fetchWakatimeStats({ username, api_domain });
@@ -107,7 +99,7 @@ export default async (req, res) => {
         hide_progress,
         border_radius,
         border_color,
-        locale: locale ? locale.toLowerCase() : null,
+        locale,
         layout,
         langs_count,
         display_format,

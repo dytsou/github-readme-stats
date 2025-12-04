@@ -28,12 +28,18 @@ export default async (req, res) => {
     bg_color,
     theme,
     cache_seconds,
-    locale,
+    locale: rawLocale,
     border_radius,
     border_color,
     show_owner,
     hide_border,
   } = req.query;
+
+  // Only allow supported locales - validate and sanitize to prevent XSS
+  const locale =
+    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
+      ? rawLocale.toLowerCase()
+      : undefined;
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
@@ -53,22 +59,8 @@ export default async (req, res) => {
     return access.result;
   }
 
-  if (locale && !isLocaleAvailable(locale)) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Language not found",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
-  }
+  // Locale is already validated above - invalid locales default to undefined
+  // No need to check again or reflect user input in error messages
 
   try {
     const gistData = await fetchGist(id);
@@ -90,7 +82,7 @@ export default async (req, res) => {
         theme,
         border_radius,
         border_color,
-        locale: locale ? locale.toLowerCase() : null,
+        locale,
         show_owner: parseBoolean(show_owner),
         hide_border: parseBoolean(hide_border),
       }),

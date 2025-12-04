@@ -168,7 +168,7 @@ describe("Test /api/gist", () => {
     );
   });
 
-  it("should render error if wrong locale is provided", async () => {
+  it("should silently ignore invalid locale and render card normally", async () => {
     const req = {
       query: {
         id: "bbfce31e0217a3689c8d961a356cb10d",
@@ -179,6 +179,7 @@ describe("Test /api/gist", () => {
       setHeader: vi.fn(),
       send: vi.fn(),
     };
+    mock.onPost("https://api.github.com/graphql").reply(200, gist_data);
 
     await gist(req, res);
 
@@ -186,12 +187,13 @@ describe("Test /api/gist", () => {
       "Content-Type",
       "image/svg+xml; charset=utf-8",
     );
-    expect(res.send).toHaveBeenCalledWith(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Language not found",
-      }),
-    );
+    // Invalid locale is silently ignored (defaults to undefined)
+    // Request should continue normally and render the card
+    expect(res.send).toHaveBeenCalled();
+    const sentData = res.send.mock.calls[0][0];
+    expect(sentData).toContain("<svg");
+    expect(sentData).not.toContain("Language not found");
+    expect(sentData).not.toContain("Something went wrong");
   });
 
   it("should have proper cache", async () => {

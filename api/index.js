@@ -41,7 +41,7 @@ export default async (req, res) => {
     cache_seconds,
     exclude_repo,
     custom_title,
-    locale,
+    locale: rawLocale,
     disable_animations,
     border_radius,
     number_format,
@@ -50,6 +50,13 @@ export default async (req, res) => {
     rank_icon,
     show,
   } = req.query;
+
+  // Only allow supported locales - validate and sanitize to prevent XSS
+  const locale =
+    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
+      ? rawLocale.toLowerCase()
+      : undefined;
+
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
   const access = guardAccess({
@@ -68,22 +75,8 @@ export default async (req, res) => {
     return access.result;
   }
 
-  if (locale && !isLocaleAvailable(locale)) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Language not found",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
-  }
+  // Locale is already validated above - invalid locales default to undefined
+  // No need to check again or reflect user input in error messages
 
   try {
     const showStats = parseArray(show);
@@ -129,7 +122,7 @@ export default async (req, res) => {
         border_color,
         number_format,
         number_precision: parseInt(number_precision, 10),
-        locale: locale ? locale.toLowerCase() : null,
+        locale,
         disable_animations: parseBoolean(disable_animations),
         rank_icon,
         show: showStats,

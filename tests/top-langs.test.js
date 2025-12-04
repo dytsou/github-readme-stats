@@ -213,7 +213,7 @@ describe("Test /api/top-langs", () => {
     );
   });
 
-  it("should render error card if wrong locale provided", async () => {
+  it("should silently ignore invalid locale and render card normally", async () => {
     const req = {
       query: {
         username: "anuraghazra",
@@ -232,12 +232,13 @@ describe("Test /api/top-langs", () => {
       "Content-Type",
       "image/svg+xml; charset=utf-8",
     );
-    expect(res.send).toHaveBeenCalledWith(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Locale not found",
-      }),
-    );
+    // Invalid locale is silently ignored (defaults to undefined)
+    // Request should continue normally and render the card
+    expect(res.send).toHaveBeenCalled();
+    const sentData = res.send.mock.calls[0][0];
+    expect(sentData).toContain("<svg");
+    expect(sentData).not.toContain("Locale not found");
+    expect(sentData).not.toContain("Something went wrong");
   });
 
   it("should have proper cache", async () => {
