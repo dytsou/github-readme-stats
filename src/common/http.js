@@ -13,7 +13,10 @@ const request = (data, headers) => {
   return axios({
     url: "https://api.github.com/graphql",
     method: "post",
-    headers,
+    headers: {
+      "User-Agent": "github-readme-stats",
+      ...headers,
+    },
     data,
   });
 };
