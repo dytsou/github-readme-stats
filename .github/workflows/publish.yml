@@ -73,7 +73,7 @@ jobs:
           pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks
+        run: pnpm run publish:npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -86,20 +86,15 @@ jobs:
 
       - name: Configure package.json for GitHub Packages
         run: |
-          # Create a temporary package.json with scoped name for GitHub Packages
-          cp package.json package.json.backup
+          # Update package name to match repository owner for GitHub Packages
           node -e "
-            const pkg = require('./package.json');
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             pkg.name = '@${{ github.repository_owner }}/github-readme-stats';
-            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
       - name: Publish to GitHub Packages
-        run: pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com
+        run: pnpm run publish:github
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore package.json
-        if: always()
-        run: |
-          mv package.json.backup package.json
