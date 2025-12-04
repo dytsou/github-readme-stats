@@ -22,18 +22,27 @@ export function createMockResponse(c) {
       responseSent = true;
       responseBody = body;
       
-      // Set all headers before sending
-      Object.entries(headers).forEach(([name, value]) => {
-        c.header(name, String(value));
-      });
+      // Set Content-Type first (required by GitHub Camo CDN)
+      c.header('Content-Type', 'image/svg+xml; charset=utf-8');
       
-      // Set content type if not already set
-      if (!c.res.headers.get('Content-Type')) {
-        c.header('Content-Type', 'image/svg+xml');
+      // Set Cache-Control if not already set (Camo expects cacheable responses)
+      if (!headers['Cache-Control'] && !headers['cache-control']) {
+        c.header('Cache-Control', 'public, max-age=3600');
       }
       
-      // Return the response for chaining
-      return c.html(body);
+      // Set all other headers
+      Object.entries(headers).forEach(([name, value]) => {
+        // Don't override Content-Type if it was already set
+        if (name.toLowerCase() !== 'content-type') {
+          c.header(name, String(value));
+        }
+      });
+      
+      // Ensure body is a string (Camo requires valid SVG)
+      const svgBody = typeof body === 'string' ? body : String(body);
+      
+      // Return the response with explicit 200 status for Camo compatibility
+      return c.html(svgBody);
     },
     _wasSent: () => responseSent,
     _getBody: () => responseBody,

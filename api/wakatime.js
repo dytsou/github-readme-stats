@@ -44,7 +44,7 @@ export default async (req, res) => {
     disable_animations,
   } = req.query;
 
-  res.setHeader("Content-Type", "image/svg+xml");
+  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
   const access = guardAccess({
     res,

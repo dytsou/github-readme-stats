@@ -34,7 +34,7 @@ export default async (req, res) => {
     hide_border,
   } = req.query;
 
-  res.setHeader("Content-Type", "image/svg+xml");
+  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
   const access = guardAccess({
     res,

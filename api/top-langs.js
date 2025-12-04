@@ -61,7 +61,8 @@ export default async (req, res) => {
     );
   }
   
-  res.setHeader("Content-Type", "image/svg+xml");
+  // Set Content-Type early for Camo CDN compatibility
+  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 
   const access = guardAccess({
     res,
