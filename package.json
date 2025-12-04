@@ -10,6 +10,20 @@
   ],
   "main": "src/index.js",
   "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./worker": "./src/worker.ts"
+  },
+  "files": [
+    "src",
+    "api",
+    "themes",
+    "LICENSE",
+    "readme.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/anuraghazra/github-readme-stats",
   "bugs": {
     "url": "https://github.com/anuraghazra/github-readme-stats/issues"
