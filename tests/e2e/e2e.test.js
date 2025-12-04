@@ -111,10 +111,12 @@ describe("Fetch Cards", () => {
     process.env.NODE_ENV = "development";
     // Get Cloudflare Worker URL
     DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL;
-    
+
     // Skip all tests if no deployment URL is provided
     if (!DEPLOYMENT_URL) {
-      console.warn("⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.");
+      console.warn(
+        "⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.",
+      );
     }
   });
 
@@ -138,12 +140,14 @@ describe("Fetch Cards", () => {
 
     // Verify the response is valid SVG
     expect(serverStatsSvg.data).toContain("<svg");
-    expect(serverStatsSvg.data).toContain("xmlns=\"http://www.w3.org/2000/svg\"");
+    expect(serverStatsSvg.data).toContain('xmlns="http://www.w3.org/2000/svg"');
 
     // If the server returns an error card, skip the comparison
     // (This can happen due to API rate limits, missing tokens, or network issues)
     if (serverStatsSvg.data.includes("Something went wrong")) {
-      console.warn("⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.");
+      console.warn(
+        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+      );
       return;
     }
 

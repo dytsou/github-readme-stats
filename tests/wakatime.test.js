@@ -1,4 +1,4 @@
-import { vi,  afterEach, describe, expect, it,  } from "vitest";
+import { vi, afterEach, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -117,7 +117,10 @@ describe("Test /api/wakatime", () => {
 
     await wakatime(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderWakatimeCard(wakaTimeData.data, {}),
     );
@@ -135,7 +138,10 @@ describe("Test /api/wakatime", () => {
 
     await wakatime(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.WAKATIME_CARD.DEFAULT}, ` +

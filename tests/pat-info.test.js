@@ -5,14 +5,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import {
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import patInfo, { RATE_LIMIT_SECONDS } from "../api/status/pat-info.js";

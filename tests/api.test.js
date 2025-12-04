@@ -1,13 +1,6 @@
 // @ts-check
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import api from "../api/index.js";
@@ -121,7 +114,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, { ...req.query }),
     );
@@ -132,7 +128,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -147,7 +146,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -176,7 +178,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, {
         hide: ["issues", "prs", "contribs"],
@@ -340,7 +345,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, {
         hide: ["issues", "prs", "contribs"],
@@ -361,7 +369,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "This username is blacklisted",
@@ -376,7 +387,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -397,7 +411,10 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Could not fetch total commits.",

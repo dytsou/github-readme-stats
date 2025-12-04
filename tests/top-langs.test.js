@@ -1,6 +1,6 @@
 // @ts-check
 
-import { vi,  afterEach, describe, expect, it,  } from "vitest";
+import { vi, afterEach, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -89,7 +89,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(renderTopLanguages(langs));
   });
 
@@ -113,7 +116,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderTopLanguages(langs, {
         hide_title: true,
@@ -140,7 +146,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -165,7 +174,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -188,7 +200,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "This username is blacklisted",
@@ -213,7 +228,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -236,7 +254,10 @@ describe("Test /api/top-langs", () => {
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.TOP_LANGS_CARD.DEFAULT}, ` +

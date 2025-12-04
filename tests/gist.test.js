@@ -1,6 +1,6 @@
 // @ts-check
 
-import { vi,  afterEach, describe, expect, it,  } from "vitest";
+import { vi, afterEach, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -65,7 +65,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderGistCard({
         name: gist_data.data.viewer.gist.files[0].name,
@@ -97,7 +100,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderGistCard(
         {
@@ -124,7 +130,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: 'Missing params "id" make sure you pass the parameters in URL',
@@ -150,7 +159,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({ message: "Gist not found" }),
     );
@@ -170,7 +182,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -193,7 +208,10 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "image/svg+xml; charset=utf-8",
+    );
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.GIST_CARD.DEFAULT}, ` +

@@ -43,7 +43,7 @@ export default async (req, res) => {
     hide_progress,
     stats_format,
   } = req.query;
-  
+
   // Validate username is provided
   if (!username) {
     return res.send(
@@ -60,7 +60,7 @@ export default async (req, res) => {
       }),
     );
   }
-  
+
   // Set Content-Type early for Camo CDN compatibility
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 

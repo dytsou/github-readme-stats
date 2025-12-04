@@ -43,4 +43,7 @@ jobs:
       - name: Run end-to-end tests
         run: pnpm test:e2e
         env:
-          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || github.event.deployment_status.target_url || env.CLOUDFLARE_WORKER_URL || '' }}
+          CLOUDFLARE_WORKER_URL:
+            ${{ secrets.CLOUDFLARE_WORKER_URL ||
+            github.event.deployment_status.target_url ||
+            env.CLOUDFLARE_WORKER_URL || '' }}

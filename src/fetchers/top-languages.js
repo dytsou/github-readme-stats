@@ -110,7 +110,10 @@ const fetchTopLanguages = async (
   }
 
   // Check if repositories data exists
-  if (!res.data.data.user.repositories || !res.data.data.user.repositories.nodes) {
+  if (
+    !res.data.data.user.repositories ||
+    !res.data.data.user.repositories.nodes
+  ) {
     logger.error("Missing repositories data in response:", res.data.data.user);
     throw new CustomError(
       "Could not fetch repositories data from GitHub API.",

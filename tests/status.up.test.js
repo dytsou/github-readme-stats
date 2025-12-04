@@ -2,7 +2,7 @@
  * @file Tests for the status/up cloud function.
  */
 
-import { vi,  afterEach, describe, expect, it,  } from "vitest";
+import { vi, afterEach, describe, expect, it } from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import up, { RATE_LIMIT_SECONDS } from "../api/status/up.js";

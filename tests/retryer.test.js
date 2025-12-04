@@ -1,6 +1,6 @@
 // @ts-check
 
-import { vi,  describe, expect, it,  } from "vitest";
+import { vi, describe, expect, it } from "vitest";
 import "@testing-library/jest-dom";
 import { RETRIES, retryer } from "../src/common/retryer.js";
 import { logger } from "../src/common/log.js";
