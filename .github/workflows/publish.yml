@@ -1,0 +1,106 @@
+name: Publish Package
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish to npm and GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Extract version from tag
+        if: github.event_name == 'release'
+        id: tag_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${VERSION#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set version from input
+        if: github.event_name == 'workflow_dispatch'
+        id: input_version
+        run: |
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "version=${{ steps.tag_version.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.input_version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update package.json version
+        run: |
+          pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Setup Node.js for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@${{ github.repository_owner }}"
+
+      - name: Configure package.json for GitHub Packages
+        run: |
+          # Create a temporary package.json with scoped name for GitHub Packages
+          cp package.json package.json.backup
+          node -e "
+            const pkg = require('./package.json');
+            pkg.name = '@${{ github.repository_owner }}/github-readme-stats';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Publish to GitHub Packages
+        run: pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore package.json
+        if: always()
+        run: |
+          mv package.json.backup package.json
+

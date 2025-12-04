@@ -315,9 +315,20 @@ Display your WakaTime coding statistics.
    > ```
 
 4. **Deploy:**
+
+   **Option A: Manual deployment**
    ```bash
    npx wrangler deploy
    ```
+
+   **Option B: GitHub Actions (Recommended)**
+   
+   Set up the following secrets in your GitHub repository:
+   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token (create at [Cloudflare Dashboard > My Profile > API Tokens](https://dash.cloudflare.com/profile/api-tokens))
+   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID (found in the right sidebar of your Cloudflare dashboard)
+   - `PAT_1`: Your GitHub Personal Access Token (optional, if not set in `wrangler.toml`)
+   
+   The workflow will automatically deploy on every push to `main`/`master` branch, or you can trigger it manually from the Actions tab.
 
 5. **Your instance will be available at:**
    ```
