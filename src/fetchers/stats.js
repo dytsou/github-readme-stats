@@ -10,8 +10,18 @@ import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
 import { wrapTextMultiline } from "../common/fmt.js";
 import { request } from "../common/http.js";
+import { isCloudflareWorkers } from "../common/worker-env.js";
 
-dotenv.config();
+// Only load dotenv if not in Cloudflare Workers (where env vars come from wrangler.toml)
+// Wrap in try-catch to handle cases where file system is not available (e.g., Cloudflare Workers)
+try {
+  if (!isCloudflareWorkers()) {
+    dotenv.config();
+  }
+} catch (error) {
+  // Silently fail in environments without file system (Cloudflare Workers)
+  // Environment variables will be provided via Cloudflare Workers env object
+}
 
 // GraphQL queries.
 const GRAPHQL_REPOS_FIELD = `
