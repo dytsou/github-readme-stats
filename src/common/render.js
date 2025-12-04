@@ -38,9 +38,10 @@ const flexLayout = ({ items, gap, direction, sizes = [] }) => {
  * @returns {string} Language display SVG object.
  */
 const createLanguageNode = (langName, langColor) => {
+  const safeLangColor = escapeCSSValue(langColor);
   return `
     <g data-testid="primary-lang">
-      <circle data-testid="lang-color" cx="0" cy="-5" r="6" fill="${langColor}" />
+      <circle data-testid="lang-color" cx="0" cy="-5" r="6" fill="${safeLangColor}" />
       <text data-testid="lang-name" class="gray" x="15">${encodeHTML(langName)}</text>
     </g>
     `;
