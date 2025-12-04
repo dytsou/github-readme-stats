@@ -1,7 +1,8 @@
 .vercel
 .env
 node_modules
-*.lock
+package-lock.json
+yarn.lock
 .idea/
 coverage
 benchmarks
