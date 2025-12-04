@@ -105,13 +105,30 @@ const wakaTimeData = {
 describe("WakaTime fetcher", () => {
   it("should fetch correct WakaTime data", async () => {
     const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
     mock
       .onGet(
-        `https://wakatime.com/api/v1/users/${username}/stats?is_including_today=true`,
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
       )
       .reply(200, wakaTimeData);
 
     const repo = await fetchWakatimeStats({ username });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
+  it("should fetch correct WakaTime data with custom api_domain", async () => {
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://api.wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "api.wakatime.com",
+    });
     expect(repo).toStrictEqual(wakaTimeData.data);
   });
 
@@ -124,11 +141,52 @@ describe("WakaTime fetcher", () => {
   });
 
   it("should throw error if username is not found", async () => {
-    mock.onGet(/\/https:\/\/wakatime\.com\/api/).reply(404, wakaTimeData);
+    const username = "noone";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(404, wakaTimeData);
 
-    await expect(fetchWakatimeStats({ username: "noone" })).rejects.toThrow(
+    await expect(fetchWakatimeStats({ username })).rejects.toThrow(
       "Could not resolve to a User with the login of 'noone'",
     );
+  });
+
+  it("should throw error if api_domain is not whitelisted", async () => {
+    await expect(
+      fetchWakatimeStats({
+        username: "test",
+        api_domain: "evil.com",
+      }),
+    ).rejects.toThrow(
+      "Invalid API domain. Only whitelisted WakaTime domains are allowed.",
+    );
+  });
+
+  it("should throw error if api_domain is localhost (SSRF attempt)", async () => {
+    await expect(
+      fetchWakatimeStats({
+        username: "test",
+        api_domain: "localhost:8080",
+      }),
+    ).rejects.toThrow(
+      "Invalid API domain. Only whitelisted WakaTime domains are allowed.",
+    );
+  });
+
+  it("should handle username with special characters", async () => {
+    const username = "user@example.com";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    const repo = await fetchWakatimeStats({ username });
+    expect(repo).toStrictEqual(wakaTimeData.data);
   });
 });
 
