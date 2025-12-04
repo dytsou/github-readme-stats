@@ -16,4 +16,29 @@ const encodeHTML = (str) => {
     .replace(/\u0008/gim, "");
 };
 
-export { encodeHTML };
+/**
+ * Escape CSS/attribute value to prevent XSS in SVG attributes.
+ * This function ensures that color values and other CSS values
+ * are safe to use in SVG attribute contexts.
+ *
+ * @param {string} value The CSS/attribute value to escape.
+ * @returns {string} Escaped value safe for use in SVG attributes.
+ */
+const escapeCSSValue = (value) => {
+  if (typeof value !== "string") {
+    return String(value);
+  }
+
+  // Escape quotes and special characters that could break out of attribute context
+  return value
+    .replace(/\\/g, "\\\\") // Escape backslashes first
+    .replace(/"/g, '\\"') // Escape double quotes
+    .replace(/'/g, "\\'") // Escape single quotes
+    .replace(/\n/g, "\\A ") // Escape newlines
+    .replace(/\r/g, "") // Remove carriage returns
+    .replace(/\f/g, "") // Remove form feeds
+    .replace(/</g, "\\3C ") // Escape less-than
+    .replace(/>/g, "\\3E "); // Escape greater-than
+};
+
+export { encodeHTML, escapeCSSValue };

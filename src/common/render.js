@@ -2,7 +2,7 @@
 
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 import { getCardColors } from "./color.js";
-import { encodeHTML } from "./html.js";
+import { encodeHTML, escapeCSSValue } from "./html.js";
 import { clampValue } from "./ops.js";
 
 /**
@@ -163,16 +163,28 @@ const renderError = ({
     theme,
   });
 
+  // Sanitize color values to prevent XSS in SVG attributes
+  const safeTitleColor = escapeCSSValue(titleColor);
+  const safeTextColor = escapeCSSValue(textColor);
+  // Handle both string colors and gradient arrays (for gradients, use first color as fallback)
+  const safeBgColor =
+    typeof bgColor === "string"
+      ? escapeCSSValue(bgColor)
+      : Array.isArray(bgColor) && bgColor.length > 0
+        ? escapeCSSValue(`#${bgColor[0]}`)
+        : "#1f2328"; // Default fallback color
+  const safeBorderColor = escapeCSSValue(borderColor);
+
   return `
-    <svg width="${ERROR_CARD_LENGTH}"  height="120" viewBox="0 0 ${ERROR_CARD_LENGTH} 120" fill="${bgColor}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="${ERROR_CARD_LENGTH}"  height="120" viewBox="0 0 ${ERROR_CARD_LENGTH} 120" fill="${safeBgColor}" xmlns="http://www.w3.org/2000/svg">
     <style>
-    .text { font: 600 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${titleColor} }
-    .small { font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor} }
+    .text { font: 600 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTitleColor} }
+    .small { font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
     .gray { fill: #858585 }
     </style>
     <rect x="0.5" y="0.5" width="${
       ERROR_CARD_LENGTH - 1
-    }" height="99%" rx="4.5" fill="${bgColor}" stroke="${borderColor}"/>
+    }" height="99%" rx="4.5" fill="${safeBgColor}" stroke="${safeBorderColor}"/>
     <text x="25" y="45" class="text">Something went wrong!${
       UPSTREAM_API_ERRORS.includes(secondaryMessage) || !show_repo_link
         ? ""
