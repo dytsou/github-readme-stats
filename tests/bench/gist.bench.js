@@ -1,7 +1,7 @@
 import gist from "../../api/gist.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { it, jest } from "vitest";
+import { it, vi } from "vitest";
 import { runAndLogStats } from "./utils.js";
 
 const gist_data = {
