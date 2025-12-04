@@ -15,41 +15,8 @@ import {
   MissingParamError,
   retrieveSecondaryMessage,
 } from "../src/common/error.js";
-import { isValidHexColor } from "../src/common/color.js";
 import { parseBoolean } from "../src/common/ops.js";
-import { themes } from "../themes/index.js";
-
-/**
- * Validates and sanitizes color parameters to prevent XSS.
- * Returns undefined for invalid colors, allowing renderError to use safe defaults.
- *
- * @param {string|undefined} color The color value to validate.
- * @returns {string|undefined} Validated color or undefined.
- */
-const validateColor = (color) => {
-  if (!color || typeof color !== "string") {
-    return undefined;
-  }
-  // Remove leading # if present for validation
-  const hexColor = color.replace(/^#/, "");
-  // Validate hex color format
-  return isValidHexColor(hexColor) ? color : undefined;
-};
-
-/**
- * Validates theme parameter to prevent XSS.
- * Returns undefined for invalid themes, allowing renderError to use safe defaults.
- *
- * @param {string|undefined} theme The theme name to validate.
- * @returns {string|undefined} Validated theme name or undefined.
- */
-const validateTheme = (theme) => {
-  if (!theme || typeof theme !== "string") {
-    return undefined;
-  }
-  // Check if theme exists in themes object
-  return themes[theme] ? theme : undefined;
-};
+import { validateColor, validateTheme } from "../src/common/color.js";
 
 // @ts-ignore
 export default async (req, res) => {

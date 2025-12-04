@@ -141,4 +141,52 @@ const getCardColors = ({
   return { titleColor, iconColor, textColor, bgColor, borderColor, ringColor };
 };
 
-export { isValidHexColor, isValidGradient, getCardColors };
+/**
+ * Validates and canonicalizes color parameters to prevent XSS.
+ * Returns a canonicalized color string (# + hex digits) for valid colors,
+ * or undefined for invalid colors, allowing renderError to use safe defaults.
+ * This ensures we never output user-controlled strings directly.
+ *
+ * @param {string|undefined} color The color value to validate and canonicalize.
+ * @returns {string|undefined} Canonicalized color (# + hex) or undefined.
+ */
+const validateColor = (color) => {
+  if (!color || typeof color !== "string") {
+    return undefined;
+  }
+  // Remove leading # if present and trim whitespace
+  const hexColor = color.replace(/^#/, "").trim();
+  // Only allow 3, 4, 6, or 8 digit hex codes - strict validation
+  if (
+    /^(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(
+      hexColor,
+    )
+  ) {
+    // Return canonicalized format: # + validated hex (never the original user string)
+    return "#" + hexColor.toLowerCase();
+  }
+  return undefined;
+};
+
+/**
+ * Validates theme parameter to prevent XSS.
+ * Returns undefined for invalid themes, allowing renderError to use safe defaults.
+ *
+ * @param {string|undefined} theme The theme name to validate.
+ * @returns {string|undefined} Validated theme name or undefined.
+ */
+const validateTheme = (theme) => {
+  if (!theme || typeof theme !== "string") {
+    return undefined;
+  }
+  // Check if theme exists in themes object (whitelist validation)
+  return themes[theme] ? theme : undefined;
+};
+
+export {
+  isValidHexColor,
+  isValidGradient,
+  getCardColors,
+  validateColor,
+  validateTheme,
+};
