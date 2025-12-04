@@ -17,6 +17,7 @@ import {
 } from "../src/common/error.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { validateColor, validateTheme } from "../src/common/color.js";
+import { encodeHTML } from "../src/common/html.js";
 
 // @ts-ignore
 export default async (req, res) => {
@@ -83,22 +84,44 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
+    // --- Validate and sanitize user inputs before rendering ---
+    const safeTitleColor = validateColor(title_color);
+    const safeIconColor = validateColor(icon_color);
+    const safeTextColor = validateColor(text_color);
+    const safeBgColor = validateColor(bg_color);
+    const safeTheme = validateTheme(theme);
+    const safeBorderColor = validateColor(border_color);
+
+    // Sanitize custom title for SVG/text usage
+    const safeCustomTitle =
+      typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
+
+    // Validate border_radius (float [0, 20] as reasonable range)
+    let safeBorderRadius = parseFloat(border_radius);
+    if (
+      isNaN(safeBorderRadius) ||
+      safeBorderRadius < 0 ||
+      safeBorderRadius > 20
+    ) {
+      safeBorderRadius = 4.5; // default
+    }
+
     return res.send(
       renderWakatimeCard(stats, {
-        custom_title,
+        custom_title: safeCustomTitle,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
         line_height,
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        theme,
+        title_color: safeTitleColor,
+        icon_color: safeIconColor,
+        text_color: safeTextColor,
+        bg_color: safeBgColor,
+        theme: safeTheme,
         hide_progress,
-        border_radius,
-        border_color,
+        border_radius: safeBorderRadius,
+        border_color: safeBorderColor,
         locale,
         layout,
         langs_count,
