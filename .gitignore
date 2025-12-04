@@ -1,4 +1,3 @@
-.vercel
 .env
 node_modules
 package-lock.json
@@ -6,15 +5,12 @@ yarn.lock
 .idea/
 coverage
 benchmarks
-vercel_token
 
 # IDE
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 *.code-workspace
-
-.vercel
 
 # Cloudflare Workers
 wrangler.toml

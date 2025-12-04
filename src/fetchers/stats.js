@@ -154,7 +154,7 @@ const statsFetcher = async ({
       stats = res;
     }
 
-    // Disable multi page fetching on public Vercel instance due to rate limits.
+    // Disable multi page fetching on public instances due to rate limits.
     const repoNodesWithStars = repoNodes.filter(
       (node) => node.stargazers.totalCount !== 0,
     );

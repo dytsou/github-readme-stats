@@ -1,5 +1,5 @@
 /**
- * @file Contains end-to-end tests for the deployed instance (Vercel or Cloudflare Workers).
+ * @file Contains end-to-end tests for the deployed Cloudflare Workers instance.
  */
 import dotenv from "dotenv";
 dotenv.config();
@@ -109,12 +109,12 @@ describe("Fetch Cards", () => {
 
   beforeAll(() => {
     process.env.NODE_ENV = "development";
-    // Prefer Cloudflare Worker URL, fallback to Vercel Preview URL for backward compatibility
-    DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL || process.env.VERCEL_PREVIEW_URL;
+    // Get Cloudflare Worker URL
+    DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL;
     
     // Skip all tests if no deployment URL is provided
     if (!DEPLOYMENT_URL) {
-      console.warn("⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL or VERCEL_PREVIEW_URL to run e2e tests.");
+      console.warn("⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.");
     }
   });
 
