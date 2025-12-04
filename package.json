@@ -45,7 +45,12 @@
     "format:check": "prettier --check .",
     "prepare": "husky",
     "lint": "npx eslint --max-warnings 0 \"./src/**/*.js\" \"./scripts/**/*.js\" \"./tests/**/*.js\" \"./api/**/*.js\" \"./themes/**/*.js\"",
-    "bench": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.bench.config.js"
+    "bench": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.bench.config.js",
+    "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --env preview",
+    "publish:npm": "pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org",
+    "publish:github": "pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com",
+    "publish:all": "pnpm run publish:npm && pnpm run publish:github"
   },
   "author": "Anurag Hazra",
   "license": "MIT",
