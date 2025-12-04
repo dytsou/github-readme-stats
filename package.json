@@ -45,7 +45,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "lint": "npx eslint --max-warnings 0 \"./src/**/*.js\" \"./scripts/**/*.js\" \"./tests/**/*.js\" \"./api/**/*.js\" \"./themes/**/*.js\"",
+    "lint": "NPM_CONFIG_LOGLEVEL=error npx eslint --max-warnings 0 \"./src/**/*.js\" \"./scripts/**/*.js\" \"./tests/**/*.js\" \"./api/**/*.js\" \"./themes/**/*.js\"",
     "bench": "vitest run --config vitest.bench.config.js",
     "deploy": "wrangler deploy",
     "deploy:preview": "wrangler deploy --env preview",
