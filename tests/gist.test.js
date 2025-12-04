@@ -1,6 +1,6 @@
 // @ts-check
 
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { vi,  afterEach, describe, expect, it,  } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -58,14 +58,14 @@ describe("Test /api/gist", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, gist_data);
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderGistCard({
         name: gist_data.data.viewer.gist.files[0].name,
@@ -90,14 +90,14 @@ describe("Test /api/gist", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, gist_data);
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderGistCard(
         {
@@ -118,13 +118,13 @@ describe("Test /api/gist", () => {
       query: {},
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: 'Missing params "id" make sure you pass the parameters in URL',
@@ -141,8 +141,8 @@ describe("Test /api/gist", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock
       .onPost("https://api.github.com/graphql")
@@ -150,7 +150,7 @@ describe("Test /api/gist", () => {
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({ message: "Gist not found" }),
     );
@@ -164,13 +164,13 @@ describe("Test /api/gist", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -186,14 +186,14 @@ describe("Test /api/gist", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, gist_data);
 
     await gist(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.GIST_CARD.DEFAULT}, ` +

@@ -1,6 +1,6 @@
 // @ts-check
 
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { vi,  afterEach, describe, expect, it,  } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -49,14 +49,14 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_user);
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       // @ts-ignore
       renderRepoCard({
@@ -79,14 +79,14 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_user);
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderRepoCard(
         // @ts-ignore
@@ -107,8 +107,8 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock
       .onPost("https://api.github.com/graphql")
@@ -116,7 +116,7 @@ describe("Test /api/pin", () => {
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({ message: "User Repository Not found" }),
     );
@@ -130,8 +130,8 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock
       .onPost("https://api.github.com/graphql")
@@ -139,7 +139,7 @@ describe("Test /api/pin", () => {
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({ message: "Organization Repository Not found" }),
     );
@@ -153,14 +153,14 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_user);
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "This username is blacklisted",
@@ -179,14 +179,14 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_user);
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -200,13 +200,13 @@ describe("Test /api/pin", () => {
       query: {},
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message:
@@ -225,14 +225,14 @@ describe("Test /api/pin", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_user);
 
     await pin(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.PIN_CARD.DEFAULT}, ` +

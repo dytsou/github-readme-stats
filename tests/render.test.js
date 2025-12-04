@@ -1,8 +1,8 @@
 // @ts-check
 
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "vitest";
 import { queryByTestId } from "@testing-library/dom";
-import "@testing-library/jest-dom/jest-globals";
+import "@testing-library/jest-dom/vitest";
 import { renderError } from "../src/common/render.js";
 
 describe("Test render.js", () => {

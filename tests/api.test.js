@@ -6,8 +6,8 @@ import {
   describe,
   expect,
   it,
-  jest,
-} from "@jest/globals";
+  vi,
+} from "vitest";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import api from "../api/index.js";
@@ -99,8 +99,8 @@ const faker = (query, data) => {
     },
   };
   const res = {
-    setHeader: jest.fn(),
-    send: jest.fn(),
+    setHeader: vi.fn(),
+    send: vi.fn(),
   };
   mock.onPost("https://api.github.com/graphql").replyOnce(200, data);
 
@@ -121,7 +121,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, { ...req.query }),
     );
@@ -132,7 +132,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -147,7 +147,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -176,7 +176,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, {
         hide: ["issues", "prs", "contribs"],
@@ -197,7 +197,7 @@ describe("Test /api/", () => {
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
+      ["Content-Type", "image/svg+xml; charset=utf-8"],
       [
         "Cache-Control",
         `max-age=${CACHE_TTL.STATS_CARD.DEFAULT}, ` +
@@ -213,7 +213,7 @@ describe("Test /api/", () => {
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
+      ["Content-Type", "image/svg+xml; charset=utf-8"],
       [
         "Cache-Control",
         `max-age=${cache_seconds}, ` +
@@ -228,7 +228,7 @@ describe("Test /api/", () => {
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
+      ["Content-Type", "image/svg+xml; charset=utf-8"],
       [
         "Cache-Control",
         `max-age=${CACHE_TTL.ERROR}, ` +
@@ -246,7 +246,7 @@ describe("Test /api/", () => {
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
+      ["Content-Type", "image/svg+xml; charset=utf-8"],
       [
         "Cache-Control",
         `max-age=${cacheSeconds}, ` +
@@ -263,7 +263,7 @@ describe("Test /api/", () => {
     await api(req, res);
 
     expect(res.setHeader.mock.calls).toEqual([
-      ["Content-Type", "image/svg+xml"],
+      ["Content-Type", "image/svg+xml; charset=utf-8"],
       [
         "Cache-Control",
         "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
@@ -279,7 +279,7 @@ describe("Test /api/", () => {
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
+        ["Content-Type", "image/svg+xml; charset=utf-8"],
         [
           "Cache-Control",
           `max-age=${CACHE_TTL.STATS_CARD.MAX}, ` +
@@ -295,7 +295,7 @@ describe("Test /api/", () => {
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
+        ["Content-Type", "image/svg+xml; charset=utf-8"],
         [
           "Cache-Control",
           `max-age=${CACHE_TTL.STATS_CARD.MIN}, ` +
@@ -310,7 +310,7 @@ describe("Test /api/", () => {
       await api(req, res);
 
       expect(res.setHeader.mock.calls).toEqual([
-        ["Content-Type", "image/svg+xml"],
+        ["Content-Type", "image/svg+xml; charset=utf-8"],
         [
           "Cache-Control",
           `max-age=${CACHE_TTL.STATS_CARD.MIN}, ` +
@@ -340,7 +340,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderStatsCard(stats, {
         hide: ["issues", "prs", "contribs"],
@@ -361,7 +361,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "This username is blacklisted",
@@ -376,7 +376,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -397,7 +397,7 @@ describe("Test /api/", () => {
 
     await api(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Could not fetch total commits.",

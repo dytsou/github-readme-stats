@@ -4,7 +4,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { beforeAll, describe, expect, test } from "@jest/globals";
+import { beforeAll, describe, expect, test } from "vitest";
 import axios from "axios";
 import { renderGistCard } from "../../src/cards/gist.js";
 import { renderRepoCard } from "../../src/cards/repo.js";

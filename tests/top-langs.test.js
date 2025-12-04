@@ -1,6 +1,6 @@
 // @ts-check
 
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { vi,  afterEach, describe, expect, it,  } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -82,14 +82,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(renderTopLanguages(langs));
   });
 
@@ -106,14 +106,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderTopLanguages(langs, {
         hide_title: true,
@@ -133,14 +133,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, error);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: error.errors[0].message,
@@ -158,14 +158,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -181,14 +181,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "This username is blacklisted",
@@ -206,14 +206,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderError({
         message: "Something went wrong",
@@ -229,14 +229,14 @@ describe("Test /api/top-langs", () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
     mock.onPost("https://api.github.com/graphql").reply(200, data_langs);
 
     await topLangs(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.TOP_LANGS_CARD.DEFAULT}, ` +

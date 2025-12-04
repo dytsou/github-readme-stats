@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "vitest";
 import { queryByTestId } from "@testing-library/dom";
 import "@testing-library/jest-dom";
 import { renderWakatimeCard } from "../src/cards/wakatime.js";

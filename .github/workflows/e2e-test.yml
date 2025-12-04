@@ -41,13 +41,6 @@ jobs:
           CI: true
 
       - name: Run end-to-end tests
-        run: |
-          # Workaround for Jest "module is already linked" error with experimental VM modules
-          # Run tests with explicit error handling
-          pnpm test:e2e || {
-            echo "⚠️  E2E tests failed. This may be due to Jest VM modules issue."
-            echo "If CLOUDFLARE_WORKER_URL is set, the tests should still validate the deployment."
-            exit 0
-          }
+        run: pnpm test:e2e
         env:
           CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || github.event.deployment_status.target_url || env.CLOUDFLARE_WORKER_URL || '' }}

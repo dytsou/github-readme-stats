@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { vi,  afterEach, describe, expect, it,  } from "vitest";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
@@ -108,7 +108,7 @@ describe("Test /api/wakatime", () => {
   it("should test the request", async () => {
     const username = "anuraghazra";
     const req = { query: { username } };
-    const res = { setHeader: jest.fn(), send: jest.fn() };
+    const res = { setHeader: vi.fn(), send: vi.fn() };
     mock
       .onGet(
         `https://wakatime.com/api/v1/users/${username}/stats?is_including_today=true`,
@@ -117,7 +117,7 @@ describe("Test /api/wakatime", () => {
 
     await wakatime(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.send).toHaveBeenCalledWith(
       renderWakatimeCard(wakaTimeData.data, {}),
     );
@@ -126,7 +126,7 @@ describe("Test /api/wakatime", () => {
   it("should have proper cache", async () => {
     const username = "anuraghazra";
     const req = { query: { username } };
-    const res = { setHeader: jest.fn(), send: jest.fn() };
+    const res = { setHeader: vi.fn(), send: vi.fn() };
     mock
       .onGet(
         `https://wakatime.com/api/v1/users/${username}/stats?is_including_today=true`,
@@ -135,7 +135,7 @@ describe("Test /api/wakatime", () => {
 
     await wakatime(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
+    expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml; charset=utf-8");
     expect(res.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
       `max-age=${CACHE_TTL.WAKATIME_CARD.DEFAULT}, ` +
