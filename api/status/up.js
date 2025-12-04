@@ -10,6 +10,7 @@
 import { request } from "../../src/common/http.js";
 import retryer from "../../src/common/retryer.js";
 import { logger } from "../../src/common/log.js";
+import { encodeHTML } from "../../src/common/html.js";
 
 export const RATE_LIMIT_SECONDS = 60 * 5; // 1 request per 5 minutes
 
@@ -119,6 +120,8 @@ export default async (req, res) => {
     // Return fail boolean if something went wrong.
     logger.error(err);
     res.setHeader("Cache-Control", "no-store");
-    res.send("Something went wrong: " + err.message);
+    // Sanitize error message to prevent XSS (exception text reinterpreted as HTML)
+    const safeMessage = encodeHTML(String(err.message || "Unknown error"));
+    res.send("Something went wrong: " + safeMessage);
   }
 };

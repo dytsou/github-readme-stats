@@ -3,6 +3,8 @@
  * Adapter utilities to convert Express-style handlers to Hono handlers.
  */
 
+import { encodeHTML } from "./html.js";
+
 /**
  * Creates a mock Express response object that works with Hono context.
  *
@@ -134,7 +136,9 @@ export function adaptExpressHandler(expressHandler) {
       console.error("Request query:", c.req.query());
 
       // Return SVG error card instead of text for Camo compatibility
-      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${error.message}</text></svg>`;
+      // Sanitize error message to prevent XSS
+      const safeMessage = encodeHTML(String(error.message || "Unknown error"));
+      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${safeMessage}</text></svg>`;
       return new Response(errorSvg, {
         status: 500,
         headers: { "Content-Type": "image/svg+xml; charset=utf-8" },

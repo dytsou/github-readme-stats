@@ -7,6 +7,7 @@ import wakatimeHandler from "../api/wakatime.js";
 import gistHandler from "../api/gist.js";
 import { setupWorkerEnv } from "./common/worker-env.js";
 import { adaptExpressHandler } from "./common/worker-adapter.js";
+import { encodeHTML } from "./common/html.js";
 
 /**
  * Cloudflare Workers entry point
@@ -87,7 +88,9 @@ export default {
         console.error("Worker Error:", err);
         console.error("Error stack:", err.stack);
         console.error("Request URL:", c.req.url);
-        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${err.message}</text></svg>`;
+        // Sanitize error message to prevent XSS
+        const safeMessage = encodeHTML(String(err.message || "Unknown error"));
+        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${safeMessage}</text></svg>`;
         return new Response(errorSvg, {
           status: 500,
           headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
@@ -98,8 +101,12 @@ export default {
     } catch (error) {
       // Catch any errors during setup - return SVG for Camo compatibility
       console.error("Worker setup error:", error);
-      console.error("Error stack:", error.stack);
-      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Worker setup failed: ${error.message}</text></svg>`;
+      console.error("Error stack:", (error as Error).stack);
+      // Sanitize error message to prevent XSS
+      const safeMessage = encodeHTML(
+        String((error as Error).message || "Unknown error"),
+      );
+      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Worker setup failed: ${safeMessage}</text></svg>`;
       return new Response(errorSvg, {
         status: 500,
         headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
