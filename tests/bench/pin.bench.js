@@ -1,7 +1,7 @@
 import pin from "../../api/pin.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { it, jest } from "@jest/globals";
+import { it, jest } from "vitest";
 import { runAndLogStats } from "./utils.js";
 
 const data_repo = {
@@ -41,8 +41,8 @@ it("test /api/pin", async () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
 
     await pin(req, res);

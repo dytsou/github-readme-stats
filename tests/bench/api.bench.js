@@ -1,7 +1,7 @@
 import api from "../../api/index.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { it, jest } from "@jest/globals";
+import { it, vi } from "vitest";
 import { runAndLogStats } from "./utils.js";
 
 const stats = {
@@ -61,8 +61,8 @@ const faker = (query, data) => {
     },
   };
   const res = {
-    setHeader: jest.fn(),
-    send: jest.fn(),
+    setHeader: vi.fn(),
+    send: vi.fn(),
   };
   mock.onPost("https://api.github.com/graphql").replyOnce(200, data);
 

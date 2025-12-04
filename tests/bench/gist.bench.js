@@ -1,7 +1,7 @@
 import gist from "../../api/gist.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { it, jest } from "@jest/globals";
+import { it, jest } from "vitest";
 import { runAndLogStats } from "./utils.js";
 
 const gist_data = {
@@ -42,8 +42,8 @@ it("test /api/gist", async () => {
       },
     };
     const res = {
-      setHeader: jest.fn(),
-      send: jest.fn(),
+      setHeader: vi.fn(),
+      send: vi.fn(),
     };
 
     await gist(req, res);

@@ -1,5 +1,5 @@
 import { calculateRank } from "../../src/calculateRank.js";
-import { it } from "@jest/globals";
+import { it } from "vitest";
 import { runAndLogStats } from "./utils.js";
 
 it("calculateRank", async () => {
