@@ -9,6 +9,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       reportsDirectory: './coverage',
       clean: true,
+      cleanOnRerun: true,
       exclude: [
         'node_modules/',
         'tests/e2e/',

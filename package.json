@@ -33,7 +33,7 @@
     "url": "https://github.com/anuraghazra/github-readme-stats.git"
   },
   "scripts": {
-    "test": "vitest run --coverage",
+    "test": "mkdir -p coverage/.tmp && vitest run --coverage",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:update:snapshot": "vitest run -u",
