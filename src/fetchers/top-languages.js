@@ -71,6 +71,15 @@ const fetchTopLanguages = async (
 
   const res = await retryer(fetcher, { login: username });
 
+  // Check if response has expected structure
+  if (!res || !res.data) {
+    logger.error("Invalid response structure:", res);
+    throw new CustomError(
+      "Invalid response from GitHub API.",
+      CustomError.GRAPHQL_ERROR,
+    );
+  }
+
   if (res.data.errors) {
     logger.error(res.data.errors);
     if (res.data.errors[0].type === "NOT_FOUND") {
@@ -87,6 +96,24 @@ const fetchTopLanguages = async (
     }
     throw new CustomError(
       "Something went wrong while trying to retrieve the language data using the GraphQL API.",
+      CustomError.GRAPHQL_ERROR,
+    );
+  }
+
+  // Check if user data exists
+  if (!res.data.data || !res.data.data.user) {
+    logger.error("Missing user data in response:", res.data);
+    throw new CustomError(
+      "Could not fetch user data from GitHub API. The user might not exist or the API token might be invalid.",
+      CustomError.USER_NOT_FOUND,
+    );
+  }
+
+  // Check if repositories data exists
+  if (!res.data.data.user.repositories || !res.data.data.user.repositories.nodes) {
+    logger.error("Missing repositories data in response:", res.data.data.user);
+    throw new CustomError(
+      "Could not fetch repositories data from GitHub API.",
       CustomError.GRAPHQL_ERROR,
     );
   }
