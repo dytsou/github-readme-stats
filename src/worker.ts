@@ -70,27 +70,36 @@ export default {
         });
       });
       
-      // Handle 404
+      // Handle 404 - return SVG for Camo compatibility
       app.notFound((c) => {
-        return c.text('Not Found', 404);
+        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="#333">Not Found</text></svg>`;
+        return new Response(errorSvg, {
+          status: 404,
+          headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' },
+        });
       });
       
-      // Handle errors
+      // Handle errors - return SVG for Camo compatibility
       app.onError((err, c) => {
         console.error('Worker Error:', err);
         console.error('Error stack:', err.stack);
         console.error('Request URL:', c.req.url);
-        return c.text(`Internal Server Error: ${err.message}`, 500);
+        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${err.message}</text></svg>`;
+        return new Response(errorSvg, {
+          status: 500,
+          headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' },
+        });
       });
       
       return app.fetch(request, env, ctx);
     } catch (error) {
-      // Catch any errors during setup
+      // Catch any errors during setup - return SVG for Camo compatibility
       console.error('Worker setup error:', error);
       console.error('Error stack:', error.stack);
-      return new Response(`Worker setup failed: ${error.message}`, { 
+      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Worker setup failed: ${error.message}</text></svg>`;
+      return new Response(errorSvg, { 
         status: 500,
-        headers: { 'Content-Type': 'text/plain' }
+        headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' }
       });
     }
   },
