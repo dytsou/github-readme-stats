@@ -3,15 +3,17 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
     branches:
       - master
+      - main
 
 permissions: read-all
 
 jobs:
   analysis:
-    if: github.repository == 'anuraghazra/github-readme-stats'
+    if: github.repository == 'dytsou/github-readme-stats'
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
@@ -22,12 +24,12 @@ jobs:
 
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+        uses: ossf/scorecard-action@v2
         with:
           results_file: results.sarif
           results_format: sarif
@@ -36,7 +38,7 @@ jobs:
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
       - name: "Upload artifact"
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: SARIF file
           path: results.sarif
@@ -44,6 +46,6 @@ jobs:
 
       # required for Code scanning alerts
       - name: "Upload SARIF results to code scanning"
-        uses: github/codeql-action/upload-sarif@fdcae64e1484d349b3366718cdfef3d404390e85 # v2.22.1
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif

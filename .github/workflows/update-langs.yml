@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   updateLanguages:
-    if: github.repository == 'anuraghazra/github-readme-stats'
+    if: github.repository == 'dytsou/github-readme-stats'
     name: Update supported languages
     runs-on: ubuntu-latest
     strategy:
@@ -36,21 +36,27 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         env:
           CI: true
 
       - name: Run update-languages-json.js script
-        run: npm run generate-langs-json
+        run: pnpm run generate-langs-json
 
       - name: Create Pull Request if upstream language file is changed
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
@@ -61,7 +67,7 @@ jobs:
           title: Update languages JSON
           body:
             "The
-            [update-langs](https://github.com/anuraghazra/github-readme-stats/actions/workflows/update-langs.yaml)
+            [update-langs](https://github.com/dytsou/github-readme-stats/actions/workflows/update-langs.yaml)
             action found new/updated languages in the [upstream languages JSON
             file](https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml)."
           labels: "ci, lang-card"

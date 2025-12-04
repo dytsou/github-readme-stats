@@ -1,7 +1,7 @@
 name: Close stale theme pull requests that have the 'invalid' label.
 on:
   # Temporary disabled due to paused themes addition.
-  # See: https://github.com/anuraghazra/github-readme-stats/issues/3404
+  # See: https://github.com/dytsou/github-readme-stats/issues/3404
   # schedule:
   #   #        ┌───────────── minute (0 - 59)
   #   #        │ ┌───────────── hour (0 - 23)
@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   closeOldThemePrs:
-    if: github.repository == 'anuraghazra/github-readme-stats'
+    if: github.repository == 'dytsou/github-readme-stats'
     name: Close stale 'invalid' theme PRs
     runs-on: ubuntu-latest
     strategy:
@@ -39,19 +39,25 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: "pnpm"
 
-      - uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
-        with:
-          useLockFile: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - run: npm run close-stale-theme-prs
+      - name: Close stale theme PRs
+        run: pnpm run close-stale-theme-prs
         env:
           STALE_DAYS: 20
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

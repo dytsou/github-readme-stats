@@ -1,7 +1,7 @@
 name: Theme preview
 on:
   # Temporary disabled due to paused themes addition.
-  # See: https://github.com/anuraghazra/github-readme-stats/issues/3404
+  # See: https://github.com/dytsou/github-readme-stats/issues/3404
   # pull_request_target:
   #   types: [opened, edited, reopened, synchronize]
   #   branches:
@@ -33,18 +33,24 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: "pnpm"
 
-      - uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
-        with:
-          useLockFile: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - run: npm run preview-theme
+      - name: Preview theme
+        run: pnpm run preview-theme
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
