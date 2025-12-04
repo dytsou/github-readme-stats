@@ -1,6 +1,7 @@
 // @ts-check
 
 import { renderTopLanguages } from "../src/cards/top-languages.js";
+import { encodeHTML } from "../src/common/html.js";
 import { guardAccess } from "../src/common/access.js";
 import {
   CACHE_TTL,
@@ -149,21 +150,22 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
+    // Sanitize/validate all user input before rendering card
     return res.send(
       renderTopLanguages(topLangs, {
-        custom_title,
+        custom_title: custom_title ? encodeHTML(custom_title) : undefined,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
-        title_color,
-        text_color,
-        bg_color,
-        theme,
+        title_color: validateColor(title_color),
+        text_color: validateColor(text_color),
+        bg_color: validateColor(bg_color),
+        theme: validateTheme(theme),
         layout,
         langs_count,
-        border_radius,
-        border_color,
+        border_radius: isNaN(parseFloat(border_radius)) ? undefined : Math.max(0, Math.min(50, parseFloat(border_radius))),
+        border_color: validateColor(border_color),
         locale,
         disable_animations: parseBoolean(disable_animations),
         hide_progress: parseBoolean(hide_progress),
