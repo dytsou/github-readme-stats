@@ -12,10 +12,28 @@ import {
   MissingParamError,
   retrieveSecondaryMessage,
 } from "../src/common/error.js";
+import { isValidHexColor } from "../src/common/color.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { renderError } from "../src/common/render.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
+
+/**
+ * Validates and sanitizes color parameters to prevent XSS.
+ * Returns undefined for invalid colors, allowing renderError to use safe defaults.
+ *
+ * @param {string|undefined} color The color value to validate.
+ * @returns {string|undefined} Validated color or undefined.
+ */
+const validateColor = (color) => {
+  if (!color || typeof color !== "string") {
+    return undefined;
+  }
+  // Remove leading # if present for validation
+  const hexColor = color.replace(/^#/, "");
+  // Validate hex color format
+  return isValidHexColor(hexColor) ? color : undefined;
+};
 
 // @ts-ignore
 export default async (req, res) => {
@@ -46,15 +64,16 @@ export default async (req, res) => {
 
   // Validate username is provided
   if (!username) {
+    // Validate colors before passing to renderError (renderError will also sanitize)
     return res.send(
       renderError({
         message: "Missing username parameter",
         secondaryMessage: "Please provide a username",
         renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: validateColor(title_color),
+          text_color: validateColor(text_color),
+          bg_color: validateColor(bg_color),
+          border_color: validateColor(border_color),
           theme,
         },
       }),
@@ -81,15 +100,16 @@ export default async (req, res) => {
   }
 
   if (locale && !isLocaleAvailable(locale)) {
+    // Validate colors before passing to renderError (renderError will also sanitize)
     return res.send(
       renderError({
         message: "Something went wrong",
         secondaryMessage: "Locale not found",
         renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: validateColor(title_color),
+          text_color: validateColor(text_color),
+          bg_color: validateColor(bg_color),
+          border_color: validateColor(border_color),
           theme,
         },
       }),
@@ -101,15 +121,16 @@ export default async (req, res) => {
     (typeof layout !== "string" ||
       !["compact", "normal", "donut", "donut-vertical", "pie"].includes(layout))
   ) {
+    // Validate colors before passing to renderError (renderError will also sanitize)
     return res.send(
       renderError({
         message: "Something went wrong",
         secondaryMessage: "Incorrect layout input",
         renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: validateColor(title_color),
+          text_color: validateColor(text_color),
+          bg_color: validateColor(bg_color),
+          border_color: validateColor(border_color),
           theme,
         },
       }),
@@ -121,15 +142,16 @@ export default async (req, res) => {
     (typeof stats_format !== "string" ||
       !["bytes", "percentages"].includes(stats_format))
   ) {
+    // Validate colors before passing to renderError (renderError will also sanitize)
     return res.send(
       renderError({
         message: "Something went wrong",
         secondaryMessage: "Incorrect stats_format input",
         renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: validateColor(title_color),
+          text_color: validateColor(text_color),
+          bg_color: validateColor(bg_color),
+          border_color: validateColor(border_color),
           theme,
         },
       }),
@@ -176,29 +198,31 @@ export default async (req, res) => {
   } catch (err) {
     setErrorCacheHeaders(res);
     if (err instanceof Error) {
+      // Validate colors before passing to renderError (renderError will also sanitize)
       return res.send(
         renderError({
           message: err.message,
           secondaryMessage: retrieveSecondaryMessage(err),
           renderOptions: {
-            title_color,
-            text_color,
-            bg_color,
-            border_color,
+            title_color: validateColor(title_color),
+            text_color: validateColor(text_color),
+            bg_color: validateColor(bg_color),
+            border_color: validateColor(border_color),
             theme,
             show_repo_link: !(err instanceof MissingParamError),
           },
         }),
       );
     }
+    // Validate colors before passing to renderError (renderError will also sanitize)
     return res.send(
       renderError({
         message: "An unknown error occurred",
         renderOptions: {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: validateColor(title_color),
+          text_color: validateColor(text_color),
+          bg_color: validateColor(bg_color),
+          border_color: validateColor(border_color),
           theme,
         },
       }),
