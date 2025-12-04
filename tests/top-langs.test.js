@@ -124,10 +124,10 @@ describe("Test /api/top-langs", () => {
       renderTopLanguages(langs, {
         hide_title: true,
         card_width: 100,
-        title_color: "fff",
-        icon_color: "fff",
-        text_color: "fff",
-        bg_color: "fff",
+        title_color: "#fff", // validateColor canonicalizes to # + lowercase hex
+        icon_color: "fff", // icon_color is not validated in top-langs API
+        text_color: "#fff", // validateColor canonicalizes to # + lowercase hex
+        bg_color: "#fff", // validateColor canonicalizes to # + lowercase hex
       }),
     );
   });
