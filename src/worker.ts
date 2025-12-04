@@ -61,6 +61,15 @@ export default {
         });
       });
       
+      // Debug endpoint to test query parsing
+      app.get('/debug/query', (c) => {
+        return c.json({
+          url: c.req.url,
+          query: c.req.query(),
+          rawQuery: c.req.url.split('?')[1] || '',
+        });
+      });
+      
       // Handle 404
       app.notFound((c) => {
         return c.text('Not Found', 404);

@@ -43,6 +43,24 @@ export default async (req, res) => {
     hide_progress,
     stats_format,
   } = req.query;
+  
+  // Validate username is provided
+  if (!username) {
+    return res.send(
+      renderError({
+        message: "Missing username parameter",
+        secondaryMessage: "Please provide a username",
+        renderOptions: {
+          title_color,
+          text_color,
+          bg_color,
+          border_color,
+          theme,
+        },
+      }),
+    );
+  }
+  
   res.setHeader("Content-Type", "image/svg+xml");
 
   const access = guardAccess({

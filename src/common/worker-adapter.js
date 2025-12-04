@@ -97,8 +97,11 @@ export function adaptExpressHandler(expressHandler) {
       // Log the error for debugging
       console.error('Adapter error:', error);
       console.error('Error stack:', error.stack);
-      // Re-throw to let Hono's error handler deal with it
-      throw error;
+      console.error('Request URL:', c.req.url);
+      console.error('Request query:', c.req.query());
+      
+      // Return a proper error response instead of throwing
+      return c.text(`Error: ${error.message}`, 500);
     }
   };
 }
