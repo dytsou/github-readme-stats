@@ -11,6 +11,7 @@ export default defineConfig({
       clean: true,
       cleanOnRerun: true,
       exclude: ["node_modules/", "tests/e2e/", "tests/E2E/"],
+      tempDirectory: "./.coverage-tmp",
     },
     exclude: ["**/node_modules/**", "**/tests/e2e/**"],
     testTimeout: 10000,
