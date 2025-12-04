@@ -143,12 +143,13 @@ const getCardColors = ({
 
 /**
  * Validates and canonicalizes color parameters to prevent XSS.
- * Returns a canonicalized color string (# + hex digits) for valid colors,
+ * Returns a canonicalized color string (hex digits without #) for valid colors,
  * or undefined for invalid colors, allowing renderError to use safe defaults.
  * This ensures we never output user-controlled strings directly.
+ * Note: Returns without # prefix to match getCardColors expectations.
  *
  * @param {string|undefined} color The color value to validate and canonicalize.
- * @returns {string|undefined} Canonicalized color (# + hex) or undefined.
+ * @returns {string|undefined} Canonicalized color (hex without #) or undefined.
  */
 const validateColor = (color) => {
   if (!color || typeof color !== "string") {
@@ -162,8 +163,9 @@ const validateColor = (color) => {
       hexColor,
     )
   ) {
-    // Return canonicalized format: # + validated hex (never the original user string)
-    return "#" + hexColor.toLowerCase();
+    // Return canonicalized format: validated hex lowercase (never the original user string)
+    // Note: No # prefix as getCardColors expects colors without #
+    return hexColor.toLowerCase();
   }
   return undefined;
 };
