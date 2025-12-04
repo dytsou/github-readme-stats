@@ -151,6 +151,7 @@ export default async (req, res) => {
     setCacheHeaders(res, cacheSeconds);
 
     // Sanitize/validate all user input before rendering card
+    const validatedTheme = validateTheme(theme);
     return res.send(
       renderTopLanguages(topLangs, {
         custom_title: custom_title ? encodeHTML(custom_title) : undefined,
@@ -161,8 +162,9 @@ export default async (req, res) => {
         title_color: validateColor(title_color),
         text_color: validateColor(text_color),
         bg_color: validateColor(bg_color),
-        // @ts-expect-error - validateTheme returns a validated theme name that matches ThemeNames
-        theme: validateTheme(theme),
+        // validateTheme ensures the theme is valid, so we can safely assert the type
+        // @ts-ignore - validateTheme returns a validated theme name that matches ThemeNames
+        theme: validatedTheme,
         layout,
         langs_count,
         border_radius: isNaN(parseFloat(border_radius))
