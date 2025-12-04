@@ -161,10 +161,13 @@ export default async (req, res) => {
         title_color: validateColor(title_color),
         text_color: validateColor(text_color),
         bg_color: validateColor(bg_color),
+        // @ts-expect-error - validateTheme returns a validated theme name that matches ThemeNames
         theme: validateTheme(theme),
         layout,
         langs_count,
-        border_radius: isNaN(parseFloat(border_radius)) ? undefined : Math.max(0, Math.min(50, parseFloat(border_radius))),
+        border_radius: isNaN(parseFloat(border_radius))
+          ? undefined
+          : Math.max(0, Math.min(50, parseFloat(border_radius))),
         border_color: validateColor(border_color),
         locale,
         disable_animations: parseBoolean(disable_animations),
