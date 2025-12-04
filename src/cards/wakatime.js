@@ -9,14 +9,10 @@ import { wakatimeCardLocales } from "../translations.js";
 
 /** Import language colors.
  *
- * @description Here we use the workaround found in
- * https://stackoverflow.com/questions/66726365/how-should-i-import-json-in-node
- * since vercel is using v16.14.0 which does not yet support json imports without the
- * --experimental-json-modules flag.
+ * @description Using ES module JSON import which works in modern Node.js and Cloudflare Workers.
  */
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const languageColors = require("../common/languageColors.json"); // now works
+// @ts-ignore - JSON import
+import languageColors from "../common/languageColors.json";
 
 const DEFAULT_CARD_WIDTH = 495;
 const MIN_CARD_WIDTH = 250;
