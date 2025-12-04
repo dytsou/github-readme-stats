@@ -1,6 +1,6 @@
 // @ts-check
 
-import { encodeHTML } from "./html.js";
+import { encodeHTML, escapeCSSValue } from "./html.js";
 import { flexLayout } from "./render.js";
 
 class Card {
@@ -206,6 +206,14 @@ class Card {
    * @returns {string} The rendered card.
    */
   render(body) {
+    // Sanitize color values to prevent XSS in SVG attributes
+    const safeTitleColor = escapeCSSValue(this.colors.titleColor || "");
+    const safeBorderColor = escapeCSSValue(this.colors.borderColor || "");
+    const safeBgColor =
+      typeof this.colors.bgColor === "object"
+        ? "url(#gradient)"
+        : escapeCSSValue(this.colors.bgColor || "");
+
     return `
       <svg
         width="${this.width}"
@@ -216,12 +224,12 @@ class Card {
         role="img"
         aria-labelledby="descId"
       >
-        <title id="titleId">${this.a11yTitle}</title>
-        <desc id="descId">${this.a11yDesc}</desc>
+        <title id="titleId">${encodeHTML(this.a11yTitle)}</title>
+        <desc id="descId">${encodeHTML(this.a11yDesc)}</desc>
         <style>
           .header {
             font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-            fill: ${this.colors.titleColor};
+            fill: ${safeTitleColor};
             animation: fadeInAnimation 0.8s ease-in-out forwards;
           }
           @supports(-moz-appearance: auto) {
@@ -246,13 +254,9 @@ class Card {
           y="0.5"
           rx="${this.border_radius}"
           height="99%"
-          stroke="${this.colors.borderColor}"
+          stroke="${safeBorderColor}"
           width="${this.width - 1}"
-          fill="${
-            typeof this.colors.bgColor === "object"
-              ? "url(#gradient)"
-              : this.colors.bgColor
-          }"
+          fill="${safeBgColor}"
           stroke-opacity="${this.hideBorder ? 0 : 1}"
         />
 

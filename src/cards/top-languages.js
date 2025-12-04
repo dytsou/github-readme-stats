@@ -3,6 +3,7 @@
 import { Card } from "../common/Card.js";
 import { getCardColors } from "../common/color.js";
 import { formatBytes } from "../common/fmt.js";
+import { escapeCSSValue } from "../common/html.js";
 import { I18n } from "../common/I18n.js";
 import { chunkArray, clampValue, lowercaseTrim } from "../common/ops.js";
 import {
@@ -891,6 +892,8 @@ const renderTopLanguages = (topLangs, options = {}) => {
 
   card.setHideBorder(hide_border);
   card.setHideTitle(hide_title);
+  // Sanitize color values to prevent XSS
+  const safeTextColor = escapeCSSValue(colors.textColor);
   card.setCSS(
     `
     @keyframes slideInAnimation {
@@ -910,7 +913,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
       }
     }
     .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${colors.textColor};
+      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${safeTextColor};
     }
     @supports(-moz-appearance: auto) {
       /* Selector detects Firefox */
@@ -919,7 +922,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
     .bold { font-weight: 700 }
     .lang-name {
       font: 400 11px "Segoe UI", Ubuntu, Sans-Serif;
-      fill: ${colors.textColor};
+      fill: ${safeTextColor};
     }
     .stagger {
       opacity: 0;

@@ -6,6 +6,7 @@ import { CustomError } from "../common/error.js";
 import { kFormatter } from "../common/fmt.js";
 import { I18n } from "../common/I18n.js";
 import { icons, rankIcon } from "../common/icons.js";
+import { escapeCSSValue } from "../common/html.js";
 import { clampValue } from "../common/ops.js";
 import { flexLayout, measureText } from "../common/render.js";
 import { statCardLocales, wakatimeCardLocales } from "../translations.js";
@@ -176,9 +177,13 @@ const getStyles = ({
   show_icons,
   progress,
 }) => {
+  // Sanitize color values to prevent XSS
+  const safeTextColor = escapeCSSValue(textColor);
+  const safeIconColor = escapeCSSValue(iconColor);
+  const safeRingColor = escapeCSSValue(ringColor);
   return `
     .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
+      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${safeTextColor};
     }
     @supports(-moz-appearance: auto) {
       /* Selector detects Firefox */
@@ -189,7 +194,7 @@ const getStyles = ({
       animation: fadeInAnimation 0.3s ease-in-out forwards;
     }
     .rank-text {
-      font: 800 24px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor};
+      font: 800 24px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor};
       animation: scaleInAnimation 0.3s ease-in-out forwards;
     }
     .rank-percentile-header {
@@ -202,18 +207,18 @@ const getStyles = ({
     .not_bold { font-weight: 400 }
     .bold { font-weight: 700 }
     .icon {
-      fill: ${iconColor};
+      fill: ${safeIconColor};
       display: ${show_icons ? "block" : "none"};
     }
 
     .rank-circle-rim {
-      stroke: ${ringColor};
+      stroke: ${safeRingColor};
       fill: none;
       stroke-width: 6;
       opacity: 0.2;
     }
     .rank-circle {
-      stroke: ${ringColor};
+      stroke: ${safeRingColor};
       stroke-dasharray: 250;
       fill: none;
       stroke-width: 6;

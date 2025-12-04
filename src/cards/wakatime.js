@@ -2,6 +2,7 @@
 
 import { Card } from "../common/Card.js";
 import { getCardColors } from "../common/color.js";
+import { escapeCSSValue } from "../common/html.js";
 import { I18n } from "../common/I18n.js";
 import { clampValue, lowercaseTrim } from "../common/ops.js";
 import { createProgressNode, flexLayout } from "../common/render.js";
@@ -192,9 +193,10 @@ const getStyles = ({
   titleColor,
   textColor,
 }) => {
+  const safeTextColor = escapeCSSValue(textColor);
   return `
     .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
+      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${safeTextColor};
     }
     @supports(-moz-appearance: auto) {
       /* Selector detects Firefox */
@@ -330,6 +332,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
 
         // @ts-ignore
         const languageColor = languageColors[language.name] || "#858585";
+        const safeLanguageColor = escapeCSSValue(languageColor);
 
         const output = `
           <rect
@@ -339,7 +342,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
             y="0"
             width="${progress}"
             height="8"
-            fill="${languageColor}"
+            fill="${safeLanguageColor}"
           />
         `;
         progressOffset += progress;
@@ -437,6 +440,8 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
 
   card.setHideBorder(hide_border);
   card.setHideTitle(hide_title);
+  // Sanitize color values to prevent XSS
+  const safeTextColor = escapeCSSValue(textColor);
   card.setCSS(
     `
     ${cssStyles}
@@ -456,7 +461,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
         width: 100%;
       }
     }
-    .lang-name { font: 400 11px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor} }
+    .lang-name { font: 400 11px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
     #rect-mask rect{
       animation: slideInAnimation 1s ease-in-out forwards;
     }

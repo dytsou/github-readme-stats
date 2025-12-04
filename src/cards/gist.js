@@ -9,7 +9,7 @@ import {
 import Card from "../common/Card.js";
 import { getCardColors } from "../common/color.js";
 import { kFormatter, wrapTextMultiline } from "../common/fmt.js";
-import { encodeHTML } from "../common/html.js";
+import { encodeHTML, escapeCSSValue } from "../common/html.js";
 import { icons } from "../common/icons.js";
 import { parseEmojis } from "../common/ops.js";
 
@@ -126,10 +126,13 @@ const renderGistCard = (gistData, options = {}) => {
     },
   });
 
+  // Sanitize color values to prevent XSS
+  const safeTextColor = escapeCSSValue(textColor);
+  const safeIconColor = escapeCSSValue(iconColor);
   card.setCSS(`
-    .description { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor} }
-    .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor} }
-    .icon { fill: ${iconColor} }
+    .description { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
+    .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
+    .icon { fill: ${safeIconColor} }
   `);
   card.setHideBorder(hide_border);
 

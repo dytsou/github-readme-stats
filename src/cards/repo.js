@@ -3,7 +3,7 @@
 import { Card } from "../common/Card.js";
 import { getCardColors } from "../common/color.js";
 import { kFormatter, wrapTextMultiline } from "../common/fmt.js";
-import { encodeHTML } from "../common/html.js";
+import { encodeHTML, escapeCSSValue } from "../common/html.js";
 import { I18n } from "../common/I18n.js";
 import { icons } from "../common/icons.js";
 import { clampValue, parseEmojis } from "../common/ops.js";
@@ -26,20 +26,23 @@ const DESCRIPTION_MAX_LINES = 3;
  * @param {string} textColor The color of the text.
  * @returns {string} Wrapped repo description SVG object.
  */
-const getBadgeSVG = (label, textColor) => `
+const getBadgeSVG = (label, textColor) => {
+  const safeTextColor = escapeCSSValue(textColor);
+  return `
   <g data-testid="badge" class="badge" transform="translate(320, -18)">
-    <rect stroke="${textColor}" stroke-width="1" width="70" height="20" x="-12" y="-14" ry="10" rx="10"></rect>
+    <rect stroke="${safeTextColor}" stroke-width="1" width="70" height="20" x="-12" y="-14" ry="10" rx="10"></rect>
     <text
       x="23" y="-5"
       alignment-baseline="central"
       dominant-baseline="central"
       text-anchor="middle"
-      fill="${textColor}"
+      fill="${safeTextColor}"
     >
-      ${label}
+      ${encodeHTML(label)}
     </text>
   </g>
 `;
+};
 
 /**
  * @typedef {import("../fetchers/types").RepositoryData} RepositoryData Repository data.
@@ -160,10 +163,13 @@ const renderRepoCard = (repo, options = {}) => {
   card.disableAnimations();
   card.setHideBorder(hide_border);
   card.setHideTitle(false);
+  // Sanitize color values to prevent XSS
+  const safeTextColor = escapeCSSValue(colors.textColor);
+  const safeIconColor = escapeCSSValue(colors.iconColor);
   card.setCSS(`
-    .description { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
-    .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${colors.textColor} }
-    .icon { fill: ${colors.iconColor} }
+    .description { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
+    .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${safeTextColor} }
+    .icon { fill: ${safeIconColor} }
     .badge { font: 600 11px 'Segoe UI', Ubuntu, Sans-Serif; }
     .badge rect { opacity: 0.2 }
   `);
