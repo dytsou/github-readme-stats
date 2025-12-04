@@ -61,10 +61,12 @@
     "prettier": "^3.6.2"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.6",
     "axios": "^1.13.1",
     "dotenv": "^17.2.3",
     "emoji-name-map": "^2.0.3",
     "github-username-regex": "^1.0.0",
+    "hono": "^4.10.7",
     "word-wrap": "^1.2.5"
   },
   "lint-staged": {
