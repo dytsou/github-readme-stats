@@ -109,10 +109,19 @@ export default async (req, res) => {
   } catch (err) {
     setErrorCacheHeaders(res);
     if (err instanceof Error) {
+      // Prevent leaking user locale in error message
+      let safeMessage = err.message;
+      // Generic error handling for translation not found errors
+      if (
+        safeMessage &&
+        safeMessage.includes("translation not found for locale")
+      ) {
+        safeMessage = "Invalid locale specified.";
+      }
       // Validate colors before passing to renderError (renderError will also sanitize)
       return res.send(
         renderError({
-          message: err.message,
+          message: safeMessage,
           secondaryMessage: retrieveSecondaryMessage(err),
           renderOptions: {
             title_color: validateColor(title_color),
