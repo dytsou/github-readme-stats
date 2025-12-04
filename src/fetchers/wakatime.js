@@ -59,29 +59,39 @@ const fetchWakatimeStats = async ({ username, api_domain }) => {
   }
 
   // Extract and sanitize hostname using URL parsing
-  let domain;
+  // After validation, select domain from whitelist to prevent SSRF
+  // This ensures CodeQL recognizes that domain is not user-controlled
+  let domain = "wakatime.com"; // Default safe domain
   if (api_domain) {
     try {
       // Remove any existing protocol and ensure we have one for parsing
       const domainWithoutProtocol = api_domain.replace(/^(https?:\/\/)/i, "");
       // Use URL constructor to extract only the hostname (validated by isValidWakatimeDomain)
       const urlObj = new URL(`https://${domainWithoutProtocol}`);
-      domain = urlObj.hostname.toLowerCase();
+      const extractedHostname = urlObj.hostname.toLowerCase();
+
+      // Select domain from whitelist using explicit lookup
+      // This ensures domain can only be one of the whitelisted constants
+      if (extractedHostname === "wakatime.com") {
+        domain = "wakatime.com";
+      } else if (extractedHostname === "api.wakatime.com") {
+        domain = "api.wakatime.com";
+      }
+      // If extractedHostname doesn't match whitelist, domain remains default "wakatime.com"
     } catch {
-      // Should not happen if validation passed, but fallback to default
-      domain = "wakatime.com";
+      // Should not happen if validation passed, but domain already set to safe default
     }
-  } else {
-    domain = "wakatime.com";
   }
 
   // URL-encode username to prevent path injection
   const encodedUsername = encodeURIComponent(username);
 
+  // Construct URL using only whitelisted domain constants
+  // Domain is guaranteed to be from ALLOWED_WAKATIME_DOMAINS, preventing SSRF
+  const apiUrl = `https://${domain}/api/v1/users/${encodedUsername}/stats?is_including_today=true`;
+
   try {
-    const { data } = await axios.get(
-      `https://${domain}/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
-    );
+    const { data } = await axios.get(apiUrl);
 
     return data.data;
   } catch (err) {
