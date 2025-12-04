@@ -6,10 +6,9 @@
 /**
  * Creates a mock Express response object that works with Hono context.
  *
- * @param {import('hono').Context} c Hono context
  * @returns {any} Mock Express response object
  */
-export function createMockResponse(c) {
+export function createMockResponse() {
   const headers = {};
   let responseSent = false;
   let responseBody = null;
@@ -80,7 +79,7 @@ export function createMockRequest(c) {
 export function adaptExpressHandler(expressHandler) {
   return async (c) => {
     const req = createMockRequest(c);
-    const res = createMockResponse(c);
+    const res = createMockResponse();
     
     try {
       const result = await expressHandler(req, res);
@@ -105,7 +104,10 @@ export function adaptExpressHandler(expressHandler) {
             },
           });
         }
-        return result !== undefined ? result : c;
+        if (result !== undefined) {
+          return result;
+        }
+        return c;
       }
       
       // If handler returns something directly (like a Response from guardAccess)

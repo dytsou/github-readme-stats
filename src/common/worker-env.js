@@ -10,7 +10,7 @@ if (typeof globalThis.process === 'undefined') {
 /**
  * Checks if we're running in Cloudflare Workers environment.
  * Detects by checking for Cloudflare-specific globals that exist at import time.
- * @returns {boolean}
+ * @returns {boolean} True if running in Cloudflare Workers, false otherwise
  */
 export function isCloudflareWorkers() {
   // Check for Cloudflare Workers runtime globals

@@ -18,7 +18,7 @@ try {
   if (!isCloudflareWorkers()) {
     dotenv.config();
   }
-} catch (error) {
+} catch {
   // Silently fail in environments without file system (Cloudflare Workers)
   // Environment variables will be provided via Cloudflare Workers env object
 }
