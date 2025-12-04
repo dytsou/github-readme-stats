@@ -50,5 +50,4 @@ jobs:
             exit 0
           }
         env:
-          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || github.event.deployment_status.target_url || '' }}
-        continue-on-error: true
+          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || github.event.deployment_status.target_url || env.CLOUDFLARE_WORKER_URL || '' }}
