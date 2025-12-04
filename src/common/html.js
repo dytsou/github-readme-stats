@@ -17,6 +17,21 @@ const encodeHTML = (str) => {
 };
 
 /**
+ * Restricts title strings to a safe printable unicode subset.
+ * Only allows unicode letters, numbers, punctuation, space, emoji.
+ * Strips any characters that may risk SVG/HTML XSS escape.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+const sanitizeTitle = (str) => {
+  if (typeof str !== "string") return "";
+  // Remove all control chars except whitespace, allow common printable chars plus unicode
+  // Unicode letters/numbers/punctuation/marks/symbols/spaces (\p{L}\p{N}\p{P}\p{M}\p{S}\p{Zs})
+  return str.replace(/[^\p{L}\p{N}\p{P}\p{M}\p{S}\p{Zs}]/gu, "");
+};
+
+/**
  * Escape CSS/attribute value to prevent XSS in SVG attributes.
  * This function ensures that color values and other CSS values
  * are safe to use in SVG attribute contexts.
@@ -41,4 +56,4 @@ const escapeCSSValue = (value) => {
     .replace(/>/g, "\\3E "); // Escape greater-than
 };
 
-export { encodeHTML, escapeCSSValue };
+export { encodeHTML, escapeCSSValue, sanitizeTitle };

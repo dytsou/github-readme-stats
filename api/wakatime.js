@@ -17,7 +17,7 @@ import {
 } from "../src/common/error.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { validateColor, validateTheme } from "../src/common/color.js";
-import { encodeHTML } from "../src/common/html.js";
+import { encodeHTML, sanitizeTitle } from "../src/common/html.js";
 
 // @ts-ignore
 export default async (req, res) => {
@@ -92,9 +92,11 @@ export default async (req, res) => {
     const safeTheme = validateTheme(theme);
     const safeBorderColor = validateColor(border_color);
 
-    // Sanitize custom title for SVG/text usage
+    // Sanitize custom title for SVG/text usage (restrict and encode)
     const safeCustomTitle =
-      typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
+      typeof custom_title === "string"
+        ? encodeHTML(sanitizeTitle(custom_title))
+        : undefined;
 
     // Validate border_radius (float [0, 20] as reasonable range)
     let safeBorderRadius = parseFloat(border_radius);
