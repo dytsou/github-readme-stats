@@ -17,6 +17,7 @@ import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { renderError } from "../src/common/render.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
+import { themes } from "../themes/index.js";
 
 /**
  * Validates and sanitizes color parameters to prevent XSS.
@@ -33,6 +34,21 @@ const validateColor = (color) => {
   const hexColor = color.replace(/^#/, "");
   // Validate hex color format
   return isValidHexColor(hexColor) ? color : undefined;
+};
+
+/**
+ * Validates theme parameter to prevent XSS.
+ * Returns undefined for invalid themes, allowing renderError to use safe defaults.
+ *
+ * @param {string|undefined} theme The theme name to validate.
+ * @returns {string|undefined} Validated theme name or undefined.
+ */
+const validateTheme = (theme) => {
+  if (!theme || typeof theme !== "string") {
+    return undefined;
+  }
+  // Check if theme exists in themes object
+  return themes[theme] ? theme : undefined;
 };
 
 // @ts-ignore
@@ -74,7 +90,7 @@ export default async (req, res) => {
           text_color: validateColor(text_color),
           bg_color: validateColor(bg_color),
           border_color: validateColor(border_color),
-          theme,
+          theme: validateTheme(theme),
         },
       }),
     );
@@ -88,11 +104,11 @@ export default async (req, res) => {
     id: username,
     type: "username",
     colors: {
-      title_color,
-      text_color,
-      bg_color,
-      border_color,
-      theme,
+      title_color: validateColor(title_color),
+      text_color: validateColor(text_color),
+      bg_color: validateColor(bg_color),
+      border_color: validateColor(border_color),
+      theme: validateTheme(theme),
     },
   });
   if (!access.isPassed) {
@@ -110,7 +126,7 @@ export default async (req, res) => {
           text_color: validateColor(text_color),
           bg_color: validateColor(bg_color),
           border_color: validateColor(border_color),
-          theme,
+          theme: validateTheme(theme),
         },
       }),
     );
@@ -131,7 +147,7 @@ export default async (req, res) => {
           text_color: validateColor(text_color),
           bg_color: validateColor(bg_color),
           border_color: validateColor(border_color),
-          theme,
+          theme: validateTheme(theme),
         },
       }),
     );
@@ -152,7 +168,7 @@ export default async (req, res) => {
           text_color: validateColor(text_color),
           bg_color: validateColor(bg_color),
           border_color: validateColor(border_color),
-          theme,
+          theme: validateTheme(theme),
         },
       }),
     );
@@ -208,7 +224,7 @@ export default async (req, res) => {
             text_color: validateColor(text_color),
             bg_color: validateColor(bg_color),
             border_color: validateColor(border_color),
-            theme,
+            theme: validateTheme(theme),
             show_repo_link: !(err instanceof MissingParamError),
           },
         }),
@@ -223,7 +239,7 @@ export default async (req, res) => {
           text_color: validateColor(text_color),
           bg_color: validateColor(bg_color),
           border_color: validateColor(border_color),
-          theme,
+          theme: validateTheme(theme),
         },
       }),
     );
