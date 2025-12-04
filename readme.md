@@ -277,10 +277,10 @@ Display your WakaTime coding statistics.
 
 2. **Install dependencies:**
    ```bash
-   npm install
-   # or
    pnpm install
    ```
+   
+   > **Note:** This project uses [pnpm](https://pnpm.io/) as the package manager. If you don't have pnpm installed, you can install it with `npm install -g pnpm`.
 
 3. **Configure `wrangler.toml`:**
    ```toml
@@ -288,6 +288,21 @@ Display your WakaTime coding statistics.
    main = "src/worker.ts"
    compatibility_date = "2025-12-04"
    compatibility_flags = ["nodejs_compat"]
+
+   [observability]
+   enabled = true
+   head_sampling_rate = 1
+
+   [observability.logs]
+   enabled = true
+   head_sampling_rate = 1
+   persist = true
+   invocation_logs = true
+
+   [observability.traces]
+   enabled = true
+   persist = true
+   head_sampling_rate = 1
 
    [vars]
    PAT_1 = "your_pat_token_here"
