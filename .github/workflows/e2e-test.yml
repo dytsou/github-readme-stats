@@ -43,5 +43,6 @@ jobs:
       - name: Run end-to-end tests
         run: pnpm test:e2e
         env:
+          # Prefer Cloudflare Worker URL, fallback to Vercel Preview URL for backward compatibility
+          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || github.event.deployment_status.target_url || '' }}
           VERCEL_PREVIEW_URL: ${{ github.event.deployment_status.target_url || '' }}
-          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL || '' }}

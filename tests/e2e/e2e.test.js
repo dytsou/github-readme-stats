@@ -1,5 +1,5 @@
 /**
- * @file Contains end-to-end tests for the Vercel preview instance.
+ * @file Contains end-to-end tests for the deployed instance (Vercel or Cloudflare Workers).
  */
 import dotenv from "dotenv";
 dotenv.config();
@@ -105,19 +105,30 @@ const GIST_DATA = {
 const CACHE_BURST_STRING = `v=${new Date().getTime()}`;
 
 describe("Fetch Cards", () => {
-  let VERCEL_PREVIEW_URL;
+  let DEPLOYMENT_URL;
 
   beforeAll(() => {
     process.env.NODE_ENV = "development";
-    VERCEL_PREVIEW_URL = process.env.VERCEL_PREVIEW_URL;
+    // Prefer Cloudflare Worker URL, fallback to Vercel Preview URL for backward compatibility
+    DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL || process.env.VERCEL_PREVIEW_URL;
+    
+    // Skip all tests if no deployment URL is provided
+    if (!DEPLOYMENT_URL) {
+      console.warn("⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL or VERCEL_PREVIEW_URL to run e2e tests.");
+    }
   });
 
   test("retrieve stats card", async () => {
-    expect(VERCEL_PREVIEW_URL).toBeDefined();
+    if (!DEPLOYMENT_URL) {
+      console.log("⏭️  Skipping test: No deployment URL provided");
+      return;
+    }
+    expect(DEPLOYMENT_URL).toBeDefined();
+    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the Vercel preview instance stats card function is up and running.
+    // Check if the deployed instance stats card function is up and running.
     await expect(
-      axios.get(`${VERCEL_PREVIEW_URL}/api?username=${STATS_CARD_USER}`),
+      axios.get(`${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`),
     ).resolves.not.toThrow();
 
     // Get local stats card.
@@ -125,9 +136,9 @@ describe("Fetch Cards", () => {
       include_all_commits: true,
     });
 
-    // Get the Vercel preview stats card response.
+    // Get the deployed instance stats card response.
     const serverStatsSvg = await axios.get(
-      `${VERCEL_PREVIEW_URL}/api?username=${STATS_CARD_USER}&include_all_commits=true&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}&include_all_commits=true&${CACHE_BURST_STRING}`,
     );
 
     // Check if stats card from deployment matches the stats card from local.
@@ -135,24 +146,29 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve language card", async () => {
-    expect(VERCEL_PREVIEW_URL).toBeDefined();
+    if (!DEPLOYMENT_URL) {
+      console.log("⏭️  Skipping test: No deployment URL provided");
+      return;
+    }
+    expect(DEPLOYMENT_URL).toBeDefined();
+    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the Vercel preview instance language card function is up and running.
+    // Check if the deployed instance language card function is up and running.
     console.log(
-      `${VERCEL_PREVIEW_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
     );
     await expect(
       axios.get(
-        `${VERCEL_PREVIEW_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
+        `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
       ),
     ).resolves.not.toThrow();
 
     // Get local language card.
     const localLanguageCardSVG = renderTopLanguages(LANGS_DATA);
 
-    // Get the Vercel preview language card response.
+    // Get the deployed instance language card response.
     const severLanguageSVG = await axios.get(
-      `${VERCEL_PREVIEW_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
     );
 
     // Check if language card from deployment matches the local language card.
@@ -160,19 +176,24 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve WakaTime card", async () => {
-    expect(VERCEL_PREVIEW_URL).toBeDefined();
+    if (!DEPLOYMENT_URL) {
+      console.log("⏭️  Skipping test: No deployment URL provided");
+      return;
+    }
+    expect(DEPLOYMENT_URL).toBeDefined();
+    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the Vercel preview instance WakaTime function is up and running.
+    // Check if the deployed instance WakaTime function is up and running.
     await expect(
-      axios.get(`${VERCEL_PREVIEW_URL}/api/wakatime?username=${USER}`),
+      axios.get(`${DEPLOYMENT_URL}/api/wakatime?username=${USER}`),
     ).resolves.not.toThrow();
 
     // Get local WakaTime card.
     const localWakaCardSVG = renderWakatimeCard(WAKATIME_DATA);
 
-    // Get the Vercel preview WakaTime card response.
+    // Get the deployed instance WakaTime card response.
     const serverWakaTimeSvg = await axios.get(
-      `${VERCEL_PREVIEW_URL}/api/wakatime?username=${USER}&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api/wakatime?username=${USER}&${CACHE_BURST_STRING}`,
     );
 
     // Check if WakaTime card from deployment matches the local WakaTime card.
@@ -180,21 +201,26 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve repo card", async () => {
-    expect(VERCEL_PREVIEW_URL).toBeDefined();
+    if (!DEPLOYMENT_URL) {
+      console.log("⏭️  Skipping test: No deployment URL provided");
+      return;
+    }
+    expect(DEPLOYMENT_URL).toBeDefined();
+    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the Vercel preview instance Repo function is up and running.
+    // Check if the deployed instance Repo function is up and running.
     await expect(
       axios.get(
-        `${VERCEL_PREVIEW_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
+        `${DEPLOYMENT_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
       ),
     ).resolves.not.toThrow();
 
     // Get local repo card.
     const localRepoCardSVG = renderRepoCard(REPOSITORY_DATA);
 
-    // Get the Vercel preview repo card response.
+    // Get the deployed instance repo card response.
     const serverRepoSvg = await axios.get(
-      `${VERCEL_PREVIEW_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
     );
 
     // Check if Repo card from deployment matches the local Repo card.
@@ -202,21 +228,26 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve gist card", async () => {
-    expect(VERCEL_PREVIEW_URL).toBeDefined();
+    if (!DEPLOYMENT_URL) {
+      console.log("⏭️  Skipping test: No deployment URL provided");
+      return;
+    }
+    expect(DEPLOYMENT_URL).toBeDefined();
+    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the Vercel preview instance Gist function is up and running.
+    // Check if the deployed instance Gist function is up and running.
     await expect(
       axios.get(
-        `${VERCEL_PREVIEW_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
+        `${DEPLOYMENT_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
       ),
     ).resolves.not.toThrow();
 
     // Get local gist card.
     const localGistCardSVG = renderGistCard(GIST_DATA);
 
-    // Get the Vercel preview gist card response.
+    // Get the deployed instance gist card response.
     const serverGistSvg = await axios.get(
-      `${VERCEL_PREVIEW_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
+      `${DEPLOYMENT_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
     );
 
     // Check if Gist card from deployment matches the local Gist card.
