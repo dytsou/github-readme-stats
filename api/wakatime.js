@@ -93,11 +93,16 @@ export default async (req, res) => {
     const safeBorderColor = validateColor(border_color);
 
     // Sanitize custom title for SVG/text usage
-    const safeCustomTitle = typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
+    const safeCustomTitle =
+      typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
 
     // Validate border_radius (float [0, 20] as reasonable range)
     let safeBorderRadius = parseFloat(border_radius);
-    if (isNaN(safeBorderRadius) || safeBorderRadius < 0 || safeBorderRadius > 20) {
+    if (
+      isNaN(safeBorderRadius) ||
+      safeBorderRadius < 0 ||
+      safeBorderRadius > 20
+    ) {
       safeBorderRadius = 4.5; // default
     }
 
