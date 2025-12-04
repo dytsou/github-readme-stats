@@ -9,8 +9,4 @@ export default {
     "<rootDir>/node_modules/",
     "<rootDir>/tests/E2E/",
   ],
-  moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1",
-  },
-  maxWorkers: 1,
 };
