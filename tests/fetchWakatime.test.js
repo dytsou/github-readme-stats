@@ -176,6 +176,114 @@ describe("WakaTime fetcher", () => {
     );
   });
 
+  it("should reject domain with protocol injection (SSRF attempt)", async () => {
+    await expect(
+      fetchWakatimeStats({
+        username: "test",
+        api_domain: "http://evil.com",
+      }),
+    ).rejects.toThrow(
+      "Invalid API domain. Only whitelisted WakaTime domains are allowed.",
+    );
+  });
+
+  it("should strip port and use only hostname (SSRF protection)", async () => {
+    // Port should be stripped, only hostname used
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    // Even with port specified, only hostname should be used
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "wakatime.com:8080",
+    });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
+  it("should strip path and use only hostname (SSRF protection)", async () => {
+    // Path should be stripped, only hostname used
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    // Even with path specified, only hostname should be used
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "wakatime.com/evil",
+    });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
+  it("should strip user info and use only hostname (SSRF protection)", async () => {
+    // User info should be stripped, only hostname used
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    // Even with user info specified, only hostname should be used
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "user@wakatime.com",
+    });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
+  it("should reject domain with mixed attack (SSRF attempt)", async () => {
+    await expect(
+      fetchWakatimeStats({
+        username: "test",
+        api_domain: "wakatime.com@evil.com",
+      }),
+    ).rejects.toThrow(
+      "Invalid API domain. Only whitelisted WakaTime domains are allowed.",
+    );
+  });
+
+  it("should accept valid domain with trailing slash (normalized)", async () => {
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "wakatime.com/",
+    });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
+  it("should accept valid domain with protocol prefix (normalized)", async () => {
+    const username = "anuraghazra";
+    const encodedUsername = encodeURIComponent(username);
+    mock
+      .onGet(
+        `https://api.wakatime.com/api/v1/users/${encodedUsername}/stats?is_including_today=true`,
+      )
+      .reply(200, wakaTimeData);
+
+    const repo = await fetchWakatimeStats({
+      username,
+      api_domain: "https://api.wakatime.com",
+    });
+    expect(repo).toStrictEqual(wakaTimeData.data);
+  });
+
   it("should handle username with special characters", async () => {
     const username = "user@example.com";
     const encodedUsername = encodeURIComponent(username);

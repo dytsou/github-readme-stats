@@ -11,6 +11,8 @@ const ALLOWED_WAKATIME_DOMAINS = ["wakatime.com", "api.wakatime.com"];
 
 /**
  * Validates that the provided domain is in the allowed whitelist.
+ * Uses URL parsing to extract only the hostname, preventing SSRF attacks
+ * by stripping protocol, port, path, and other components.
  *
  * @param {string} domain The domain to validate.
  * @returns {boolean} True if domain is allowed, false otherwise.
@@ -20,11 +22,21 @@ const isValidWakatimeDomain = (domain) => {
     return true; // Default to wakatime.com if not provided
   }
 
-  // Remove trailing slashes and normalize
-  const normalizedDomain = domain.replace(/\/$/gi, "").toLowerCase();
+  // Parse as a URL and extract hostname to prevent SSRF
+  let hostname;
+  try {
+    // Remove any existing protocol and ensure we have one for parsing
+    const domainWithoutProtocol = domain.replace(/^(https?:\/\/)/i, "");
+    // Use URL constructor to parse and extract only the hostname
+    const urlObj = new URL(`https://${domainWithoutProtocol}`);
+    hostname = urlObj.hostname.toLowerCase();
+  } catch {
+    // Invalid URL format - reject
+    return false;
+  }
 
-  // Check against whitelist
-  return ALLOWED_WAKATIME_DOMAINS.includes(normalizedDomain);
+  // Check against whitelist using only the extracted hostname
+  return ALLOWED_WAKATIME_DOMAINS.includes(hostname);
 };
 
 /**
@@ -46,10 +58,22 @@ const fetchWakatimeStats = async ({ username, api_domain }) => {
     );
   }
 
-  // Normalize and sanitize domain
-  const domain = api_domain
-    ? api_domain.replace(/\/$/gi, "").toLowerCase()
-    : "wakatime.com";
+  // Extract and sanitize hostname using URL parsing
+  let domain;
+  if (api_domain) {
+    try {
+      // Remove any existing protocol and ensure we have one for parsing
+      const domainWithoutProtocol = api_domain.replace(/^(https?:\/\/)/i, "");
+      // Use URL constructor to extract only the hostname (validated by isValidWakatimeDomain)
+      const urlObj = new URL(`https://${domainWithoutProtocol}`);
+      domain = urlObj.hostname.toLowerCase();
+    } catch {
+      // Should not happen if validation passed, but fallback to default
+      domain = "wakatime.com";
+    }
+  } else {
+    domain = "wakatime.com";
+  }
 
   // URL-encode username to prevent path injection
   const encodedUsername = encodeURIComponent(username);
