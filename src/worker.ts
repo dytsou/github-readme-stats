@@ -22,16 +22,27 @@ export default {
       const app = new Hono();
       
       // Adapt Express handlers to Hono
+      // Support both with and without trailing slashes
       // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get('/api', adaptExpressHandler(statsHandler));
       // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get('/api/', adaptExpressHandler(statsHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get('/api/pin', adaptExpressHandler(repoCardHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get('/api/pin/', adaptExpressHandler(repoCardHandler));
       // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get('/api/top-langs', adaptExpressHandler(topLangsHandler));
       // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get('/api/top-langs/', adaptExpressHandler(topLangsHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get('/api/wakatime', adaptExpressHandler(wakatimeHandler));
       // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get('/api/wakatime/', adaptExpressHandler(wakatimeHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get('/api/gist', adaptExpressHandler(gistHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get('/api/gist/', adaptExpressHandler(gistHandler));
       
       // Handle root path
       app.get('/', (c) => {
