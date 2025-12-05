@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths:
-      - 'package.json'
-      - 'src/**'
-      - 'config/**'
+      - "package.json"
+      - "src/**"
+      - "config/**"
   release:
     types: [created]
   workflow_dispatch:
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Enable Corepack
         run: corepack enable
@@ -69,12 +69,16 @@ jobs:
         continue-on-error: true
 
       - name: Install dependencies
-        if: steps.check-npmjs.outputs.exists == 'false' || steps.check-github.outputs.exists == 'false'
+        if:
+          steps.check-npmjs.outputs.exists == 'false' ||
+          steps.check-github.outputs.exists == 'false'
         run: |
           pnpm install --frozen-lockfile
 
       - name: Verify package
-        if: steps.check-npmjs.outputs.exists == 'false' || steps.check-github.outputs.exists == 'false'
+        if:
+          steps.check-npmjs.outputs.exists == 'false' ||
+          steps.check-github.outputs.exists == 'false'
         run: |
           # pnpm doesn't support --dry-run, so we pack and then remove the tarball
           pnpm pack
@@ -128,21 +132,21 @@ jobs:
           GITHUB_PUBLISHED=false
           NPMJS_SKIPPED=false
           GITHUB_SKIPPED=false
-          
+
           # Check if npmjs was published in this run
           if [ "${{ steps.check-npmjs.outputs.exists }}" == "false" ] && [ "${{ steps.publish-npmjs.outcome }}" == "success" ]; then
             NPMJS_PUBLISHED=true
           elif [ "${{ steps.check-npmjs.outputs.exists }}" == "true" ]; then
             NPMJS_SKIPPED=true
           fi
-          
+
           # Check if GitHub Packages was published in this run
           if [ "${{ steps.check-github.outputs.exists }}" == "false" ] && [ "${{ steps.publish-github.outcome }}" == "success" ]; then
             GITHUB_PUBLISHED=true
           elif [ "${{ steps.check-github.outputs.exists }}" == "true" ]; then
             GITHUB_SKIPPED=true
           fi
-          
+
           # Create release if:
           # 1. Any registry was published in this run, OR
           # 2. GitHub Packages was published (even if npmjs was skipped because it already exists)
@@ -160,7 +164,10 @@ jobs:
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
           name: v${{ steps.package-version.outputs.version }}
-          prerelease: ${{ contains(steps.package-version.outputs.version, 'beta') || contains(steps.package-version.outputs.version, 'alpha') || contains(steps.package-version.outputs.version, 'rc') }}
+          prerelease:
+            ${{ contains(steps.package-version.outputs.version, 'beta') ||
+            contains(steps.package-version.outputs.version, 'alpha') ||
+            contains(steps.package-version.outputs.version, 'rc') }}
           body: |
             ## @dytsou/github-readme-stats@${{ steps.package-version.outputs.version }}
 
@@ -186,7 +193,7 @@ jobs:
 
             **From GitHub Packages:**
 
-            
+
             First, create or update your `.npmrc` file:
 
             ```ini
