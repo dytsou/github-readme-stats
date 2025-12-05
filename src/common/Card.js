@@ -204,17 +204,23 @@ class Card {
   /**
    * Renders the card with inner body HTML/SVG.
    *
-   * ⚠️ SECURITY WARNING:
-   * The `body` parameter is injected as raw HTML/SVG into the card.
-   * To avoid cross-site scripting (XSS) vulnerabilities, YOU MUST ensure
-   * that all content passed via `body` is trusted and properly sanitized.
-   * If your content contains user input, sanitize with `encodeHTML` or equivalent,
-   * and DO NOT pass unsanitized user input.
+   * **Security Model:**
+   * This method accepts pre-built SVG content from internal rendering functions.
+   * All user-controlled data (custom_title, descriptions, language names, etc.)
+   * MUST be sanitized using `escapeHtml()` or `escapeCSSValue()` BEFORE being
+   * included in the body content. The sanitization happens at the data entry points
+   * in the individual card rendering functions (stats.js, repo.js, gist.js, etc.),
+   * not at this aggregation point.
    *
-   * @param {string} body The inner body of the card.
+   * This is a trusted internal API - the body parameter contains SVG elements
+   * that have already been constructed with proper escaping of dynamic values.
+   *
+   * @param {string} body The inner body of the card (pre-sanitized SVG content).
    * @returns {string} The rendered card.
    */
   render(body) {
+    // Security: body contains pre-sanitized SVG from internal render functions.
+    // User inputs are escaped at source using escapeHtml() before reaching here.
     // Sanitize color values to prevent XSS in SVG attributes
     const safeTitleColor = escapeCSSValue(this.colors.titleColor || "");
     const safeBorderColor = escapeCSSValue(this.colors.borderColor || "");
