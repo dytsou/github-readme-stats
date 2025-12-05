@@ -58,7 +58,7 @@ Display your GitHub statistics including stars, commits, pull requests, and more
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `username` | GitHub username (required) | `anuraghazra` |
+| `username` | GitHub username (required) | `NAME` |
 | `theme` | Theme name | `dark`, `radical`, `merko`, etc. |
 | `hide` | Hide specific stats | `stars,commits,prs` |
 | `show` | Show additional stats | `reviews,discussions_started` |
@@ -395,6 +395,18 @@ Use HTML with `align` attribute:
   <img height=200 align="center" src="https://YOUR-INSTANCE.WORKERS.DEV/api/top-langs?username=YOUR_USERNAME&layout=compact" />
 </a>
 ```
+
+---
+
+## API Documentation
+
+For comprehensive API documentation including all endpoints, parameters, response formats, error handling, and examples, see [API.md](API.md) or [API Documentation](https://dytsou.github.io/github-readme-stats/).
+
+**OpenAPI Specification:** The API is also available as an OpenAPI 3.1.0 specification in [openapi.yaml](openapi.yaml). You can use this with tools like:
+- [Swagger UI](https://swagger.io/tools/swagger-ui/) for interactive API exploration
+- [Postman](https://www.postman.com/) for API testing
+- Code generators for client SDKs
+- API documentation generators
 
 ---
 
