@@ -202,6 +202,15 @@ class Card {
   };
 
   /**
+   * Renders the card with inner body HTML/SVG.
+   *
+   * ⚠️ SECURITY WARNING:
+   * The `body` parameter is injected as raw HTML/SVG into the card.
+   * To avoid cross-site scripting (XSS) vulnerabilities, YOU MUST ensure
+   * that all content passed via `body` is trusted and properly sanitized.
+   * If your content contains user input, sanitize with `encodeHTML` or equivalent,
+   * and DO NOT pass unsanitized user input.
+   *
    * @param {string} body The inner body of the card.
    * @returns {string} The rendered card.
    */
