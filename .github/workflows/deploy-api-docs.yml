@@ -1,0 +1,212 @@
+name: Deploy API docs
+
+permissions:
+  contents: write
+  pages: write
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "openapi.yaml"
+      - "API.md"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy API docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2 # v2.13.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout repo
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Redocly CLI
+        run: npm install -g @redocly/cli@latest
+
+      - name: Generate Redocly documentation
+        run: |
+          redocly build-docs openapi.yaml --output redocly.html
+
+      - name: Generate Swagger UI HTML
+        run: |
+          cat > swagger.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>GitHub Readme Stats API - Swagger UI</title>
+            <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" />
+            <style>
+              html {
+                box-sizing: border-box;
+                overflow: -moz-scrollbars-vertical;
+                overflow-y: scroll;
+              }
+              *, *:before, *:after {
+                box-sizing: inherit;
+              }
+              body {
+                margin:0;
+                background: #fafafa;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="swagger-ui"></div>
+            <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+            <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
+            <script>
+              window.onload = function() {
+                const ui = SwaggerUIBundle({
+                  url: "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/openapi.yaml",
+                  dom_id: '#swagger-ui',
+                  deepLinking: true,
+                  presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                  ],
+                  plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                  ],
+                  layout: "StandaloneLayout"
+                });
+              };
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Create index page
+        run: |
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>GitHub Readme Stats API Documentation</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                max-width: 800px;
+                width: 100%;
+                padding: 40px;
+                text-align: center;
+              }
+              h1 {
+                color: #667eea;
+                margin-bottom: 20px;
+                font-size: 2.5em;
+              }
+              p {
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 1.1em;
+              }
+              .links {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                margin-top: 30px;
+              }
+              a {
+                display: inline-block;
+                padding: 15px 30px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: transform 0.2s, box-shadow 0.2s;
+              }
+              a:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+              }
+              .badge {
+                display: inline-block;
+                padding: 5px 10px;
+                background: #667eea;
+                color: white;
+                border-radius: 4px;
+                font-size: 0.9em;
+                margin-left: 10px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>GitHub Readme Stats API Documentation</h1>
+              <p>Choose your preferred documentation format:</p>
+              <div class="links">
+                <a href="redocly/index.html">
+                  Redocly Documentation
+                </a>
+                <a href="swagger.html">
+                  Swagger UI
+                </a>
+                <a href="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/openapi.yaml">
+                  OpenAPI YAML (Raw)
+                </a>
+                <a href="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/API.md">
+                  Markdown Documentation
+                </a>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Prepare publish directory
+        run: |
+          mkdir -p publish/redocly
+          mv redocly.html publish/redocly/index.html
+          mv swagger.html publish/swagger.html
+          mv index.html publish/index.html
+          cp openapi.yaml publish/openapi.yaml
+          cp API.md publish/API.md
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./publish
