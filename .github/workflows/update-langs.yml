@@ -13,24 +13,17 @@ on:
     - cron: "0 0 */30 * *"
 
 permissions:
-  actions: read
-  checks: read
-  contents: write
-  deployments: read
-  issues: read
-  discussions: read
-  packages: read
-  pages: read
-  pull-requests: write
-  repository-projects: read
-  security-events: read
-  statuses: read
+  contents: read
 
 jobs:
   updateLanguages:
     if: github.repository == 'dytsou/github-readme-stats'
     name: Update supported languages
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       matrix:
         node-version: [22.x]
