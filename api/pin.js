@@ -30,12 +30,19 @@ export default async (req, res) => {
     show_owner,
     cache_seconds,
     locale: rawLocale,
-    border_radius,
+    border_radius: rawBorderRadius,
     border_color,
     description_lines_count,
   } = req.query;
 
   // Only allow supported locales - validate and sanitize to prevent XSS
+  // Validate and sanitize border_radius to prevent XSS
+  const border_radius = (()=>{
+    const br = parseFloat(rawBorderRadius);
+    if (isNaN(br)) return 4.5;
+    // Clamp to reasonable range; SVG border radius shouldn't exceed half width/height.
+    return Math.max(0, Math.min(br, 50));
+  })();
   const locale =
     typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
       ? rawLocale.toLowerCase()
