@@ -8,7 +8,7 @@
 #
 # - Alert ID: js/html-constructed-from-input
 #   Files: src/common/Card.js:286, src/cards/top-languages.js:713
-#   Reason: 
+#   Reason:
 #     * Card.js:286 - Card.render() accepts pre-sanitized SVG content from internal render functions.
 #       All user inputs are HTML-encoded at source using escapeHtml() before reaching
 #       Card.render(). This is a trusted internal API - see Card.js JSDoc for full
