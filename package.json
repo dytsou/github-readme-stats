@@ -1,6 +1,6 @@
 {
   "name": "@dytsou/github-readme-stats",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Dynamically generate stats for your GitHub readme",
   "keywords": [
     "github-readme-stats",
@@ -13,24 +13,27 @@
   "exports": {
     ".": "./src/index.js",
     "./worker": "./src/worker.ts"
+
   },
   "files": [
     "src",
     "api",
     "themes",
     "LICENSE",
-    "readme.md"
+    "readme.md",
+    "openapi.yaml",
+    "API.md"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/anuraghazra/github-readme-stats",
+  "homepage": "https://github.com/dytsou/github-readme-stats",
   "bugs": {
-    "url": "https://github.com/anuraghazra/github-readme-stats/issues"
+    "url": "https://github.com/dytsou/github-readme-stats/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/anuraghazra/github-readme-stats.git"
+    "url": "https://github.com/dytsou/github-readme-stats.git"
   },
   "scripts": {
     "test": "mkdir -p .coverage-tmp && vitest run --coverage",
@@ -53,7 +56,7 @@
     "publish:github": "pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com",
     "publish:all": "pnpm run publish:npm && pnpm run publish:github"
   },
-  "author": "Anurag Hazra",
+  "author": "dytsou",
   "license": "MIT",
   "devDependencies": {
     "@actions/core": "^1.11.1",
