@@ -1,5 +1,9 @@
 name: Deploy API docs
 
+permissions:
+  contents: write
+  pages: write
+
 on:
   push:
     branches:
@@ -13,9 +17,6 @@ jobs:
   deploy:
     name: Deploy API docs
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
