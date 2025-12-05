@@ -4,13 +4,22 @@
 # Note: CodeQL config files don't support excluding specific query results by path.
 # For documented false positives, dismiss alerts in GitHub Security tab.
 #
-# Documented False Positive:
+# Documented False Positives:
+#
 # - Alert ID: js/html-constructed-from-input
-# - File: src/common/Card.js:286
-# - Reason: Card.render() accepts pre-sanitized SVG content from internal render functions.
-#   All user inputs are HTML-encoded at source using escapeHtml() before reaching
-#   Card.render(). This is a trusted internal API - see Card.js JSDoc for full
-#   security model documentation. The sanitization happens at data entry points
-#   (individual card renderers), not at aggregation points.
+#   File: src/common/Card.js:286
+#   Reason: Card.render() accepts pre-sanitized SVG content from internal render functions.
+#     All user inputs are HTML-encoded at source using escapeHtml() before reaching
+#     Card.render(). This is a trusted internal API - see Card.js JSDoc for full
+#     security model documentation. The sanitization happens at data entry points
+#     (individual card renderers), not at aggregation points.
+#
+# - Alert ID: Token-Permissions (Scorecard)
+#   Files: .github/workflows/generate-theme-doc.yml, .github/workflows/prs-cache-clean.yml, .github/workflows/update-langs.yml
+#   Reason: These workflows correctly follow the principle of least privilege with score 9/10.
+#     Write permissions (contents: write, actions: write, pull-requests: write) are scoped
+#     to job-level only, not top-level. Score 9 is the maximum achievable when workflows
+#     require write permissions. These warnings are informational and should be dismissed
+#     as they represent best-practice security configuration.
 #
 # See: https://docs.github.com/en/code-security/code-scanning/using-codeql-code-scanning-with-your-ci/customizing-codeql-scans
