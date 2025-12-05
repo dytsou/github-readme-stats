@@ -1,0 +1,923 @@
+openapi: 3.1.0
+info:
+  title: GitHub Readme Stats API
+  description: |
+    Dynamically generated GitHub stats cards for your README.
+
+    This API provides endpoints to generate SVG cards displaying GitHub statistics,
+    top languages, repository information, Gists, and WakaTime statistics.
+
+    All card endpoints return SVG images that can be embedded in README files.
+  version: 1.0.2
+  contact:
+    name: GitHub Readme Stats
+    url: https://github.com/dytsou/github-readme-stats
+  license:
+    name: MIT
+    url: https://github.com/dytsou/github-readme-stats/blob/main/LICENSE
+
+servers:
+  - url: https://your-instance.workers.dev
+    description: Cloudflare Workers instance
+  - url: https://your-instance.vercel.app
+    description: Vercel instance
+
+tags:
+  - name: Cards
+    description: SVG card generation endpoints
+  - name: Status
+    description: Service status and health check endpoints
+
+paths:
+  /api:
+    get:
+      tags:
+        - Cards
+      summary: Generate GitHub Stats Card
+      description: |
+        Generate a GitHub statistics card showing stars, commits, pull requests, and more.
+        Returns an SVG image that can be embedded in README files.
+      operationId: getStatsCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: GitHub username
+          schema:
+            type: string
+            example: anuraghazra
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: hide
+          in: query
+          required: false
+          description: Comma-separated list of stats to hide
+          schema:
+            type: string
+            enum:
+              [
+                stars,
+                commits,
+                prs,
+                contribs,
+                issues,
+                reviews,
+                discussions_started,
+                discussions_answered,
+              ]
+            example: contribs,prs
+        - name: show
+          in: query
+          required: false
+          description: Comma-separated list of additional stats to show
+          schema:
+            type: string
+            enum:
+              [
+                reviews,
+                discussions_started,
+                discussions_answered,
+                prs_merged,
+                prs_merged_percentage,
+              ]
+            example: reviews
+        - name: hide_title
+          in: query
+          required: false
+          description: Hide card title
+          schema:
+            type: boolean
+            default: false
+        - name: hide_rank
+          in: query
+          required: false
+          description: Hide rank badge
+          schema:
+            type: boolean
+            default: false
+        - name: rank_icon
+          in: query
+          required: false
+          description: Rank icon style
+          schema:
+            type: string
+            enum: [default, github, percentile]
+            default: default
+        - name: show_icons
+          in: query
+          required: false
+          description: Display icons
+          schema:
+            type: boolean
+            default: false
+        - name: card_width
+          in: query
+          required: false
+          description: Card width in pixels
+          schema:
+            type: integer
+            default: 500
+        - name: include_all_commits
+          in: query
+          required: false
+          description: Count all commits (not just current year)
+          schema:
+            type: boolean
+            default: false
+        - name: commits_year
+          in: query
+          required: false
+          description: Filter commits by year
+          schema:
+            type: integer
+            example: 2024
+        - name: exclude_repo
+          in: query
+          required: false
+          description: Comma-separated list of repositories to exclude
+          schema:
+            type: string
+            example: repo1,repo2
+        - name: custom_title
+          in: query
+          required: false
+          description: Custom card title
+          schema:
+            type: string
+            example: My GitHub Stats
+        - name: number_format
+          in: query
+          required: false
+          description: Number format
+          schema:
+            type: string
+            enum: [short, long]
+            default: short
+        - name: number_precision
+          in: query
+          required: false
+          description: Number precision
+          schema:
+            type: integer
+        - name: line_height
+          in: query
+          required: false
+          description: Line height
+          schema:
+            type: number
+        - name: ring_color
+          in: query
+          required: false
+          description: Ring color (hex, without #)
+          schema:
+            type: string
+            pattern: "^[0-9A-Fa-f]{6}$"
+            example: ffffff
+        - name: icon_color
+          in: query
+          required: false
+          description: Icon color (hex, without #)
+          schema:
+            type: string
+            pattern: "^[0-9A-Fa-f]{6}$"
+            example: ffffff
+        - name: text_bold
+          in: query
+          required: false
+          description: Make text bold
+          schema:
+            type: boolean
+            default: false
+        - name: disable_animations
+          in: query
+          required: false
+          description: Disable animations
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: SVG image of the stats card
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/top-langs:
+    get:
+      tags:
+        - Cards
+      summary: Generate Top Languages Card
+      description: |
+        Display the most frequently used programming languages.
+        Returns an SVG image that can be embedded in README files.
+      operationId: getTopLanguagesCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: GitHub username
+          schema:
+            type: string
+            example: anuraghazra
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: layout
+          in: query
+          required: false
+          description: Layout style
+          schema:
+            type: string
+            enum: [normal, compact, donut, donut-vertical, pie]
+            default: normal
+        - name: langs_count
+          in: query
+          required: false
+          description: Number of languages to show (1-20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+        - name: hide
+          in: query
+          required: false
+          description: Comma-separated list of languages to hide
+          schema:
+            type: string
+            example: javascript,html
+        - name: exclude_repo
+          in: query
+          required: false
+          description: Comma-separated list of repositories to exclude
+          schema:
+            type: string
+            example: repo1,repo2
+        - name: size_weight
+          in: query
+          required: false
+          description: Weight for byte count in ranking
+          schema:
+            type: number
+            default: 1
+        - name: count_weight
+          in: query
+          required: false
+          description: Weight for repo count in ranking
+          schema:
+            type: number
+            default: 0
+        - name: stats_format
+          in: query
+          required: false
+          description: Display format
+          schema:
+            type: string
+            enum: [percentages, bytes]
+            default: percentages
+        - name: hide_progress
+          in: query
+          required: false
+          description: Hide progress bars
+          schema:
+            type: boolean
+            default: false
+        - name: hide_title
+          in: query
+          required: false
+          description: Hide card title
+          schema:
+            type: boolean
+            default: false
+        - name: card_width
+          in: query
+          required: false
+          description: Card width in pixels
+          schema:
+            type: integer
+            default: 500
+        - name: custom_title
+          in: query
+          required: false
+          description: Custom card title
+          schema:
+            type: string
+        - name: disable_animations
+          in: query
+          required: false
+          description: Disable animations
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: SVG image of the top languages card
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/pin:
+    get:
+      tags:
+        - Cards
+      summary: Generate Repository Card
+      description: |
+        Pin additional repositories beyond GitHub's 6-repo limit.
+        Returns an SVG image that can be embedded in README files.
+      operationId: getRepositoryCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: GitHub username
+          schema:
+            type: string
+            example: anuraghazra
+        - name: repo
+          in: query
+          required: true
+          description: Repository name
+          schema:
+            type: string
+            example: github-readme-stats
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: show_owner
+          in: query
+          required: false
+          description: Show repository owner
+          schema:
+            type: boolean
+            default: false
+        - name: description_lines_count
+          in: query
+          required: false
+          description: Number of description lines (1-3)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+        - name: icon_color
+          in: query
+          required: false
+          description: Icon color (hex, without #)
+          schema:
+            type: string
+            pattern: "^[0-9A-Fa-f]{6}$"
+            example: ffffff
+      responses:
+        "200":
+          description: SVG image of the repository card
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/gist:
+    get:
+      tags:
+        - Cards
+      summary: Generate Gist Card
+      description: |
+        Display GitHub Gists in your README.
+        Returns an SVG image that can be embedded in README files.
+      operationId: getGistCard
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Gist ID
+          schema:
+            type: string
+            example: bbfce31e0217a3689c8d961a356cb10d
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: show_owner
+          in: query
+          required: false
+          description: Show gist owner
+          schema:
+            type: boolean
+            default: false
+        - name: icon_color
+          in: query
+          required: false
+          description: Icon color (hex, without #)
+          schema:
+            type: string
+            pattern: "^[0-9A-Fa-f]{6}$"
+            example: ffffff
+      responses:
+        "200":
+          description: SVG image of the gist card
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/wakatime:
+    get:
+      tags:
+        - Cards
+      summary: Generate WakaTime Card
+      description: |
+        Display your WakaTime coding statistics.
+
+        **Warning:** Your WakaTime profile must be public. Enable both
+        "Display code time publicly" and "Display languages, editors, os, categories publicly"
+        in your WakaTime settings.
+
+        Returns an SVG image that can be embedded in README files.
+      operationId: getWakaTimeCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: WakaTime username
+          schema:
+            type: string
+            example: anuraghazra
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: layout
+          in: query
+          required: false
+          description: Layout style
+          schema:
+            type: string
+            enum: [default, compact]
+            default: default
+        - name: langs_count
+          in: query
+          required: false
+          description: Limit number of languages
+          schema:
+            type: integer
+        - name: hide_progress
+          in: query
+          required: false
+          description: Hide progress bars
+          schema:
+            type: boolean
+            default: false
+        - name: display_format
+          in: query
+          required: false
+          description: Display format
+          schema:
+            type: string
+            enum: [time, percent]
+            default: time
+        - name: api_domain
+          in: query
+          required: false
+          description: Custom API domain
+          schema:
+            type: string
+            default: wakatime.com
+        - name: hide_title
+          in: query
+          required: false
+          description: Hide card title
+          schema:
+            type: boolean
+            default: false
+        - name: card_width
+          in: query
+          required: false
+          description: Card width in pixels
+          schema:
+            type: integer
+            default: 500
+        - name: custom_title
+          in: query
+          required: false
+          description: Custom card title
+          schema:
+            type: string
+        - name: hide
+          in: query
+          required: false
+          description: Comma-separated list of languages to hide
+          schema:
+            type: string
+            example: javascript,html
+        - name: line_height
+          in: query
+          required: false
+          description: Line height
+          schema:
+            type: number
+        - name: icon_color
+          in: query
+          required: false
+          description: Icon color (hex, without #)
+          schema:
+            type: string
+            pattern: "^[0-9A-Fa-f]{6}$"
+            example: ffffff
+        - name: disable_animations
+          in: query
+          required: false
+          description: Disable animations
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: SVG image of the WakaTime card
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/status/up:
+    get:
+      tags:
+        - Status
+      summary: Check Service Uptime
+      description: |
+        Check if the Personal Access Tokens (PATs) are still functional.
+
+        **Rate Limit:** 1 request per 5 minutes
+      operationId: getServiceUptime
+      parameters:
+        - name: type
+          in: query
+          required: false
+          description: Response type
+          schema:
+            type: string
+            enum: [boolean, json, shields]
+            default: boolean
+      responses:
+        "200":
+          description: Service uptime status
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: boolean
+                    description: When type=boolean
+                  - type: object
+                    description: When type=json
+                    properties:
+                      up:
+                        type: boolean
+                  - $ref: "#/components/schemas/ShieldsResponse"
+        "429":
+          description: Rate limit exceeded
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/status/pat-info:
+    get:
+      tags:
+        - Status
+      summary: Get PAT Information
+      description: |
+        Get detailed information about Personal Access Tokens status.
+
+        **Rate Limit:** 1 request per 5 minutes
+      operationId: getPATInfo
+      responses:
+        "200":
+          description: PAT information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PATInfo"
+        "429":
+          description: Rate limit exceeded
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    Theme:
+      name: theme
+      in: query
+      required: false
+      description: Theme name
+      schema:
+        type: string
+        default: default
+        example: dark
+    BgColor:
+      name: bg_color
+      in: query
+      required: false
+      description: Background color (hex, without #)
+      schema:
+        type: string
+        pattern: "^[0-9A-Fa-f]{6}$"
+        example: 1a1b27
+    TitleColor:
+      name: title_color
+      in: query
+      required: false
+      description: Title color (hex, without #)
+      schema:
+        type: string
+        pattern: "^[0-9A-Fa-f]{6}$"
+        example: fff
+    TextColor:
+      name: text_color
+      in: query
+      required: false
+      description: Text color (hex, without #)
+      schema:
+        type: string
+        pattern: "^[0-9A-Fa-f]{6}$"
+        example: 9f9f9f
+    BorderColor:
+      name: border_color
+      in: query
+      required: false
+      description: Border color (hex, without #)
+      schema:
+        type: string
+        pattern: "^[0-9A-Fa-f]{6}$"
+        example: e4e2e2
+    HideBorder:
+      name: hide_border
+      in: query
+      required: false
+      description: Hide card border
+      schema:
+        type: boolean
+        default: false
+    BorderRadius:
+      name: border_radius
+      in: query
+      required: false
+      description: Border radius (0-50)
+      schema:
+        type: number
+        minimum: 0
+        maximum: 50
+        default: 4.5
+    CacheSeconds:
+      name: cache_seconds
+      in: query
+      required: false
+      description: Cache duration in seconds
+      schema:
+        type: integer
+        minimum: 43200
+        maximum: 864000
+    Locale:
+      name: locale
+      in: query
+      required: false
+      description: Language locale code
+      schema:
+        type: string
+        enum:
+          - ar
+          - az
+          - bn
+          - bg
+          - my
+          - ca
+          - cn
+          - zh-tw
+          - cs
+          - nl
+          - en
+          - fil
+          - fi
+          - fr
+          - de
+          - el
+          - he
+          - hi
+          - hu
+          - id
+          - it
+          - ja
+          - kr
+          - ml
+          - np
+          - no
+          - fa
+          - pl
+          - pt-br
+          - pt-pt
+          - ro
+          - ru
+          - sa
+          - sr
+          - sr-latn
+          - sk
+          - es
+          - sw
+          - se
+          - ta
+          - th
+          - tr
+          - uk-ua
+          - ur
+          - uz
+          - vi
+        default: en
+
+  schemas:
+    ShieldsResponse:
+      type: object
+      description: Shields.io compatible JSON response
+      properties:
+        schemaVersion:
+          type: integer
+          example: 1
+        label:
+          type: string
+          example: Public Instance
+        message:
+          type: string
+          enum: [up, down]
+          example: up
+        color:
+          type: string
+          enum: [brightgreen, red]
+          example: brightgreen
+        isError:
+          type: boolean
+          example: true
+
+    PATInfo:
+      type: object
+      description: Personal Access Token information
+      properties:
+        validPATs:
+          type: array
+          items:
+            type: string
+          description: List of valid PATs
+          example: [PAT_1, PAT_2]
+        expiredPATs:
+          type: array
+          items:
+            type: string
+          description: List of expired PATs
+          example: [PAT_3]
+        exhaustedPATs:
+          type: array
+          items:
+            type: string
+          description: List of rate-limited PATs
+          example: [PAT_4]
+        suspendedPATs:
+          type: array
+          items:
+            type: string
+          description: List of suspended PATs
+          example: []
+        errorPATs:
+          type: array
+          items:
+            type: string
+          description: List of PATs with errors
+          example: []
+        details:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/PATDetails"
+          description: Detailed status of each PAT
+
+    PATDetails:
+      type: object
+      description: Detailed status of a Personal Access Token
+      properties:
+        status:
+          type: string
+          enum: [valid, expired, exhausted, suspended, error]
+          description: PAT status
+        remaining:
+          type: integer
+          description: Remaining API calls (only for valid/exhausted PATs)
+          example: 4999
+        resetIn:
+          type: string
+          description: Time until rate limit reset (only for exhausted PATs)
+          example: 45 minutes
+        error:
+          type: object
+          description: Error details (only for error PATs)
+          properties:
+            type:
+              type: string
+              example: BAD_CREDENTIALS
+            message:
+              type: string
+              example: Bad credentials
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        message:
+          type: string
+          example: User not found
+        secondaryMessage:
+          type: string
+          example: Please check the username and try again
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        image/svg+xml:
+          schema:
+            type: string
+            format: binary
+          example: "<svg>...</svg>"
+
+    NotFound:
+      description: Resource not found (user, repo, gist, etc.)
+      content:
+        image/svg+xml:
+          schema:
+            type: string
+            format: binary
+          example: "<svg>...</svg>"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        image/svg+xml:
+          schema:
+            type: string
+            format: binary
+          example: "<svg>...</svg>"
