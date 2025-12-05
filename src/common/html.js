@@ -1,20 +1,19 @@
 // @ts-check
 
+import escapeHtml from "escape-html";
+
 /**
  * Encode string as HTML to prevent XSS.
- * Encodes special characters including quotes, angle brackets, ampersands, and unicode.
- *
- * @see https://stackoverflow.com/a/48073476/10629172
+ * Uses the well-known escape-html library which encodes &, <, >, ", '.
+ * This is recognized by security scanners like CodeQL.
  *
  * @param {string} str String to encode.
  * @returns {string} Encoded string.
  */
 const encodeHTML = (str) => {
-  return str
-    .replace(/[\u00A0-\u9999<>&"'](?!#)/gim, (i) => {
-      return "&#" + i.charCodeAt(0) + ";";
-    })
-    .replace(/\u0008/gim, "");
+  // escape-html handles XSS-critical characters: & < > " '
+  // Also remove backspace character which could cause display issues
+  return escapeHtml(str).replace(/\u0008/gim, "");
 };
 
 /**

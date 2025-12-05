@@ -64,9 +64,10 @@ describe("test renderGistCard", () => {
       document.getElementsByClassName("description")[0].children[0].textContent,
     ).toBe("The quick brown fox jumps over the lazy dog is an");
 
+    // em-dash (—) is 1 character, so more text fits on the line
     expect(
       document.getElementsByClassName("description")[0].children[1].textContent,
-    ).toBe("English-language pangram—a sentence that contains all");
+    ).toBe("English-language pangram—a sentence that contains all of");
   });
 
   it("should not trim description if it is short", () => {
