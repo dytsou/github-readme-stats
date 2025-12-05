@@ -91,7 +91,7 @@ Generate a GitHub statistics card showing stars, commits, pull requests, and mor
 **Example Request:**
 
 ```
-GET /api?username=anuraghazra&theme=dark&show_icons=true&hide=contribs,prs
+GET /api?username=NAME&theme=dark&show_icons=true&hide=contribs,prs
 ```
 
 **Example Response:**
@@ -143,7 +143,7 @@ ranking_index = (byte_count ^ size_weight) * (repo_count ^ count_weight)
 **Example Request:**
 
 ```
-GET /api/top-langs?username=anuraghazra&layout=compact&langs_count=8
+GET /api/top-langs?username=NAME&layout=compact&langs_count=8
 ```
 
 **Example Response:**
@@ -175,7 +175,7 @@ Pin additional repositories beyond GitHub's 6-repo limit.
 **Example Request:**
 
 ```
-GET /api/pin?username=anuraghazra&repo=github-readme-stats&show_owner=true
+GET /api/pin?username=NAME&repo=github-readme-stats&show_owner=true
 ```
 
 **Example Response:**
@@ -248,7 +248,7 @@ Display your WakaTime coding statistics.
 **Example Request:**
 
 ```
-GET /api/wakatime?username=anuraghazra&layout=compact
+GET /api/wakatime?username=NAME&layout=compact
 ```
 
 **Example Response:**
@@ -469,38 +469,38 @@ Override default cache duration using the `cache_seconds` query parameter (subje
 ### Basic Stats Card
 
 ```markdown
-![GitHub Stats](https://your-instance.workers.dev/api?username=anuraghazra)
+![GitHub Stats](https://your-instance.workers.dev/api?username=NAME)
 ```
 
 ### Custom Theme and Icons
 
 ```markdown
-![GitHub Stats](https://your-instance.workers.dev/api?username=anuraghazra&theme=radical&show_icons=true)
+![GitHub Stats](https://your-instance.workers.dev/api?username=NAME&theme=radical&show_icons=true)
 ```
 
 ### Hide Specific Stats
 
 ```markdown
-![GitHub Stats](https://your-instance.workers.dev/api?username=anuraghazra&hide=contribs,prs)
+![GitHub Stats](https://your-instance.workers.dev/api?username=NAME&hide=contribs,prs)
 ```
 
 ### Top Languages with Compact Layout
 
 ```markdown
-![Top Languages](https://your-instance.workers.dev/api/top-langs?username=anuraghazra&layout=compact)
+![Top Languages](https://your-instance.workers.dev/api/top-langs?username=NAME&layout=compact)
 ```
 
 ### Repository Card
 
 ```markdown
-![Repository Card](https://your-instance.workers.dev/api/pin?username=anuraghazra&repo=github-readme-stats)
+![Repository Card](https://your-instance.workers.dev/api/pin?username=NAME&repo=github-readme-stats)
 ```
 
 ### Responsive Themes (Dark/Light Mode)
 
 ```markdown
-[![GitHub Stats Dark](https://your-instance.workers.dev/api?username=anuraghazra&theme=dark#gh-dark-mode-only)](https://github.com/anuraghazra)
-[![GitHub Stats Light](https://your-instance.workers.dev/api?username=anuraghazra&theme=default#gh-light-mode-only)](https://github.com/anuraghazra)
+[![GitHub Stats Dark](https://your-instance.workers.dev/api?username=NAME&theme=dark#gh-dark-mode-only)](https://github.com/NAME)
+[![GitHub Stats Light](https://your-instance.workers.dev/api?username=NAME&theme=default#gh-light-mode-only)](https://github.com/NAME)
 ```
 
 ---

@@ -45,7 +45,7 @@ paths:
           description: GitHub username
           schema:
             type: string
-            example: anuraghazra
+            example: NAME
         - $ref: "#/components/parameters/Theme"
         - $ref: "#/components/parameters/BgColor"
         - $ref: "#/components/parameters/TitleColor"
@@ -233,7 +233,7 @@ paths:
           description: GitHub username
           schema:
             type: string
-            example: anuraghazra
+            example: NAME
         - $ref: "#/components/parameters/Theme"
         - $ref: "#/components/parameters/BgColor"
         - $ref: "#/components/parameters/TitleColor"
@@ -361,7 +361,7 @@ paths:
           description: GitHub username
           schema:
             type: string
-            example: anuraghazra
+            example: NAME
         - name: repo
           in: query
           required: true
@@ -493,7 +493,7 @@ paths:
           description: WakaTime username
           schema:
             type: string
-            example: anuraghazra
+            example: NAME
         - $ref: "#/components/parameters/Theme"
         - $ref: "#/components/parameters/BgColor"
         - $ref: "#/components/parameters/TitleColor"

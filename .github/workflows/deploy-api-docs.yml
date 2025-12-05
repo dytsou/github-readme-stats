@@ -176,12 +176,11 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>📚 API Documentation</h1>
+              <h1>GitHub Readme Stats API Documentation</h1>
               <p>Choose your preferred documentation format:</p>
               <div class="links">
                 <a href="redocly/index.html">
                   Redocly Documentation
-                  <span class="badge">Recommended</span>
                 </a>
                 <a href="swagger.html">
                   Swagger UI
