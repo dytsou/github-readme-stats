@@ -14,7 +14,6 @@ import {
   resolveCacheSeconds,
   setCacheHeaders,
 } from "../src/common/cache.js";
-import { encodeHTML } from "../src/common/html.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
@@ -135,7 +134,7 @@ export default async (req, res) => {
 
     return res.send(
       renderTopLanguages(topLangs, {
-        custom_title: custom_title ? encodeHTML(custom_title) : undefined,
+        custom_title,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
