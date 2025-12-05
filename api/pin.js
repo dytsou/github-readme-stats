@@ -12,7 +12,7 @@ import {
   resolveCacheSeconds,
   setCacheHeaders,
 } from "../src/common/cache.js";
-import { parseBoolean } from "../src/common/ops.js";
+import { clampValue, parseBoolean } from "../src/common/ops.js";
 import { fetchRepo } from "../src/fetchers/repo.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
@@ -82,21 +82,32 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
-    return res.send(
-      renderRepoCard(repoData, {
-        hide_border: parseBoolean(hide_border),
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        theme,
-        border_radius,
-        border_color,
-        show_owner: parseBoolean(show_owner),
-        locale,
-        description_lines_count,
-      }),
-    );
+    // Sanitize border_radius: parse, clamp, only include if valid
+    const borderRadiusNum = Number(border_radius);
+    const sanitizedBorderRadius =
+      Number.isFinite(borderRadiusNum) && border_radius !== undefined
+        ? clampValue(borderRadiusNum, 0, 50)
+        : undefined;
+
+    const renderOptions = {
+      hide_border: parseBoolean(hide_border),
+      title_color,
+      icon_color,
+      text_color,
+      bg_color,
+      theme,
+      border_color,
+      show_owner: parseBoolean(show_owner),
+      locale,
+      description_lines_count,
+    };
+
+    // Only include border_radius if it's valid, otherwise let Card use default
+    if (sanitizedBorderRadius !== undefined) {
+      renderOptions.border_radius = sanitizedBorderRadius;
+    }
+
+    return res.send(renderRepoCard(repoData, renderOptions));
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
