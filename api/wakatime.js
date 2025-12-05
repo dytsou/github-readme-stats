@@ -1,23 +1,29 @@
 // @ts-check
 
 import { renderWakatimeCard } from "../src/cards/wakatime.js";
-import { renderError } from "../src/common/render.js";
-import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
-import { isLocaleAvailable } from "../src/translations.js";
+import { guardAccess } from "../src/common/access.js";
+import {
+  createValidatedColorOptions,
+  handleApiError,
+  setSvgContentType,
+  parseNumericParam,
+} from "../src/common/api-utils.js";
 import {
   CACHE_TTL,
   resolveCacheSeconds,
   setCacheHeaders,
-  setErrorCacheHeaders,
 } from "../src/common/cache.js";
-import { guardAccess } from "../src/common/access.js";
-import {
-  MissingParamError,
-  retrieveSecondaryMessage,
-} from "../src/common/error.js";
-import { parseArray, parseBoolean } from "../src/common/ops.js";
-import { validateColor, validateTheme } from "../src/common/color.js";
+import { validateColor } from "../src/common/color.js";
 import { encodeHTML } from "../src/common/html.js";
+import { parseArray, parseBoolean } from "../src/common/ops.js";
+import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
+import { isLocaleAvailable } from "../src/translations.js";
+
+/** @type {number} */
+const DEFAULT_BORDER_RADIUS = 4.5;
+
+/** @type {number} */
+const MAX_BORDER_RADIUS = 20;
 
 // @ts-ignore
 export default async (req, res) => {
@@ -52,26 +58,26 @@ export default async (req, res) => {
       ? rawLocale.toLowerCase()
       : undefined;
 
-  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+  setSvgContentType(res);
+
+  // Create validated color options once for reuse
+  const colorOptions = createValidatedColorOptions({
+    title_color,
+    text_color,
+    bg_color,
+    border_color,
+    theme,
+  });
 
   const access = guardAccess({
     res,
     id: username,
     type: "wakatime",
-    colors: {
-      title_color: validateColor(title_color),
-      text_color: validateColor(text_color),
-      bg_color: validateColor(bg_color),
-      border_color: validateColor(border_color),
-      theme: validateTheme(theme),
-    },
+    colors: colorOptions,
   });
   if (!access.isPassed) {
     return access.result;
   }
-
-  // Locale is already validated above - invalid locales default to undefined
-  // No need to check again or reflect user input in error messages
 
   try {
     const stats = await fetchWakatimeStats({ username, api_domain });
@@ -84,27 +90,9 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
-    // --- Validate and sanitize user inputs before rendering ---
-    const safeTitleColor = validateColor(title_color);
-    const safeIconColor = validateColor(icon_color);
-    const safeTextColor = validateColor(text_color);
-    const safeBgColor = validateColor(bg_color);
-    const safeTheme = validateTheme(theme);
-    const safeBorderColor = validateColor(border_color);
-
     // Sanitize custom title for SVG/text usage
     const safeCustomTitle =
       typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
-
-    // Validate border_radius (float [0, 20] as reasonable range)
-    let safeBorderRadius = parseFloat(border_radius);
-    if (
-      isNaN(safeBorderRadius) ||
-      safeBorderRadius < 0 ||
-      safeBorderRadius > 20
-    ) {
-      safeBorderRadius = 4.5; // default
-    }
 
     return res.send(
       renderWakatimeCard(stats, {
@@ -114,14 +102,19 @@ export default async (req, res) => {
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
         line_height,
-        title_color: safeTitleColor,
-        icon_color: safeIconColor,
-        text_color: safeTextColor,
-        bg_color: safeBgColor,
-        theme: safeTheme,
+        title_color: colorOptions.title_color,
+        icon_color: validateColor(icon_color),
+        text_color: colorOptions.text_color,
+        bg_color: colorOptions.bg_color,
+        theme: colorOptions.theme,
         hide_progress,
-        border_radius: safeBorderRadius,
-        border_color: safeBorderColor,
+        border_radius: parseNumericParam(
+          border_radius,
+          DEFAULT_BORDER_RADIUS,
+          0,
+          MAX_BORDER_RADIUS,
+        ),
+        border_color: colorOptions.border_color,
         locale,
         layout,
         langs_count,
@@ -130,45 +123,15 @@ export default async (req, res) => {
       }),
     );
   } catch (err) {
-    setErrorCacheHeaders(res);
+    // Sanitize error messages to prevent information leakage
     if (err instanceof Error) {
-      // Prevent leaking user locale in error message
-      let safeMessage = err.message;
-      // Generic error handling for translation not found errors
-      if (
-        safeMessage &&
-        safeMessage.includes("translation not found for locale")
-      ) {
-        safeMessage = "Invalid locale specified.";
-      }
-      // Validate colors before passing to renderError (renderError will also sanitize)
-      return res.send(
-        renderError({
-          message: safeMessage,
-          secondaryMessage: retrieveSecondaryMessage(err),
-          renderOptions: {
-            title_color: validateColor(title_color),
-            text_color: validateColor(text_color),
-            bg_color: validateColor(bg_color),
-            border_color: validateColor(border_color),
-            theme: validateTheme(theme),
-            show_repo_link: !(err instanceof MissingParamError),
-          },
-        }),
-      );
+      const safeMessage = err.message?.includes(
+        "translation not found for locale",
+      )
+        ? "Invalid locale specified."
+        : err.message;
+      err = new Error(safeMessage);
     }
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "An unknown error occurred",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return handleApiError({ res, error: err, colorOptions });
   }
 };

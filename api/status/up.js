@@ -11,13 +11,14 @@ import { request } from "../../src/common/http.js";
 import retryer from "../../src/common/retryer.js";
 import { logger } from "../../src/common/log.js";
 import { encodeHTML } from "../../src/common/html.js";
+import { setJsonContentType } from "../../src/common/api-utils.js";
 
 export const RATE_LIMIT_SECONDS = 60 * 5; // 1 request per 5 minutes
 
 /**
  * Simple uptime check fetcher for the PATs.
  *
- * @param {any} variables Fetcher variables.
+ * @param {Record<string, unknown>} variables Fetcher variables.
  * @param {string} token GitHub token.
  * @returns {Promise<import('axios').AxiosResponse>} The response.
  */
@@ -40,59 +41,61 @@ const uptimeFetcher = (variables, token) => {
 };
 
 /**
- * @typedef {{
- *  schemaVersion: number;
- *  label: string;
- *  message: "up" | "down";
- *  color: "brightgreen" | "red";
- *  isError: boolean
- * }} ShieldsResponse Shields.io response object.
+ * @typedef {Object} ShieldsResponse
+ * @property {number} schemaVersion - Shields.io schema version.
+ * @property {string} label - Badge label.
+ * @property {"up" | "down"} message - Status message.
+ * @property {"brightgreen" | "red"} color - Badge color.
+ * @property {boolean} isError - Whether this is an error state.
  */
 
 /**
- * Creates Json response that can be used for shields.io dynamic card generation.
+ * Creates JSON response for shields.io dynamic card generation.
  *
  * @param {boolean} up Whether the PATs are up or not.
- * @returns {ShieldsResponse}  Dynamic shields.io JSON response object.
- *
- * @see https://shields.io/endpoint.
+ * @returns {ShieldsResponse} Dynamic shields.io JSON response object.
+ * @see https://shields.io/endpoint
  */
-const shieldsUptimeBadge = (up) => {
-  const schemaVersion = 1;
-  const isError = true;
-  const label = "Public Instance";
-  const message = up ? "up" : "down";
-  const color = up ? "brightgreen" : "red";
-  return {
-    schemaVersion,
-    label,
-    message,
-    color,
-    isError,
-  };
+const shieldsUptimeBadge = (up) => ({
+  schemaVersion: 1,
+  label: "Public Instance",
+  message: up ? "up" : "down",
+  color: up ? "brightgreen" : "red",
+  isError: true,
+});
+
+/**
+ * Validates and normalizes the response type parameter.
+ *
+ * @param {string|undefined} type - The type parameter from query.
+ * @returns {"shields" | "json" | "boolean"} Normalized type value.
+ */
+const normalizeResponseType = (type) => {
+  const normalized = typeof type === "string" ? type.toLowerCase() : "boolean";
+  if (normalized === "shields" || normalized === "json") {
+    return normalized;
+  }
+  return "boolean";
 };
 
 /**
  * Cloud function that returns whether the PATs are still functional.
  *
- * @param {any} req The request.
- * @param {any} res The response.
+ * @param {import('express').Request} req The request.
+ * @param {import('express').Response} res The response.
  * @returns {Promise<void>} Nothing.
  */
 export default async (req, res) => {
-  let { type } = req.query;
-  type = type ? type.toLowerCase() : "boolean";
+  const responseType = normalizeResponseType(req.query.type);
 
-  res.setHeader("Content-Type", "application/json");
+  setJsonContentType(res);
 
   try {
     let PATsValid = true;
     try {
       await retryer(uptimeFetcher, {});
-    } catch (err) {
-      // Resolve eslint no-unused-vars
-      err;
-
+    } catch {
+      // PAT validation failed - mark as invalid
       PATsValid = false;
     }
 
@@ -105,7 +108,7 @@ export default async (req, res) => {
       res.setHeader("Cache-Control", "no-store");
     }
 
-    switch (type) {
+    switch (responseType) {
       case "shields":
         res.send(shieldsUptimeBadge(PATsValid));
         break;
@@ -117,11 +120,10 @@ export default async (req, res) => {
         break;
     }
   } catch (err) {
-    // Return fail boolean if something went wrong.
     logger.error(err);
     res.setHeader("Cache-Control", "no-store");
-    // Sanitize error message to prevent XSS (exception text reinterpreted as HTML)
-    const safeMessage = encodeHTML(String(err.message || "Unknown error"));
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const safeMessage = encodeHTML(errorMessage);
     res.send("Something went wrong: " + safeMessage);
   }
 };

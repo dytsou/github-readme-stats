@@ -11,13 +11,14 @@ import { request } from "../../src/common/http.js";
 import { logger } from "../../src/common/log.js";
 import { dateDiff } from "../../src/common/ops.js";
 import { encodeHTML } from "../../src/common/html.js";
+import { setJsonContentType } from "../../src/common/api-utils.js";
 
 export const RATE_LIMIT_SECONDS = 60 * 5; // 1 request per 5 minutes
 
 /**
  * Simple uptime check fetcher for the PATs.
  *
- * @param {any} variables Fetcher variables.
+ * @param {Record<string, unknown>} variables Fetcher variables.
  * @param {string} token GitHub token.
  * @returns {Promise<import('axios').AxiosResponse>} The response.
  */
@@ -39,30 +40,57 @@ const uptimeFetcher = (variables, token) => {
   );
 };
 
+/**
+ * Retrieves all PAT environment variable keys.
+ *
+ * @returns {string[]} Array of PAT environment variable names.
+ */
 const getAllPATs = () => {
   return Object.keys(process.env).filter((key) => /PAT_\d*$/.exec(key));
 };
 
 /**
- * @typedef {(variables: any, token: string) => Promise<import('axios').AxiosResponse>} Fetcher The fetcher function.
- * @typedef {{validPATs: string[], expiredPATs: string[], exhaustedPATs: string[], suspendedPATs: string[], errorPATs: string[], details: any}} PATInfo The PAT info.
+ * @typedef {(variables: Record<string, unknown>, token: string) => Promise<import('axios').AxiosResponse>} Fetcher
+ */
+
+/**
+ * @typedef {Object} PATDetails
+ * @property {string} status - The PAT status.
+ * @property {number} [remaining] - Remaining API calls.
+ * @property {string} [resetIn] - Time until rate limit reset.
+ * @property {{ type: string, message: string }} [error] - Error details.
+ */
+
+/**
+ * @typedef {Object} PATInfo
+ * @property {string[]} validPATs - List of valid PATs.
+ * @property {string[]} expiredPATs - List of expired PATs.
+ * @property {string[]} exhaustedPATs - List of rate-limited PATs.
+ * @property {string[]} suspendedPATs - List of suspended PATs.
+ * @property {string[]} errorPATs - List of PATs with errors.
+ * @property {Record<string, PATDetails>} details - Detailed status of each PAT.
  */
 
 /**
  * Check whether any of the PATs is expired.
  *
  * @param {Fetcher} fetcher The fetcher function.
- * @param {any} variables Fetcher variables.
+ * @param {Record<string, unknown>} variables Fetcher variables.
  * @returns {Promise<PATInfo>} The response.
  */
 const getPATInfo = async (fetcher, variables) => {
-  /** @type {Record<string, any>} */
+  /** @type {Record<string, PATDetails>} */
   const details = {};
   const PATs = getAllPATs();
 
   for (const pat of PATs) {
     try {
-      const response = await fetcher(variables, process.env[pat]);
+      const token = process.env[pat];
+      if (!token) {
+        continue;
+      }
+
+      const response = await fetcher(variables, token);
       const errors = response.data.errors;
       const hasErrors = Boolean(errors);
       const errorType = errors?.[0]?.type;
@@ -70,7 +98,7 @@ const getPATInfo = async (fetcher, variables) => {
         (hasErrors && errorType === "RATE_LIMITED") ||
         response.data.data?.rateLimit?.remaining === 0;
 
-      // Store PATs with errors.
+      // Store PATs with errors
       if (hasErrors && errorType !== "RATE_LIMITED") {
         details[pat] = {
           status: "error",
@@ -80,13 +108,15 @@ const getPATInfo = async (fetcher, variables) => {
           },
         };
         continue;
-      } else if (isRateLimited) {
-        const date1 = new Date();
-        const date2 = new Date(response.data?.data?.rateLimit?.resetAt);
+      }
+
+      if (isRateLimited) {
+        const now = new Date();
+        const resetAt = new Date(response.data?.data?.rateLimit?.resetAt);
         details[pat] = {
           status: "exhausted",
           remaining: 0,
-          resetIn: dateDiff(date2, date1) + " minutes",
+          resetIn: dateDiff(resetAt, now) + " minutes",
         };
       } else {
         details[pat] = {
@@ -95,32 +125,34 @@ const getPATInfo = async (fetcher, variables) => {
         };
       }
     } catch (err) {
-      // Store the PAT if it is expired.
-      const errorMessage = err.response?.data?.message?.toLowerCase();
+      // Handle known error responses
+      const errorMessage = err?.response?.data?.message?.toLowerCase();
       if (errorMessage === "bad credentials") {
-        details[pat] = {
-          status: "expired",
-        };
+        details[pat] = { status: "expired" };
       } else if (errorMessage === "sorry. your account was suspended.") {
-        details[pat] = {
-          status: "suspended",
-        };
+        details[pat] = { status: "suspended" };
       } else {
         throw err;
       }
     }
   }
 
+  /**
+   * Filters PATs by status.
+   * @param {string} status - The status to filter by.
+   * @returns {string[]} PATs with the specified status.
+   */
   const filterPATsByStatus = (status) => {
     return Object.keys(details).filter((pat) => details[pat].status === status);
   };
 
+  // Sort details by key for consistent output
   const sortedDetails = Object.keys(details)
     .sort()
     .reduce((obj, key) => {
       obj[key] = details[key];
       return obj;
-    }, {});
+    }, /** @type {Record<string, PATDetails>} */ ({}));
 
   return {
     validPATs: filterPATsByStatus("valid"),
@@ -135,14 +167,14 @@ const getPATInfo = async (fetcher, variables) => {
 /**
  * Cloud function that returns information about the used PATs.
  *
- * @param {any} _ The request.
- * @param {any} res The response.
+ * @param {unknown} _req The request (unused).
+ * @param {import('express').Response} res The response.
  * @returns {Promise<void>} The response.
  */
-export default async (_, res) => {
-  res.setHeader("Content-Type", "application/json");
+export default async (_req, res) => {
+  setJsonContentType(res);
+
   try {
-    // Add header to prevent abuse.
     const PATsInfo = await getPATInfo(uptimeFetcher, {});
     if (PATsInfo) {
       res.setHeader(
@@ -152,11 +184,10 @@ export default async (_, res) => {
     }
     res.send(JSON.stringify(PATsInfo, null, 2));
   } catch (err) {
-    // Throw error if something went wrong.
     logger.error(err);
     res.setHeader("Cache-Control", "no-store");
-    // Sanitize error message to prevent XSS (exception text reinterpreted as HTML)
-    const safeMessage = encodeHTML(String(err.message || "Unknown error"));
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const safeMessage = encodeHTML(errorMessage);
     res.send("Something went wrong: " + safeMessage);
   }
 };

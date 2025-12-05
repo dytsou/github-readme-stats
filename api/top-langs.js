@@ -1,23 +1,29 @@
 // @ts-check
 
 import { renderTopLanguages } from "../src/cards/top-languages.js";
-import { encodeHTML } from "../src/common/html.js";
 import { guardAccess } from "../src/common/access.js";
+import {
+  createValidatedColorOptions,
+  handleApiError,
+  sendValidationError,
+  setSvgContentType,
+  parseNumericParam,
+} from "../src/common/api-utils.js";
 import {
   CACHE_TTL,
   resolveCacheSeconds,
   setCacheHeaders,
-  setErrorCacheHeaders,
 } from "../src/common/cache.js";
-import {
-  MissingParamError,
-  retrieveSecondaryMessage,
-} from "../src/common/error.js";
+import { encodeHTML } from "../src/common/html.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
-import { renderError } from "../src/common/render.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
-import { validateColor, validateTheme } from "../src/common/color.js";
+
+/** @type {readonly string[]} */
+const VALID_LAYOUTS = ["compact", "normal", "donut", "donut-vertical", "pie"];
+
+/** @type {readonly string[]} */
+const VALID_STATS_FORMATS = ["bytes", "percentages"];
 
 // @ts-ignore
 export default async (req, res) => {
@@ -52,86 +58,63 @@ export default async (req, res) => {
       ? rawLocale.toLowerCase()
       : undefined;
 
+  // Create validated color options once for reuse
+  const colorOptions = createValidatedColorOptions({
+    title_color,
+    text_color,
+    bg_color,
+    border_color,
+    theme,
+  });
+
   // Validate username is provided
   if (!username) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Missing username parameter",
-        secondaryMessage: "Please provide a username",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return sendValidationError({
+      res,
+      message: "Missing username parameter",
+      secondaryMessage: "Please provide a username",
+      colorOptions,
+    });
   }
 
   // Set Content-Type early for Camo CDN compatibility
-  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+  setSvgContentType(res);
 
   const access = guardAccess({
     res,
     id: username,
     type: "username",
-    colors: {
-      title_color: validateColor(title_color),
-      text_color: validateColor(text_color),
-      bg_color: validateColor(bg_color),
-      border_color: validateColor(border_color),
-      theme: validateTheme(theme),
-    },
+    colors: colorOptions,
   });
   if (!access.isPassed) {
     return access.result;
   }
 
-  // Locale is already validated above - invalid locales default to null
-  // No need to check again or reflect user input in error messages
-
+  // Validate layout parameter
   if (
     layout !== undefined &&
-    (typeof layout !== "string" ||
-      !["compact", "normal", "donut", "donut-vertical", "pie"].includes(layout))
+    (typeof layout !== "string" || !VALID_LAYOUTS.includes(layout))
   ) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Incorrect layout input",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return sendValidationError({
+      res,
+      message: "Something went wrong",
+      secondaryMessage: "Incorrect layout input",
+      colorOptions,
+    });
   }
 
+  // Validate stats_format parameter
   if (
     stats_format !== undefined &&
     (typeof stats_format !== "string" ||
-      !["bytes", "percentages"].includes(stats_format))
+      !VALID_STATS_FORMATS.includes(stats_format))
   ) {
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "Something went wrong",
-        secondaryMessage: "Incorrect stats_format input",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return sendValidationError({
+      res,
+      message: "Something went wrong",
+      secondaryMessage: "Incorrect stats_format input",
+      colorOptions,
+    });
   }
 
   try {
@@ -150,8 +133,6 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
-    // Sanitize/validate all user input before rendering card
-    const validatedTheme = validateTheme(theme);
     return res.send(
       renderTopLanguages(topLangs, {
         custom_title: custom_title ? encodeHTML(custom_title) : undefined,
@@ -159,18 +140,15 @@ export default async (req, res) => {
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
-        title_color: validateColor(title_color),
-        text_color: validateColor(text_color),
-        bg_color: validateColor(bg_color),
-        // validateTheme ensures the theme is valid, so we can safely assert the type
-        // @ts-ignore - validateTheme returns a validated theme name that matches ThemeNames
-        theme: validatedTheme,
+        title_color: colorOptions.title_color,
+        text_color: colorOptions.text_color,
+        bg_color: colorOptions.bg_color,
+        // @ts-ignore - validateTheme returns a validated theme name
+        theme: colorOptions.theme,
         layout,
         langs_count,
-        border_radius: isNaN(parseFloat(border_radius))
-          ? undefined
-          : Math.max(0, Math.min(50, parseFloat(border_radius))),
-        border_color: validateColor(border_color),
+        border_radius: parseNumericParam(border_radius, undefined, 0, 50),
+        border_color: colorOptions.border_color,
         locale,
         disable_animations: parseBoolean(disable_animations),
         hide_progress: parseBoolean(hide_progress),
@@ -178,36 +156,6 @@ export default async (req, res) => {
       }),
     );
   } catch (err) {
-    setErrorCacheHeaders(res);
-    if (err instanceof Error) {
-      // Validate colors before passing to renderError (renderError will also sanitize)
-      return res.send(
-        renderError({
-          message: err.message,
-          secondaryMessage: retrieveSecondaryMessage(err),
-          renderOptions: {
-            title_color: validateColor(title_color),
-            text_color: validateColor(text_color),
-            bg_color: validateColor(bg_color),
-            border_color: validateColor(border_color),
-            theme: validateTheme(theme),
-            show_repo_link: !(err instanceof MissingParamError),
-          },
-        }),
-      );
-    }
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "An unknown error occurred",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return handleApiError({ res, error: err, colorOptions });
   }
 };
