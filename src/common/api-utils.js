@@ -57,9 +57,26 @@ const createValidatedColorOptions = ({
  */
 
 /**
- * Sanitizes error messages to prevent XSS by replacing messages that may
- * contain user input with safe generic alternatives.
- * Note: Does NOT encode HTML - renderError handles that.
+ * Patterns that indicate error messages containing user-controlled data.
+ * These patterns are replaced with safe generic alternatives to prevent XSS.
+ * @type {ReadonlyArray<{pattern: RegExp, replacement: string}>}
+ */
+const UNSAFE_MESSAGE_PATTERNS = [
+  {
+    pattern: /translation not found for/i,
+    replacement: "Invalid locale specified",
+  },
+  {
+    pattern: /Could not resolve to a User with the login of/i,
+    replacement: "User not found",
+  },
+];
+
+/**
+ * Sanitizes error messages to prevent XSS by filtering out messages that
+ * contain user-controlled data (like usernames or locales embedded in errors).
+ * Other error messages in this codebase are hardcoded and safe.
+ * Note: renderError also applies HTML encoding as an additional safety layer.
  *
  * @param {string} message - The error message to sanitize.
  * @returns {string} A safe error message.
@@ -68,11 +85,16 @@ const sanitizeErrorMessage = (message) => {
   if (!message || typeof message !== "string") {
     return "An error occurred";
   }
-  // Replace messages containing user-controlled locale data with safe alternatives
-  if (message.includes("translation not found for")) {
-    return "Invalid locale specified";
+
+  // Replace messages containing user-controlled data with safe alternatives
+  for (const { pattern, replacement } of UNSAFE_MESSAGE_PATTERNS) {
+    if (pattern.test(message)) {
+      return replacement;
+    }
   }
-  // Return message as-is - renderError will handle HTML encoding
+
+  // Other error messages in this codebase are hardcoded strings (safe)
+  // renderError will HTML-encode the output as an additional safety layer
   return message;
 };
 
