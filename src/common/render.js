@@ -1,8 +1,9 @@
 // @ts-check
 
+import escapeHtml from "escape-html";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 import { getCardColors } from "./color.js";
-import { encodeHTML, escapeCSSValue } from "./html.js";
+import { escapeCSSValue } from "./html.js";
 import { clampValue } from "./ops.js";
 
 /**
@@ -33,8 +34,12 @@ const flexLayout = ({ items, gap, direction, sizes = [] }) => {
 /**
  * Creates a node to display the primary programming language of the repository/gist.
  *
- * @param {string} langName Language name.
- * @param {string} langColor Language color.
+ * **Security Note:** This function safely handles untrusted input by HTML-encoding
+ * the `langName` parameter and CSS-escaping the `langColor` parameter.
+ * Data from external APIs (like GitHub) is sanitized before being inserted into the SVG.
+ *
+ * @param {string} langName Language name (will be HTML-encoded).
+ * @param {string} langColor Language color (will be CSS-escaped).
  * @returns {string} Language display SVG object.
  */
 const createLanguageNode = (langName, langColor) => {
@@ -42,7 +47,7 @@ const createLanguageNode = (langName, langColor) => {
   return `
     <g data-testid="primary-lang">
       <circle data-testid="lang-color" cx="0" cy="-5" r="6" fill="${safeLangColor}" />
-      <text data-testid="lang-name" class="gray" x="15">${encodeHTML(langName)}</text>
+      <text data-testid="lang-name" class="gray" x="15">${escapeHtml(langName)}</text>
     </g>
     `;
 };
@@ -127,9 +132,13 @@ const UPSTREAM_API_ERRORS = [
 /**
  * Renders error message on the card.
  *
+ * **Security Note:** This function safely handles untrusted input by HTML-encoding
+ * the `message` and `secondaryMessage` parameters using the escape-html library.
+ * All user-provided or external data is sanitized before being inserted into the SVG.
+ *
  * @param {object} args Function arguments.
- * @param {string} args.message Main error message.
- * @param {string} [args.secondaryMessage=""] The secondary error message.
+ * @param {string} args.message Main error message (will be HTML-encoded).
+ * @param {string} [args.secondaryMessage=""] The secondary error message (will be HTML-encoded).
  * @param {object} [args.renderOptions={}] Render options.
  * @param {string=} args.renderOptions.title_color Card title color.
  * @param {string=} args.renderOptions.text_color Card text color.
@@ -192,8 +201,8 @@ const renderError = ({
         : " file an issue at https://tiny.one/readme-stats"
     }</text>
     <text data-testid="message" x="25" y="55" class="text small">
-      <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
-      <tspan x="25" dy="18" class="gray">${encodeHTML(secondaryMessage)}</tspan>
+      <tspan x="25" dy="18">${escapeHtml(message)}</tspan>
+      <tspan x="25" dy="18" class="gray">${escapeHtml(secondaryMessage)}</tspan>
     </text>
     </svg>
   `;

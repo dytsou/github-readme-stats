@@ -3,8 +3,9 @@ import { encodeHTML } from "../src/common/html.js";
 
 describe("Test html.js", () => {
   it("should test encodeHTML", () => {
+    // escape-html uses named entities: &lt; &gt; &amp; &quot; &#39;
     expect(encodeHTML(`<html>hello world<,.#4^&^@%!))`)).toBe(
-      "&#60;html&#62;hello world&#60;,.#4^&#38;^@%!))",
+      "&lt;html&gt;hello world&lt;,.#4^&amp;^@%!))",
     );
   });
 });
