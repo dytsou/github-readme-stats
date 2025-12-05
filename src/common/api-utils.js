@@ -9,6 +9,7 @@ import { renderError } from "./render.js";
 import { validateColor, validateTheme } from "./color.js";
 import { MissingParamError, retrieveSecondaryMessage } from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
+import { encodeHTML } from "./html.js";
 
 /**
  * @typedef {Object} ColorOptions
@@ -57,6 +58,25 @@ const createValidatedColorOptions = ({
  */
 
 /**
+ * Sanitizes error messages to prevent XSS by replacing messages that may
+ * contain user input with safe generic alternatives.
+ *
+ * @param {string} message - The error message to sanitize.
+ * @returns {string} A safe error message.
+ */
+const sanitizeErrorMessage = (message) => {
+  if (!message || typeof message !== "string") {
+    return "An error occurred";
+  }
+  // Replace messages containing user-controlled locale data with safe alternatives
+  if (message.includes("translation not found for locale")) {
+    return "Invalid locale specified";
+  }
+  // Encode any remaining HTML entities to prevent XSS
+  return encodeHTML(message);
+};
+
+/**
  * Handles API errors by setting cache headers and sending a rendered error response.
  * Centralizes error handling logic to ensure consistent behavior across all API endpoints.
  *
@@ -67,10 +87,17 @@ const handleApiError = ({ res, error, colorOptions }) => {
   setErrorCacheHeaders(res);
 
   if (error instanceof Error) {
+    // Sanitize error message to prevent XSS from user-controlled data in exceptions
+    const safeMessage = sanitizeErrorMessage(error.message);
+    const rawSecondary = retrieveSecondaryMessage(error);
+    const safeSecondary = rawSecondary
+      ? sanitizeErrorMessage(rawSecondary)
+      : undefined;
+
     return res.send(
       renderError({
-        message: error.message,
-        secondaryMessage: retrieveSecondaryMessage(error),
+        message: safeMessage,
+        secondaryMessage: safeSecondary,
         renderOptions: {
           ...colorOptions,
           show_repo_link: !(error instanceof MissingParamError),
