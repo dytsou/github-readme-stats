@@ -32,7 +32,7 @@ class I18n {
 
     if (!this.translations[str][this.locale]) {
       throw new Error(
-        `'${str}' translation not found for locale '${encodeHTML(this.locale)}'`,
+        `'${str}' translation not found for requested locale'`,
       );
     }
 
