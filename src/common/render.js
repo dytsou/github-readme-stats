@@ -1,8 +1,9 @@
 // @ts-check
 
+import escapeHtml from "escape-html";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 import { getCardColors } from "./color.js";
-import { encodeHTML, escapeCSSValue } from "./html.js";
+import { escapeCSSValue } from "./html.js";
 import { clampValue } from "./ops.js";
 
 /**
@@ -46,7 +47,7 @@ const createLanguageNode = (langName, langColor) => {
   return `
     <g data-testid="primary-lang">
       <circle data-testid="lang-color" cx="0" cy="-5" r="6" fill="${safeLangColor}" />
-      <text data-testid="lang-name" class="gray" x="15">${encodeHTML(langName)}</text>
+      <text data-testid="lang-name" class="gray" x="15">${escapeHtml(langName)}</text>
     </g>
     `;
 };
@@ -200,8 +201,8 @@ const renderError = ({
         : " file an issue at https://tiny.one/readme-stats"
     }</text>
     <text data-testid="message" x="25" y="55" class="text small">
-      <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
-      <tspan x="25" dy="18" class="gray">${encodeHTML(secondaryMessage)}</tspan>
+      <tspan x="25" dy="18">${escapeHtml(message)}</tspan>
+      <tspan x="25" dy="18" class="gray">${escapeHtml(secondaryMessage)}</tspan>
     </text>
     </svg>
   `;
