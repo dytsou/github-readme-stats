@@ -33,8 +33,12 @@ const flexLayout = ({ items, gap, direction, sizes = [] }) => {
 /**
  * Creates a node to display the primary programming language of the repository/gist.
  *
- * @param {string} langName Language name.
- * @param {string} langColor Language color.
+ * **Security Note:** This function safely handles untrusted input by HTML-encoding
+ * the `langName` parameter and CSS-escaping the `langColor` parameter.
+ * Data from external APIs (like GitHub) is sanitized before being inserted into the SVG.
+ *
+ * @param {string} langName Language name (will be HTML-encoded).
+ * @param {string} langColor Language color (will be CSS-escaped).
  * @returns {string} Language display SVG object.
  */
 const createLanguageNode = (langName, langColor) => {
@@ -127,9 +131,13 @@ const UPSTREAM_API_ERRORS = [
 /**
  * Renders error message on the card.
  *
+ * **Security Note:** This function safely handles untrusted input by HTML-encoding
+ * the `message` and `secondaryMessage` parameters using the escape-html library.
+ * All user-provided or external data is sanitized before being inserted into the SVG.
+ *
  * @param {object} args Function arguments.
- * @param {string} args.message Main error message.
- * @param {string} [args.secondaryMessage=""] The secondary error message.
+ * @param {string} args.message Main error message (will be HTML-encoded).
+ * @param {string} [args.secondaryMessage=""] The secondary error message (will be HTML-encoded).
  * @param {object} [args.renderOptions={}] Render options.
  * @param {string=} args.renderOptions.title_color Card title color.
  * @param {string=} args.renderOptions.text_color Card text color.
