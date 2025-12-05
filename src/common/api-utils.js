@@ -138,14 +138,16 @@ const setJsonContentType = (res) => {
 /**
  * Parses and validates a numeric parameter with bounds checking.
  *
- * @template {number | undefined} T
  * @param {string|undefined} value - The value to parse.
- * @param {T} defaultValue - Default value if parsing fails.
+ * @param {number|undefined} defaultValue - Default value if parsing fails.
  * @param {number} [min] - Minimum allowed value.
  * @param {number} [max] - Maximum allowed value.
- * @returns {T extends undefined ? number | undefined : number} The parsed and clamped value.
+ * @returns {number|undefined} The parsed and clamped value.
  */
 const parseNumericParam = (value, defaultValue, min, max) => {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
   const parsed = parseFloat(value);
   if (isNaN(parsed)) {
     return defaultValue;
