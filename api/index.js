@@ -98,45 +98,48 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
-    // Sanitize border_radius: parse, clamp, fallback to undefined if invalid
-    const sanitizedBorderRadius = clampValue(
-      Number(border_radius),
-      0,
-      50
-    );
-    return res.send(
-      renderStatsCard(stats, {
-        hide: parseArray(hide),
-        show_icons: parseBoolean(show_icons),
-        hide_title: parseBoolean(hide_title),
-        hide_border: parseBoolean(hide_border),
-        card_width: parseInt(card_width, 10),
-        hide_rank: parseBoolean(hide_rank),
-        include_all_commits: parseBoolean(include_all_commits),
-        commits_year: parseInt(commits_year, 10),
-        line_height,
-        title_color,
-        ring_color,
-        icon_color,
-        text_color,
-        text_bold: parseBoolean(text_bold),
-        bg_color,
-        theme,
-        // Validate custom_title is a string (prevents array from duplicate query params)
-        // Card.js handles HTML encoding internally
-        custom_title:
-          typeof custom_title === "string" ? custom_title : undefined,
-        border_radius:
-          Number.isFinite(sanitizedBorderRadius) ? sanitizedBorderRadius : undefined,
-        border_color,
-        number_format,
-        number_precision: parseInt(number_precision, 10),
-        locale,
-        disable_animations: parseBoolean(disable_animations),
-        rank_icon,
-        show: showStats,
-      }),
-    );
+    // Sanitize border_radius: parse, clamp, only include if valid
+    const borderRadiusNum = Number(border_radius);
+    const sanitizedBorderRadius =
+      Number.isFinite(borderRadiusNum) && border_radius !== undefined
+        ? clampValue(borderRadiusNum, 0, 50)
+        : undefined;
+
+    const renderOptions = {
+      hide: parseArray(hide),
+      show_icons: parseBoolean(show_icons),
+      hide_title: parseBoolean(hide_title),
+      hide_border: parseBoolean(hide_border),
+      card_width: parseInt(card_width, 10),
+      hide_rank: parseBoolean(hide_rank),
+      include_all_commits: parseBoolean(include_all_commits),
+      commits_year: parseInt(commits_year, 10),
+      line_height,
+      title_color,
+      ring_color,
+      icon_color,
+      text_color,
+      text_bold: parseBoolean(text_bold),
+      bg_color,
+      theme,
+      // Validate custom_title is a string (prevents array from duplicate query params)
+      // Card.js handles HTML encoding internally
+      custom_title: typeof custom_title === "string" ? custom_title : undefined,
+      border_color,
+      number_format,
+      number_precision: parseInt(number_precision, 10),
+      locale,
+      disable_animations: parseBoolean(disable_animations),
+      rank_icon,
+      show: showStats,
+    };
+
+    // Only include border_radius if it's valid, otherwise let Card use default
+    if (sanitizedBorderRadius !== undefined) {
+      renderOptions.border_radius = sanitizedBorderRadius;
+    }
+
+    return res.send(renderStatsCard(stats, renderOptions));
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
