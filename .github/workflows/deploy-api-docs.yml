@@ -1,5 +1,8 @@
 name: Deploy API docs
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
