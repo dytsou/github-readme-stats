@@ -13,6 +13,7 @@ import {
   setCacheHeaders,
 } from "../src/common/cache.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
+import { clampValue } from "../src/common/ops.js";
 import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
@@ -97,6 +98,12 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
+    // Sanitize border_radius: parse, clamp, fallback to undefined if invalid
+    const sanitizedBorderRadius = clampValue(
+      Number(border_radius),
+      0,
+      50
+    );
     return res.send(
       renderStatsCard(stats, {
         hide: parseArray(hide),
@@ -119,7 +126,8 @@ export default async (req, res) => {
         // Card.js handles HTML encoding internally
         custom_title:
           typeof custom_title === "string" ? custom_title : undefined,
-        border_radius,
+        border_radius:
+          Number.isFinite(sanitizedBorderRadius) ? sanitizedBorderRadius : undefined,
         border_color,
         number_format,
         number_precision: parseInt(number_precision, 10),
