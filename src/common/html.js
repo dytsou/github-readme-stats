@@ -9,8 +9,14 @@
  * @returns {string} Encoded string.
  */
 const encodeHTML = (str) => {
-  return str
-    .replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
+  return String(str)
+    // Encode &, <, >, ", ' and all non-basic Unicode chars to entities
+    .replace(/&/g, "&#38;")
+    .replace(/</g, "&#60;")
+    .replace(/>/g, "&#62;")
+    .replace(/"/g, "&#34;")
+    .replace(/'/g, "&#39;")
+    .replace(/[\u00A0-\u9999](?!#)/gim, (i) => {
       return "&#" + i.charCodeAt(0) + ";";
     })
     .replace(/\u0008/gim, "");
