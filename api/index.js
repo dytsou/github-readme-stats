@@ -115,7 +115,10 @@ export default async (req, res) => {
         text_bold: parseBoolean(text_bold),
         bg_color,
         theme,
-        custom_title,
+        // Validate custom_title is a string (prevents array from duplicate query params)
+        // Card.js handles HTML encoding internally
+        custom_title:
+          typeof custom_title === "string" ? custom_title : undefined,
         border_radius,
         border_color,
         number_format,

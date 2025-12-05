@@ -134,7 +134,10 @@ export default async (req, res) => {
 
     return res.send(
       renderTopLanguages(topLangs, {
-        custom_title,
+        // Validate custom_title is a string (prevents array from duplicate query params)
+        // Card.js handles HTML encoding internally
+        custom_title:
+          typeof custom_title === "string" ? custom_title : undefined,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
