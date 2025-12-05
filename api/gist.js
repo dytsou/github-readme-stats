@@ -78,7 +78,15 @@ export default async (req, res) => {
         text_color,
         bg_color,
         theme,
-        border_radius,
+        border_radius:
+          (() => {
+            // Validate border_radius: must be a finite number between 0 and 50
+            const num = parseFloat(border_radius);
+            if (isNaN(num) || !isFinite(num) || num < 0 || num > 50) {
+              return undefined; // Let card use its default
+            }
+            return num;
+          })(),
         border_color,
         locale,
         show_owner: parseBoolean(show_owner),
