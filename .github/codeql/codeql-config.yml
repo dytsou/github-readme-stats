@@ -7,12 +7,17 @@
 # Documented False Positives:
 #
 # - Alert ID: js/html-constructed-from-input
-#   File: src/common/Card.js:286
-#   Reason: Card.render() accepts pre-sanitized SVG content from internal render functions.
-#     All user inputs are HTML-encoded at source using escapeHtml() before reaching
-#     Card.render(). This is a trusted internal API - see Card.js JSDoc for full
-#     security model documentation. The sanitization happens at data entry points
-#     (individual card renderers), not at aggregation points.
+#   Files: src/common/Card.js:286, src/cards/top-languages.js:713
+#   Reason:
+#     * Card.js:286 - Card.render() accepts pre-sanitized SVG content from internal render functions.
+#       All user inputs are HTML-encoded at source using escapeHtml() before reaching
+#       Card.render(). This is a trusted internal API - see Card.js JSDoc for full
+#       security model documentation. The sanitization happens at data entry points
+#       (individual card renderers), not at aggregation points.
+#     * top-languages.js:713 - The `card_width` parameter is validated to be a number
+#       (isNaN check) and clamped to safe bounds (>= MIN_CARD_WIDTH). It is used only
+#       in numeric SVG attributes (width, height) where numeric values are safe from XSS.
+#       The validation ensures it cannot contain malicious content.
 #
 # - Alert ID: Token-Permissions (Scorecard)
 #   Files: .github/workflows/generate-theme-doc.yml, .github/workflows/prs-cache-clean.yml, .github/workflows/update-langs.yml
