@@ -27,7 +27,7 @@ describe("I18n", () => {
       translations: statCardLocales({ name: "Anurag Hazra", apostrophe: "s" }),
     });
     expect(() => i18n.t("statcard.title")).toThrow(
-      "'statcard.title' translation not found for locale 'asdf'",
+      "'statcard.title' translation not found for requested locale'",
     );
   });
 });

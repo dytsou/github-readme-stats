@@ -1,6 +1,5 @@
 // @ts-check
 
-import { encodeHTML } from "./html.js";
 const FALLBACK_LOCALE = "en";
 
 /**
@@ -31,9 +30,7 @@ class I18n {
     }
 
     if (!this.translations[str][this.locale]) {
-      throw new Error(
-        `'${str}' translation not found for requested locale'`,
-      );
+      throw new Error(`'${str}' translation not found for requested locale'`);
     }
 
     return this.translations[str][this.locale];

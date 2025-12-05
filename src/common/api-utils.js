@@ -9,7 +9,6 @@ import { renderError } from "./render.js";
 import { validateColor, validateTheme } from "./color.js";
 import { MissingParamError, retrieveSecondaryMessage } from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
-import { encodeHTML } from "./html.js";
 
 /**
  * @typedef {Object} ColorOptions
@@ -60,6 +59,7 @@ const createValidatedColorOptions = ({
 /**
  * Sanitizes error messages to prevent XSS by replacing messages that may
  * contain user input with safe generic alternatives.
+ * Note: Does NOT encode HTML - renderError handles that.
  *
  * @param {string} message - The error message to sanitize.
  * @returns {string} A safe error message.
@@ -69,11 +69,11 @@ const sanitizeErrorMessage = (message) => {
     return "An error occurred";
   }
   // Replace messages containing user-controlled locale data with safe alternatives
-  if (message.includes("translation not found for locale")) {
+  if (message.includes("translation not found for")) {
     return "Invalid locale specified";
   }
-  // Encode any remaining HTML entities to prevent XSS
-  return encodeHTML(message);
+  // Return message as-is - renderError will handle HTML encoding
+  return message;
 };
 
 /**
