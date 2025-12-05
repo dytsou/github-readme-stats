@@ -3,20 +3,18 @@
 import { renderRepoCard } from "../src/cards/repo.js";
 import { guardAccess } from "../src/common/access.js";
 import {
+  createValidatedColorOptions,
+  handleApiError,
+  setSvgContentType,
+} from "../src/common/api-utils.js";
+import {
   CACHE_TTL,
   resolveCacheSeconds,
   setCacheHeaders,
-  setErrorCacheHeaders,
 } from "../src/common/cache.js";
-import {
-  MissingParamError,
-  retrieveSecondaryMessage,
-} from "../src/common/error.js";
 import { parseBoolean } from "../src/common/ops.js";
-import { renderError } from "../src/common/render.js";
 import { fetchRepo } from "../src/fetchers/repo.js";
 import { isLocaleAvailable } from "../src/translations.js";
-import { validateColor, validateTheme } from "../src/common/color.js";
 
 // @ts-ignore
 export default async (req, res) => {
@@ -43,26 +41,26 @@ export default async (req, res) => {
       ? rawLocale.toLowerCase()
       : undefined;
 
-  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+  setSvgContentType(res);
+
+  // Create validated color options once for reuse
+  const colorOptions = createValidatedColorOptions({
+    title_color,
+    text_color,
+    bg_color,
+    border_color,
+    theme,
+  });
 
   const access = guardAccess({
     res,
     id: username,
     type: "username",
-    colors: {
-      title_color: validateColor(title_color),
-      text_color: validateColor(text_color),
-      bg_color: validateColor(bg_color),
-      border_color: validateColor(border_color),
-      theme: validateTheme(theme),
-    },
+    colors: colorOptions,
   });
   if (!access.isPassed) {
     return access.result;
   }
-
-  // Locale is already validated above - invalid locales default to undefined
-  // No need to check again or reflect user input in error messages
 
   try {
     const repoData = await fetchRepo(username, repo);
@@ -91,36 +89,6 @@ export default async (req, res) => {
       }),
     );
   } catch (err) {
-    setErrorCacheHeaders(res);
-    if (err instanceof Error) {
-      // Validate colors before passing to renderError (renderError will also sanitize)
-      return res.send(
-        renderError({
-          message: err.message,
-          secondaryMessage: retrieveSecondaryMessage(err),
-          renderOptions: {
-            title_color: validateColor(title_color),
-            text_color: validateColor(text_color),
-            bg_color: validateColor(bg_color),
-            border_color: validateColor(border_color),
-            theme: validateTheme(theme),
-            show_repo_link: !(err instanceof MissingParamError),
-          },
-        }),
-      );
-    }
-    // Validate colors before passing to renderError (renderError will also sanitize)
-    return res.send(
-      renderError({
-        message: "An unknown error occurred",
-        renderOptions: {
-          title_color: validateColor(title_color),
-          text_color: validateColor(text_color),
-          bg_color: validateColor(bg_color),
-          border_color: validateColor(border_color),
-          theme: validateTheme(theme),
-        },
-      }),
-    );
+    return handleApiError({ res, error: err, colorOptions });
   }
 };
