@@ -14,7 +14,6 @@ import {
   setCacheHeaders,
 } from "../src/common/cache.js";
 import { validateColor } from "../src/common/color.js";
-import { encodeHTML } from "../src/common/html.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
 import { isLocaleAvailable } from "../src/translations.js";
@@ -90,13 +89,10 @@ export default async (req, res) => {
 
     setCacheHeaders(res, cacheSeconds);
 
-    // Sanitize custom title for SVG/text usage
-    const safeCustomTitle =
-      typeof custom_title === "string" ? encodeHTML(custom_title) : undefined;
-
     return res.send(
       renderWakatimeCard(stats, {
-        custom_title: safeCustomTitle,
+        // Card.js handles HTML encoding of custom_title internally
+        custom_title,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),

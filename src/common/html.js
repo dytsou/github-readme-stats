@@ -21,16 +21,15 @@ const encodeHTML = (str) => {
  * This function ensures that color values and other CSS values
  * are safe to use in SVG attribute contexts.
  *
- * @param {string} value The CSS/attribute value to escape.
+ * @param {string|string[]} value The CSS/attribute value to escape.
  * @returns {string} Escaped value safe for use in SVG attributes.
  */
 const escapeCSSValue = (value) => {
-  if (typeof value !== "string") {
-    return String(value);
-  }
+  // Convert non-string values (e.g., arrays for gradients) to string first
+  const strValue = typeof value === "string" ? value : String(value);
 
   // Escape quotes and special characters that could break out of attribute context
-  return value
+  return strValue
     .replace(/\\/g, "\\\\") // Escape backslashes first
     .replace(/"/g, '\\"') // Escape double quotes
     .replace(/'/g, "\\'") // Escape single quotes
