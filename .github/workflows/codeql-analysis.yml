@@ -11,18 +11,7 @@ on:
       - main
 
 permissions:
-  actions: read
-  checks: read
   contents: read
-  deployments: read
-  issues: read
-  discussions: read
-  packages: read
-  pages: read
-  pull-requests: read
-  repository-projects: read
-  security-events: write
-  statuses: read
 
 jobs:
   CodeQL-Build:
@@ -30,6 +19,12 @@ jobs:
 
     # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
     runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      security-events: write
 
     steps:
       - name: Checkout repository
