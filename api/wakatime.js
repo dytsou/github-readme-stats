@@ -106,6 +106,7 @@ export default async (req, res) => {
         icon_color: validateColor(icon_color),
         text_color: colorOptions.text_color,
         bg_color: colorOptions.bg_color,
+        // @ts-ignore - validateTheme ensures theme is valid ThemeNames
         theme: colorOptions.theme,
         hide_progress,
         border_radius: parseNumericParam(
@@ -123,15 +124,8 @@ export default async (req, res) => {
       }),
     );
   } catch (err) {
-    // Sanitize error messages to prevent information leakage
-    if (err instanceof Error) {
-      const safeMessage = err.message?.includes(
-        "translation not found for locale",
-      )
-        ? "Invalid locale specified."
-        : err.message;
-      err = new Error(safeMessage);
-    }
+    // handleApiError sanitizes error messages via sanitizeErrorMessage()
+    // which replaces unsafe patterns containing user data with safe alternatives
     return handleApiError({ res, error: err, colorOptions });
   }
 };
