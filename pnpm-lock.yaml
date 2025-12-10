@@ -97,7 +97,7 @@ importers:
         version: 4.1.1
       jsdom:
         specifier: ^27.2.0
-        version: 27.2.0
+        version: 27.3.0(postcss@8.5.6)
       lint-staged:
         specifier: ^16.2.6
         version: 16.2.7
@@ -112,13 +112,13 @@ importers:
         version: 3.7.4
       vitest:
         specifier: ^4.0.15
-        version: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.2.0)(yaml@2.8.2)
+        version: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.3.0(postcss@8.5.6))(yaml@2.8.2)
 
 packages:
-  "@acemir/cssom@0.9.25":
+  "@acemir/cssom@0.9.28":
     resolution:
       {
-        integrity: sha512-ZWKTnGx+py7q6W3Q1q7+ZOW0GLuhgaxjBRMytOxYu5CQwIF6YCu5iCgY7NzuTt+DkpAa4jqKfvxANuCBWTzdVg==,
+        integrity: sha512-LuS6IVEivI75vKN8S04qRD+YySP0RmU/cV8UNukhQZvprxF+76Z43TNo/a08eCodaGhT1Us8etqS1ZRY9/Or0A==,
       }
 
   "@actions/core@1.11.1":
@@ -163,10 +163,10 @@ packages:
         integrity: sha512-9xiBAtLn4aNsa4mDnpovJvBn72tNEIACyvlqaNJ+ADemR+yeMJWnBudOi2qGDviJa7SwcDOU/TRh5dnET7qk0w==,
       }
 
-  "@asamuzakjp/dom-selector@6.7.5":
+  "@asamuzakjp/dom-selector@6.7.6":
     resolution:
       {
-        integrity: sha512-Eks6dY8zau4m4wNRQjRVaKQRTalNcPcBvU1ZQ35w5kKRk1gUeNCkVLsRiATurjASTp3TKM4H10wsI50nx3NZdw==,
+        integrity: sha512-hBaJER6A9MpdG3WgdlOolHmbOYvSk46y7IQN/1+iqiCuUu6iWdQrs9DGKF8ocqsEqWujWf/V7b7vaDgiUmIvUg==,
       }
 
   "@asamuzakjp/nwsapi@2.3.9":
@@ -261,12 +261,14 @@ packages:
     peerDependencies:
       "@csstools/css-tokenizer": ^3.0.4
 
-  "@csstools/css-syntax-patches-for-csstree@1.0.20":
+  "@csstools/css-syntax-patches-for-csstree@1.0.14":
     resolution:
       {
-        integrity: sha512-8BHsjXfSciZxjmHQOuVdW2b8WLUPts9a+mfL13/PzEviufUEW2xnvQuOlKs9dRBHgRqJ53SF/DUoK9+MZk72oQ==,
+        integrity: sha512-zSlIxa20WvMojjpCSy8WrNpcZ61RqfTfX3XTaOeVlGJrt/8HF3YbzgFZa01yTbT4GWQLwfTcC3EB8i3XnB647Q==,
       }
     engines: { node: ">=18" }
+    peerDependencies:
+      postcss: ^8.4
 
   "@csstools/css-tokenizer@3.0.4":
     resolution:
@@ -1412,10 +1414,10 @@ packages:
         integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==,
       }
 
-  cssstyle@5.3.3:
+  cssstyle@5.3.4:
     resolution:
       {
-        integrity: sha512-OytmFH+13/QXONJcC75QNdMtKpceNk3u8ThBjyyYjkEcy/ekBwR1mMAuNvi3gdBPW3N5TlCzQ0WZw8H0lN/bDw==,
+        integrity: sha512-KyOS/kJMEq5O9GdPnaf82noigg5X5DYn0kZPJTaAsCUaBizp6Xa1y9D4Qoqf/JazEXWuruErHgVXwjN5391ZJw==,
       }
     engines: { node: ">=20" }
 
@@ -2155,10 +2157,10 @@ packages:
       }
     engines: { node: ">=20.0.0" }
 
-  jsdom@27.2.0:
+  jsdom@27.3.0:
     resolution:
       {
-        integrity: sha512-454TI39PeRDW1LgpyLPyURtB4Zx1tklSr6+OFOipsxGUH1WMTvk6C65JQdrj455+DP2uJ1+veBEHTGFKWVLFoA==,
+        integrity: sha512-GtldT42B8+jefDUC4yUKAvsaOrH7PDHmZxZXNgF2xMmymjUbRYJvpAybZAKEmXDGTM0mCsz8duOa4vTm5AY2Kg==,
       }
     engines: { node: ^20.19.0 || ^22.12.0 || >=24.0.0 }
     peerDependencies:
@@ -3238,7 +3240,7 @@ packages:
     engines: { node: ">=10" }
 
 snapshots:
-  "@acemir/cssom@0.9.25": {}
+  "@acemir/cssom@0.9.28": {}
 
   "@actions/core@1.11.1":
     dependencies:
@@ -3276,7 +3278,7 @@ snapshots:
       "@csstools/css-tokenizer": 3.0.4
       lru-cache: 11.2.4
 
-  "@asamuzakjp/dom-selector@6.7.5":
+  "@asamuzakjp/dom-selector@6.7.6":
     dependencies:
       "@asamuzakjp/nwsapi": 2.3.9
       bidi-js: 1.0.3
@@ -3327,7 +3329,9 @@ snapshots:
     dependencies:
       "@csstools/css-tokenizer": 3.0.4
 
-  "@csstools/css-syntax-patches-for-csstree@1.0.20": {}
+  "@csstools/css-syntax-patches-for-csstree@1.0.14(postcss@8.5.6)":
+    dependencies:
+      postcss: 8.5.6
 
   "@csstools/css-tokenizer@3.0.4": {}
 
@@ -3684,7 +3688,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.2.0)(yaml@2.8.2)
+      vitest: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.3.0(postcss@8.5.6))(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -3731,7 +3735,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.2.0)(yaml@2.8.2)
+      vitest: 4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.3.0(postcss@8.5.6))(yaml@2.8.2)
 
   "@vitest/utils@4.0.15":
     dependencies:
@@ -3910,11 +3914,13 @@ snapshots:
 
   css.escape@1.5.1: {}
 
-  cssstyle@5.3.3:
+  cssstyle@5.3.4(postcss@8.5.6):
     dependencies:
       "@asamuzakjp/css-color": 4.1.0
-      "@csstools/css-syntax-patches-for-csstree": 1.0.20
+      "@csstools/css-syntax-patches-for-csstree": 1.0.14(postcss@8.5.6)
       css-tree: 3.1.0
+    transitivePeerDependencies:
+      - postcss
 
   data-urls@6.0.0:
     dependencies:
@@ -4366,11 +4372,11 @@ snapshots:
 
   jsdoc-type-pratt-parser@6.10.0: {}
 
-  jsdom@27.2.0:
+  jsdom@27.3.0(postcss@8.5.6):
     dependencies:
-      "@acemir/cssom": 0.9.25
-      "@asamuzakjp/dom-selector": 6.7.5
-      cssstyle: 5.3.3
+      "@acemir/cssom": 0.9.28
+      "@asamuzakjp/dom-selector": 6.7.6
+      cssstyle: 5.3.4(postcss@8.5.6)
       data-urls: 6.0.0
       decimal.js: 10.6.0
       html-encoding-sniffer: 4.0.0
@@ -4390,6 +4396,7 @@ snapshots:
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - bufferutil
+      - postcss
       - supports-color
       - utf-8-validate
 
@@ -4883,7 +4890,7 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.8.2
 
-  vitest@4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.2.0)(yaml@2.8.2):
+  vitest@4.0.15(@types/node@24.10.1)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jsdom@27.3.0(postcss@8.5.6))(yaml@2.8.2):
     dependencies:
       "@vitest/expect": 4.0.15
       "@vitest/mocker": 4.0.15(vite@7.2.6(@types/node@24.10.1)(yaml@2.8.2))
@@ -4909,7 +4916,7 @@ snapshots:
       "@types/node": 24.10.1
       "@vitest/ui": 4.0.15(vitest@4.0.15)
       happy-dom: 20.0.11
-      jsdom: 27.2.0
+      jsdom: 27.3.0(postcss@8.5.6)
     transitivePeerDependencies:
       - jiti
       - less
