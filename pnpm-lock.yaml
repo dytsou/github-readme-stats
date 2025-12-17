@@ -9,7 +9,7 @@ importers:
     dependencies:
       "@hono/node-server":
         specifier: ^1.19.6
-        version: 1.19.7(hono@4.10.7)
+        version: 1.19.7(hono@4.11.1)
       axios:
         specifier: ^1.13.1
         version: 1.13.2
@@ -27,7 +27,7 @@ importers:
         version: 1.0.0
       hono:
         specifier: ^4.10.7
-        version: 4.10.7
+        version: 4.11.1
       word-wrap:
         specifier: ^1.2.5
         version: 1.2.5
@@ -1953,10 +1953,10 @@ packages:
       }
     hasBin: true
 
-  hono@4.10.7:
+  hono@4.11.1:
     resolution:
       {
-        integrity: sha512-icXIITfw/07Q88nLSkB9aiUrd8rYzSweK681Kjo/TSggaGbOX4RRyxxm71v+3PC8C/j+4rlxGeoTRxQDkaJkUw==,
+        integrity: sha512-KsFcH0xxHes0J4zaQgWbYwmz3UPOOskdqZmItstUG93+Wk1ePBLkLGwbP9zlmh1BFUiL8Qp+Xfu9P7feJWpGNg==,
       }
     engines: { node: ">=16.9.0" }
 
@@ -3491,9 +3491,9 @@ snapshots:
 
   "@fastify/busboy@2.1.1": {}
 
-  "@hono/node-server@1.19.7(hono@4.10.7)":
+  "@hono/node-server@1.19.7(hono@4.11.1)":
     dependencies:
-      hono: 4.10.7
+      hono: 4.11.1
 
   "@humanfs/core@0.19.1": {}
 
@@ -4284,7 +4284,7 @@ snapshots:
 
   hjson@3.2.2: {}
 
-  hono@4.10.7: {}
+  hono@4.11.1: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
