@@ -48,11 +48,22 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Current package version: $VERSION"
 
+      - name: Get package name
+        id: package-name
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          SCOPE=$(echo "$PACKAGE_NAME" | sed 's|/.*||')
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "scope=$SCOPE" >> $GITHUB_OUTPUT
+          echo "Package name: $PACKAGE_NAME"
+          echo "Package scope: $SCOPE"
+
       - name: Check if version exists on npmjs
         id: check-npmjs
         run: |
           VERSION=${{ steps.package-version.outputs.version }}
-          if npm view @dytsou/github-readme-stats@$VERSION version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+          PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
+          if npm view $PACKAGE_NAME@$VERSION version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Version $VERSION already exists on npmjs, will skip npmjs publish"
           else
@@ -65,9 +76,11 @@ jobs:
         id: check-github
         run: |
           VERSION=${{ steps.package-version.outputs.version }}
-          npm config set @dytsou:registry https://npm.pkg.github.com
+          PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
+          SCOPE="${{ steps.package-name.outputs.scope }}"
+          npm config set $SCOPE:registry https://npm.pkg.github.com
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
-          if npm view @dytsou/github-readme-stats@$VERSION version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+          if npm view $PACKAGE_NAME@$VERSION version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Version $VERSION already exists on GitHub Packages, will skip GitHub Packages publish"
           else
@@ -77,15 +90,13 @@ jobs:
         continue-on-error: true
 
       - name: Install dependencies
-        if:
-          steps.check-npmjs.outputs.exists == 'false' ||
+        if: steps.check-npmjs.outputs.exists == 'false' ||
           steps.check-github.outputs.exists == 'false'
         run: |
           pnpm install --frozen-lockfile
 
       - name: Verify package
-        if:
-          steps.check-npmjs.outputs.exists == 'false' ||
+        if: steps.check-npmjs.outputs.exists == 'false' ||
           steps.check-github.outputs.exists == 'false'
         run: |
           # pnpm doesn't support --dry-run, so we pack and then remove the tarball
@@ -99,8 +110,10 @@ jobs:
         run: |
           npm config set registry https://registry.npmjs.org
           npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
+          VERSION="${{ steps.package-version.outputs.version }}"
           pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org || {
-            if npm view @dytsou/github-readme-stats@${{ steps.package-version.outputs.version }} version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            if npm view $PACKAGE_NAME@$VERSION version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
               echo "Version already exists, skipping publish"
               exit 0
             else
@@ -118,10 +131,13 @@ jobs:
         id: publish-github
         run: |
           npm config set registry https://npm.pkg.github.com
-          npm config set @dytsou:registry https://npm.pkg.github.com
+          SCOPE="${{ steps.package-name.outputs.scope }}"
+          PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
+          VERSION="${{ steps.package-version.outputs.version }}"
+          npm config set $SCOPE:registry https://npm.pkg.github.com
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
           pnpm publish --no-git-checks --registry https://npm.pkg.github.com || {
-            if npm view @dytsou/github-readme-stats@${{ steps.package-version.outputs.version }} version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            if npm view $PACKAGE_NAME@$VERSION version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
               echo "Version already exists, skipping publish"
               exit 0
             else
@@ -177,11 +193,11 @@ jobs:
             contains(steps.package-version.outputs.version, 'alpha') ||
             contains(steps.package-version.outputs.version, 'rc') }}
           body: |
-            ## @dytsou/github-readme-stats@${{ steps.package-version.outputs.version }}
+            ## ${{ steps.package-name.outputs.name }}@${{ steps.package-version.outputs.version }}
 
             **Published to multiple registries:**
 
-            - **npmjs.com**: https://www.npmjs.com/package/@dytsou/github-readme-stats
+            - **npmjs.com**: https://www.npmjs.com/package/${{ steps.package-name.outputs.name }}
 
             - **GitHub Packages**: https://github.com/dytsou/github-readme-stats/packages
 
@@ -192,11 +208,11 @@ jobs:
             **From npmjs (default):**
 
             ```bash
-            npm install @dytsou/github-readme-stats
+            npm install ${{ steps.package-name.outputs.name }}
 
             # or
 
-            pnpm install @dytsou/github-readme-stats
+            pnpm install ${{ steps.package-name.outputs.name }}
             ```
 
             **From GitHub Packages:**
@@ -205,18 +221,18 @@ jobs:
             First, create or update your `.npmrc` file:
 
             ```ini
-            @dytsou:registry=https://npm.pkg.github.com
+            ${{ steps.package-name.outputs.scope }}:registry=https://npm.pkg.github.com
             //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
             ```
 
             Then install:
 
             ```bash
-            npm install @dytsou/github-readme-stats
+            npm install ${{ steps.package-name.outputs.name }}
 
             # or
 
-            pnpm install @dytsou/github-readme-stats
+            pnpm install ${{ steps.package-name.outputs.name }}
             ```
           generate_release_notes: true
           draft: false
