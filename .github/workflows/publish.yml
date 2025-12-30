@@ -90,13 +90,15 @@ jobs:
         continue-on-error: true
 
       - name: Install dependencies
-        if: steps.check-npmjs.outputs.exists == 'false' ||
+        if:
+          steps.check-npmjs.outputs.exists == 'false' ||
           steps.check-github.outputs.exists == 'false'
         run: |
           pnpm install --frozen-lockfile
 
       - name: Verify package
-        if: steps.check-npmjs.outputs.exists == 'false' ||
+        if:
+          steps.check-npmjs.outputs.exists == 'false' ||
           steps.check-github.outputs.exists == 'false'
         run: |
           # pnpm doesn't support --dry-run, so we pack and then remove the tarball
