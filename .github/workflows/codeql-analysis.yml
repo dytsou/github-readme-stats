@@ -2,9 +2,8 @@ name: "Static code analysis workflow (CodeQL)"
 
 on:
   push:
-    branches:
-      - master
-      - main
+    # Run on all pushes to ensure SAST runs on every commit
+    # This satisfies OSSF Scorecard requirement for SAST on all commits
   pull_request:
     branches:
       - master
