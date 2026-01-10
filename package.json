@@ -54,7 +54,7 @@
     "bench": "vitest run --config vitest.bench.config.js",
     "deploy": "wrangler deploy",
     "deploy:preview": "wrangler deploy --env preview",
-    "publish:npm": "pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org",
+    "publish:npmjs": "pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org",
     "publish:github": "pnpm publish --access public --no-git-checks --registry https://npm.pkg.github.com",
     "publish:all": "pnpm run publish:npm && pnpm run publish:github"
   },
