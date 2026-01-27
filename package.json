@@ -36,7 +36,7 @@
     "url": "https://github.com/dytsou/github-readme-stats.git"
   },
   "scripts": {
-    "test": "mkdir -p .coverage-tmp && vitest run --coverage",
+    "test": "mkdir -p .coverage-tmp coverage/.tmp && vitest run --coverage",
     "test:ci": "pnpm test && pnpm lint && pnpm format",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
