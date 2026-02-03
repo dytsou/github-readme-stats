@@ -61,7 +61,7 @@
   "author": "dytsou",
   "license": "MIT",
   "devDependencies": {
-    "@actions/core": "^2.0.2",
+    "@actions/core": "^3.0.0",
     "@actions/github": "^9.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.0",
