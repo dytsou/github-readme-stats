@@ -82,7 +82,7 @@
     "hjson": "^3.2.2",
     "husky": "^9.1.7",
     "js-yaml": "^4.1.0",
-    "jsdom": "^27.2.0",
+    "jsdom": "^28.0.0",
     "lint-staged": "^16.2.6",
     "lodash.snakecase": "^4.1.1",
     "parse-diff": "^0.11.1",
