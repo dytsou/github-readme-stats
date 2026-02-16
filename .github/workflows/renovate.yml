@@ -1,8 +1,9 @@
 # Renovate – dependency updates via renovatebot/github-action
 #
-# Runs Renovate in self-hosted mode: creates PRs to update npm, GitHub Actions,
-# and other managed dependencies. Requires repository secret RENOVATE_TOKEN
-# (PAT with repo scope; add workflow scope if you use the github-actions manager).
+# The workflow (GitHub Actions) creates the PRs; commits are authored by dytsou
+# via gitAuthor in .github/renovate.json. Uses GITHUB_TOKEN so PRs show as from
+# github-actions[bot]. Note: PRs created with GITHUB_TOKEN may not trigger other
+# workflows (e.g. Test) on push; you can re-run them manually or use a PAT if needed.
 #
 # See: https://github.com/renovatebot/github-action
 name: Renovate
@@ -14,7 +15,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   renovate:
@@ -32,4 +34,4 @@ jobs:
           RENOVATE_REQUIRE_CONFIG: "optional"
         with:
           configurationFile: .github/renovate.json
-          token: ${{ secrets.RENOVATE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
