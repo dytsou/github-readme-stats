@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "onboarding": false,
+  "requireConfig": "optional",
+  "branchPrefix": "renovate/",
+  "prConcurrentLimit": 10,
+  "commitMessagePrefix": "build(deps)",
+  "commitMessagePrefixDevelopment": "build(deps-dev)",
+  "packageRules": [
+    {
+      "description": "Group npm prod and dev dependency updates",
+      "matchManagers": ["npm"],
+      "groupName": "npm dependencies"
+    },
+    {
+      "description": "GitHub Actions commit prefix",
+      "matchManagers": ["github-actions"],
+      "commitMessagePrefix": "ci(deps)",
+      "commitMessagePrefixDevelopment": "ci(deps-dev)",
+      "groupName": "github-actions"
+    }
+  ]
+}
