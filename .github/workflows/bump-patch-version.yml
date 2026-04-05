@@ -1,0 +1,86 @@
+name: Bump patch version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bumpPatchVersion:
+    name: Bump package.json patch version
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Ensure main has commits after latest tag
+        run: |
+          set -euo pipefail
+          git fetch origin main --tags
+
+          if ! git rev-parse --verify origin/main >/dev/null 2>&1; then
+            echo "::error::Could not resolve origin/main"
+            exit 1
+          fi
+
+          LATEST_TAG="$(git tag --merged origin/main --sort=-version:refname | head -n1 || true)"
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No tags on main's history yet; continuing (no baseline tag to compare)."
+            exit 0
+          fi
+
+          COUNT="$(git rev-list --count "${LATEST_TAG}"..origin/main)"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::main has no commits after tag '${LATEST_TAG}'. Merge or push changes before bumping the patch version."
+            exit 1
+          fi
+
+          echo "main is ${COUNT} commit(s) ahead of tag '${LATEST_TAG}'."
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          pnpm version patch --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $VERSION"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          commit-message:
+            "chore: bump version to ${{ steps.bump.outputs.version }}"
+          branch: "chore/bump-patch-version-${{ github.run_id }}"
+          delete-branch: true
+          title: "chore: bump version to ${{ steps.bump.outputs.version }}"
+          body: |
+            This PR bumps the **patch** version in `package.json` (via `pnpm version patch --no-git-tag-version`).
+
+            Triggered manually from [bump-patch-version](https://github.com/${{ github.repository }}/actions/workflows/bump-patch-version.yml).
+
+            After merge, the [Publish](https://github.com/${{ github.repository }}/actions/workflows/publish.yml) workflow can publish the new version when it runs on `main`.
+          labels: "ci, maintenance"
