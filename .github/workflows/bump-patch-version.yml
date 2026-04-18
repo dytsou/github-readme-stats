@@ -62,7 +62,7 @@ jobs:
       - name: Bump patch version
         id: bump
         run: |
-          pnpm version patch --no-git-tag-version
+          pnpm version patch --no-git-tag
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "New version: $VERSION"
@@ -76,7 +76,7 @@ jobs:
           delete-branch: true
           title: "chore: bump version to ${{ steps.bump.outputs.version }}"
           body: |
-            This PR bumps the **patch** version in `package.json` (via `pnpm version patch --no-git-tag-version`).
+            This PR bumps the **patch** version in `package.json` (via `pnpm version patch --no-git-tag`).
 
             Triggered manually from [bump-patch-version](https://github.com/${{ github.repository }}/actions/workflows/bump-patch-version.yml).
 
