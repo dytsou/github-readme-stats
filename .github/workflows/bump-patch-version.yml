@@ -53,6 +53,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6.0.0
+        with:
+          version: "10.33.0"
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -62,7 +64,7 @@ jobs:
       - name: Bump patch version
         id: bump
         run: |
-          pnpm version patch --no-git-tag
+          pnpm version patch --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "New version: $VERSION"
@@ -76,7 +78,7 @@ jobs:
           delete-branch: true
           title: "chore: bump version to ${{ steps.bump.outputs.version }}"
           body: |
-            This PR bumps the **patch** version in `package.json` (via `pnpm version patch --no-git-tag`).
+            This PR bumps the **patch** version in `package.json` (via `pnpm version patch --no-git-tag-version`).
 
             Triggered manually from [bump-patch-version](https://github.com/${{ github.repository }}/actions/workflows/bump-patch-version.yml).
 
