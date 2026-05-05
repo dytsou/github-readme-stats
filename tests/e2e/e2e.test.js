@@ -129,6 +129,11 @@ async function computeSkipReason() {
     return "No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.";
   }
 
+  const apiUrl = new URL(
+    `/api?username=${STATS_CARD_USER}`,
+    deploymentUrl,
+  ).toString();
+
   try {
     const parsedUrl = new URL(deploymentUrl);
     if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
@@ -138,27 +143,35 @@ async function computeSkipReason() {
     return `Invalid CLOUDFLARE_WORKER_URL: ${String(err?.message || err)}`;
   }
 
-  DEPLOYMENT_URL = deploymentUrl;
-
   try {
     // Preflight the deployment on an endpoint the suite will use.
     // We allow non-2xx so we can inspect status codes deterministically.
-    const preflight = await http.get(
-      `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`,
-      {
-        timeout: PREFLIGHT_TIMEOUT_MS,
-        validateStatus: () => true,
+    const preflight = await http.get(apiUrl, {
+      timeout: PREFLIGHT_TIMEOUT_MS,
+      validateStatus: () => true,
+      headers: {
+        Accept: "image/svg+xml,text/plain;q=0.9,*/*;q=0.8",
       },
-    );
+    });
 
-    if (preflight.status === 403) {
-      DEPLOYMENT_URL = undefined;
-      return "Remote returned HTTP 403 (deployment protected or incorrect URL for CI).";
+    if (preflight.status === 401 || preflight.status === 403) {
+      return `Remote returned HTTP ${preflight.status} (deployment protected or incorrect URL for CI).`;
     }
 
     if (preflight.status < 200 || preflight.status >= 300) {
-      DEPLOYMENT_URL = undefined;
-      return `E2E preflight failed: ${DEPLOYMENT_URL} responded with HTTP ${preflight.status}`;
+      return `E2E preflight failed: ${deploymentUrl} responded with HTTP ${preflight.status}`;
+    }
+
+    // Make sure we're talking to the expected endpoint (SVG), not an HTML/login page.
+    const contentType = String(preflight.headers?.["content-type"] || "");
+    const bodySnippet = String(preflight.data ?? "").slice(0, 300);
+    const looksLikeSvg =
+      contentType.includes("image/svg+xml") ||
+      bodySnippet.includes("<svg") ||
+      bodySnippet.includes('xmlns="http://www.w3.org/2000/svg"');
+
+    if (!looksLikeSvg) {
+      return `E2E preflight failed: ${deploymentUrl} did not return SVG content (content-type: ${contentType || "unknown"})`;
     }
   } catch (err) {
     const code = err?.code ? String(err.code) : "";
@@ -179,6 +192,7 @@ async function computeSkipReason() {
     return `E2E preflight error: ${String(err?.message || err)}`;
   }
 
+  DEPLOYMENT_URL = deploymentUrl;
   return null;
 }
 
