@@ -106,27 +106,83 @@ const CACHE_BURST_STRING = `v=${new Date().getTime()}`;
 
 describe("Fetch Cards", () => {
   let DEPLOYMENT_URL;
+  /** @type {string | null} */
+  let skipReason = null;
+  let didLogSkipReason = false;
 
-  beforeAll(() => {
+  /**
+   * Returns true when the suite should be skipped.
+   *
+   * This logs the skip reason at most once to keep test output readable.
+   *
+   * @returns {boolean} True if the current test should early-return (skip).
+   */
+  function maybeSkip() {
+    if (!skipReason) {
+      return false;
+    }
+    if (!didLogSkipReason) {
+      didLogSkipReason = true;
+      console.warn(`Skipping E2E tests: ${skipReason}`);
+    }
+    return true;
+  }
+
+  beforeAll(async () => {
     process.env.NODE_ENV = "development";
     // Get Cloudflare Worker URL
     DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL;
 
-    // Skip all tests if no deployment URL is provided
     if (!DEPLOYMENT_URL) {
-      console.warn(
-        "⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.",
+      skipReason =
+        "No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.";
+      return;
+    }
+
+    try {
+      const parsedUrl = new URL(DEPLOYMENT_URL);
+      if (
+        !parsedUrl.protocol ||
+        (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:")
+      ) {
+        throw new Error(
+          `Unsupported protocol: ${parsedUrl.protocol || "(none)"}`,
+        );
+      }
+    } catch (err) {
+      skipReason = `Invalid CLOUDFLARE_WORKER_URL: ${String(err?.message || err)}`;
+      DEPLOYMENT_URL = undefined;
+      return;
+    }
+
+    // Preflight the deployment on an endpoint the suite will use.
+    // We allow non-2xx so we can inspect status codes deterministically.
+    const preflight = await axios.get(
+      `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`,
+      {
+        timeout: 8000,
+        validateStatus: () => true,
+      },
+    );
+
+    if (preflight.status === 403) {
+      skipReason =
+        "Remote returned HTTP 403 (deployment protected or incorrect URL for CI).";
+      DEPLOYMENT_URL = undefined;
+      return;
+    }
+
+    if (preflight.status < 200 || preflight.status >= 300) {
+      throw new Error(
+        `E2E preflight failed: ${DEPLOYMENT_URL} responded with HTTP ${preflight.status}`,
       );
     }
   });
 
   test("retrieve stats card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
+    if (maybeSkip()) {
       return;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
     // Check if the deployed instance stats card function is up and running.
     await expect(
@@ -161,12 +217,9 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve language card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
+    if (maybeSkip()) {
       return;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
     // Check if the deployed instance language card function is up and running.
     console.log(
@@ -206,12 +259,9 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve WakaTime card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
+    if (maybeSkip()) {
       return;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
     // Check if the deployed instance WakaTime function is up and running.
     await expect(
@@ -246,12 +296,9 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve repo card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
+    if (maybeSkip()) {
       return;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
     // Check if the deployed instance Repo function is up and running.
     await expect(
@@ -286,12 +333,9 @@ describe("Fetch Cards", () => {
   }, 15000);
 
   test("retrieve gist card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
+    if (maybeSkip()) {
       return;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
     // Check if the deployed instance Gist function is up and running.
     await expect(
