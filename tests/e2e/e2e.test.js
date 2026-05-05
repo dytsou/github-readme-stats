@@ -104,89 +104,92 @@ const GIST_DATA = {
 
 const CACHE_BURST_STRING = `v=${new Date().getTime()}`;
 
-describe("Fetch Cards", async () => {
-  /** @type {string | undefined} */
-  let DEPLOYMENT_URL;
-  /** @type {string | null} */
-  let skipReason = null;
+const TEST_TIMEOUT_MS = 30000;
+const HTTP_TIMEOUT_MS = 10000;
+const PREFLIGHT_TIMEOUT_MS = 10000;
 
-  const http = axios.create({
-    timeout: 12000,
-  });
+/** @type {string | undefined} */
+let DEPLOYMENT_URL;
 
-  /**
-   * Returns a skip reason string, or null when the suite should run.
-   * Sets DEPLOYMENT_URL when runnable.
-   *
-   * @returns {Promise<string | null>} Skip reason or null.
-   */
-  async function computeSkipReason() {
-    process.env.NODE_ENV = "development";
+const http = axios.create({
+  timeout: HTTP_TIMEOUT_MS,
+});
 
-    const deploymentUrl = process.env.CLOUDFLARE_WORKER_URL;
-    if (!deploymentUrl) {
-      return "No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.";
+/**
+ * Returns a skip reason string, or null when the suite should run.
+ * Sets DEPLOYMENT_URL when runnable.
+ *
+ * @returns {Promise<string | null>} Skip reason or null.
+ */
+async function computeSkipReason() {
+  process.env.NODE_ENV = "development";
+
+  const deploymentUrl = process.env.CLOUDFLARE_WORKER_URL;
+  if (!deploymentUrl) {
+    return "No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.";
+  }
+
+  try {
+    const parsedUrl = new URL(deploymentUrl);
+    if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+      return `Unsupported protocol for CLOUDFLARE_WORKER_URL: ${parsedUrl.protocol || "(none)"}`;
     }
+  } catch (err) {
+    return `Invalid CLOUDFLARE_WORKER_URL: ${String(err?.message || err)}`;
+  }
 
-    try {
-      const parsedUrl = new URL(deploymentUrl);
-      if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
-        return `Unsupported protocol for CLOUDFLARE_WORKER_URL: ${parsedUrl.protocol || "(none)"}`;
-      }
-    } catch (err) {
-      return `Invalid CLOUDFLARE_WORKER_URL: ${String(err?.message || err)}`;
-    }
+  DEPLOYMENT_URL = deploymentUrl;
 
-    DEPLOYMENT_URL = deploymentUrl;
+  try {
+    // Preflight the deployment on an endpoint the suite will use.
+    // We allow non-2xx so we can inspect status codes deterministically.
+    const preflight = await http.get(
+      `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`,
+      {
+        timeout: PREFLIGHT_TIMEOUT_MS,
+        validateStatus: () => true,
+      },
+    );
 
-    try {
-      // Preflight the deployment on an endpoint the suite will use.
-      // We allow non-2xx so we can inspect status codes deterministically.
-      const preflight = await http.get(
-        `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`,
-        {
-          timeout: 8000,
-          validateStatus: () => true,
-        },
-      );
-
-      if (preflight.status === 403) {
-        DEPLOYMENT_URL = undefined;
-        return "Remote returned HTTP 403 (deployment protected or incorrect URL for CI).";
-      }
-
-      if (preflight.status < 200 || preflight.status >= 300) {
-        DEPLOYMENT_URL = undefined;
-        return `E2E preflight failed: ${DEPLOYMENT_URL} responded with HTTP ${preflight.status}`;
-      }
-    } catch (err) {
-      const code = err?.code ? String(err.code) : "";
-      const isConnectivityError =
-        code === "ECONNREFUSED" ||
-        code === "ENOTFOUND" ||
-        code === "ETIMEDOUT" ||
-        code === "ECONNRESET" ||
-        code === "EAI_AGAIN";
-
+    if (preflight.status === 403) {
       DEPLOYMENT_URL = undefined;
-
-      if (isConnectivityError) {
-        return `E2E preflight failed: ${code}`;
-      }
-
-      return `E2E preflight error: ${String(err?.message || err)}`;
+      return "Remote returned HTTP 403 (deployment protected or incorrect URL for CI).";
     }
 
-    return null;
+    if (preflight.status < 200 || preflight.status >= 300) {
+      DEPLOYMENT_URL = undefined;
+      return `E2E preflight failed: ${DEPLOYMENT_URL} responded with HTTP ${preflight.status}`;
+    }
+  } catch (err) {
+    const code = err?.code ? String(err.code) : "";
+    const isConnectivityError =
+      code === "ECONNREFUSED" ||
+      code === "ENOTFOUND" ||
+      code === "ETIMEDOUT" ||
+      code === "ECONNRESET" ||
+      code === "EAI_AGAIN" ||
+      code === "ECONNABORTED";
+
+    DEPLOYMENT_URL = undefined;
+
+    if (isConnectivityError) {
+      return `E2E preflight failed: ${code}`;
+    }
+
+    return `E2E preflight error: ${String(err?.message || err)}`;
   }
 
-  skipReason = await computeSkipReason();
-  if (skipReason) {
-    console.warn(`Skipping E2E tests: ${skipReason}`);
-  }
+  return null;
+}
 
-  const e2eTest = skipReason ? test.skip : test;
+const skipReason = await computeSkipReason();
+if (skipReason) {
+  console.warn(`Skipping E2E tests: ${skipReason}`);
+}
 
+const e2eTest = skipReason ? test.skip : test;
+
+describe("Fetch Cards", () => {
   e2eTest(
     "retrieve stats card",
     async () => {
@@ -223,7 +226,7 @@ describe("Fetch Cards", async () => {
       // Check if stats card from deployment matches the stats card from local.
       expect(serverStatsSvg.data).toEqual(localStatsCardSVG);
     },
-    15000,
+    TEST_TIMEOUT_MS,
   );
 
   e2eTest(
@@ -265,7 +268,7 @@ describe("Fetch Cards", async () => {
       // Check if language card from deployment matches the local language card.
       expect(severLanguageSVG.data).toEqual(localLanguageCardSVG);
     },
-    15000,
+    TEST_TIMEOUT_MS,
   );
 
   e2eTest(
@@ -302,7 +305,7 @@ describe("Fetch Cards", async () => {
       // Check if WakaTime card from deployment matches the local WakaTime card.
       expect(serverWakaTimeSvg.data).toEqual(localWakaCardSVG);
     },
-    15000,
+    TEST_TIMEOUT_MS,
   );
 
   e2eTest(
@@ -341,7 +344,7 @@ describe("Fetch Cards", async () => {
       // Check if Repo card from deployment matches the local Repo card.
       expect(serverRepoSvg.data).toEqual(localRepoCardSVG);
     },
-    15000,
+    TEST_TIMEOUT_MS,
   );
 
   e2eTest(
@@ -380,6 +383,6 @@ describe("Fetch Cards", async () => {
       // Check if Gist card from deployment matches the local Gist card.
       expect(serverGistSvg.data).toEqual(localGistCardSVG);
     },
-    15000,
+    TEST_TIMEOUT_MS,
   );
 });
