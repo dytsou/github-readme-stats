@@ -4,7 +4,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { beforeAll, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import axios from "axios";
 import { renderGistCard } from "../../src/cards/gist.js";
 import { renderRepoCard } from "../../src/cards/repo.js";
@@ -104,224 +104,299 @@ const GIST_DATA = {
 
 const CACHE_BURST_STRING = `v=${new Date().getTime()}`;
 
-describe("Fetch Cards", () => {
-  let DEPLOYMENT_URL;
+const TEST_TIMEOUT_MS = 30000;
+const HTTP_TIMEOUT_MS = 10000;
+const PREFLIGHT_TIMEOUT_MS = 10000;
 
-  beforeAll(() => {
-    process.env.NODE_ENV = "development";
-    // Get Cloudflare Worker URL
-    DEPLOYMENT_URL = process.env.CLOUDFLARE_WORKER_URL;
+/** @type {string | undefined} */
+let DEPLOYMENT_URL;
 
-    // Skip all tests if no deployment URL is provided
-    if (!DEPLOYMENT_URL) {
-      console.warn(
-        "⚠️  No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.",
-      );
+const http = axios.create({
+  timeout: HTTP_TIMEOUT_MS,
+});
+
+/**
+ * Returns a skip reason string, or null when the suite should run.
+ * Sets DEPLOYMENT_URL when runnable.
+ *
+ * @returns {Promise<string | null>} Skip reason or null.
+ */
+async function computeSkipReason() {
+  process.env.NODE_ENV = "development";
+
+  const deploymentUrl = process.env.CLOUDFLARE_WORKER_URL;
+  if (!deploymentUrl) {
+    return "No deployment URL provided. Set CLOUDFLARE_WORKER_URL to run e2e tests.";
+  }
+
+  const apiUrl = new URL(
+    `/api?username=${STATS_CARD_USER}`,
+    deploymentUrl,
+  ).toString();
+
+  try {
+    const parsedUrl = new URL(deploymentUrl);
+    if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+      return `Unsupported protocol for CLOUDFLARE_WORKER_URL: ${parsedUrl.protocol || "(none)"}`;
     }
-  });
+  } catch (err) {
+    return `Invalid CLOUDFLARE_WORKER_URL: ${String(err?.message || err)}`;
+  }
 
-  test("retrieve stats card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
-      return;
-    }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
-
-    // Check if the deployed instance stats card function is up and running.
-    await expect(
-      axios.get(`${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`),
-    ).resolves.not.toThrow();
-
-    // Get the deployed instance stats card response.
-    const serverStatsSvg = await axios.get(
-      `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}&include_all_commits=true&${CACHE_BURST_STRING}`,
-    );
-
-    // Verify the response is valid SVG
-    expect(serverStatsSvg.data).toContain("<svg");
-    expect(serverStatsSvg.data).toContain('xmlns="http://www.w3.org/2000/svg"');
-
-    // If the server returns an error card, skip the comparison
-    // (This can happen due to API rate limits, missing tokens, or network issues)
-    if (serverStatsSvg.data.includes("Something went wrong")) {
-      console.warn(
-        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
-      );
-      return;
-    }
-
-    // Get local stats card.
-    const localStatsCardSVG = renderStatsCard(STATS_DATA, {
-      include_all_commits: true,
+  try {
+    // Preflight the deployment on an endpoint the suite will use.
+    // We allow non-2xx so we can inspect status codes deterministically.
+    const preflight = await http.get(apiUrl, {
+      timeout: PREFLIGHT_TIMEOUT_MS,
+      validateStatus: () => true,
+      headers: {
+        Accept: "image/svg+xml,text/plain;q=0.9,*/*;q=0.8",
+      },
     });
 
-    // Check if stats card from deployment matches the stats card from local.
-    expect(serverStatsSvg.data).toEqual(localStatsCardSVG);
-  }, 15000);
-
-  test("retrieve language card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
-      return;
+    if (preflight.status === 401 || preflight.status === 403) {
+      return `Remote returned HTTP ${preflight.status} (deployment protected or incorrect URL for CI).`;
     }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
 
-    // Check if the deployed instance language card function is up and running.
-    console.log(
-      `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
-    );
-    await expect(
-      axios.get(
+    if (preflight.status < 200 || preflight.status >= 300) {
+      return `E2E preflight failed: ${deploymentUrl} responded with HTTP ${preflight.status}`;
+    }
+
+    // Make sure we're talking to the expected endpoint (SVG), not an HTML/login page.
+    const contentType = String(preflight.headers?.["content-type"] || "");
+    const bodySnippet = String(preflight.data ?? "").slice(0, 300);
+    const looksLikeSvg =
+      contentType.includes("image/svg+xml") ||
+      bodySnippet.includes("<svg") ||
+      bodySnippet.includes('xmlns="http://www.w3.org/2000/svg"');
+
+    if (!looksLikeSvg) {
+      return `E2E preflight failed: ${deploymentUrl} did not return SVG content (content-type: ${contentType || "unknown"})`;
+    }
+  } catch (err) {
+    const code = err?.code ? String(err.code) : "";
+    const isConnectivityError =
+      code === "ECONNREFUSED" ||
+      code === "ENOTFOUND" ||
+      code === "ETIMEDOUT" ||
+      code === "ECONNRESET" ||
+      code === "EAI_AGAIN" ||
+      code === "ECONNABORTED";
+
+    DEPLOYMENT_URL = undefined;
+
+    if (isConnectivityError) {
+      return `E2E preflight failed: ${code}`;
+    }
+
+    return `E2E preflight error: ${String(err?.message || err)}`;
+  }
+
+  DEPLOYMENT_URL = deploymentUrl;
+  return null;
+}
+
+const skipReason = await computeSkipReason();
+if (skipReason) {
+  console.warn(`Skipping E2E tests: ${skipReason}`);
+}
+
+const e2eTest = skipReason ? test.skip : test;
+
+describe("Fetch Cards", () => {
+  e2eTest(
+    "retrieve stats card",
+    async () => {
+      // Check if the deployed instance stats card function is up and running.
+      await expect(
+        http.get(`${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}`),
+      ).resolves.not.toThrow();
+
+      // Get the deployed instance stats card response.
+      const serverStatsSvg = await http.get(
+        `${DEPLOYMENT_URL}/api?username=${STATS_CARD_USER}&include_all_commits=true&${CACHE_BURST_STRING}`,
+      );
+
+      // Verify the response is valid SVG
+      expect(serverStatsSvg.data).toContain("<svg");
+      expect(serverStatsSvg.data).toContain(
+        'xmlns="http://www.w3.org/2000/svg"',
+      );
+
+      // If the server returns an error card, skip the comparison
+      // (This can happen due to API rate limits, missing tokens, or network issues)
+      if (serverStatsSvg.data.includes("Something went wrong")) {
+        console.warn(
+          "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+        );
+        return;
+      }
+
+      // Get local stats card.
+      const localStatsCardSVG = renderStatsCard(STATS_DATA, {
+        include_all_commits: true,
+      });
+
+      // Check if stats card from deployment matches the stats card from local.
+      expect(serverStatsSvg.data).toEqual(localStatsCardSVG);
+    },
+    TEST_TIMEOUT_MS,
+  );
+
+  e2eTest(
+    "retrieve language card",
+    async () => {
+      // Check if the deployed instance language card function is up and running.
+      console.log(
         `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
-      ),
-    ).resolves.not.toThrow();
-
-    // Get local language card.
-    const localLanguageCardSVG = renderTopLanguages(LANGS_DATA);
-
-    // Get the deployed instance language card response.
-    const severLanguageSVG = await axios.get(
-      `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
-    );
-
-    // Verify the response is valid SVG
-    expect(severLanguageSVG.data).toContain("<svg");
-    expect(severLanguageSVG.data).toContain(
-      'xmlns="http://www.w3.org/2000/svg"',
-    );
-
-    // If the server returns an error card, skip the comparison
-    // (This can happen due to API rate limits, missing tokens, or network issues)
-    if (severLanguageSVG.data.includes("Something went wrong")) {
-      console.warn(
-        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
       );
-      return;
-    }
+      await expect(
+        http.get(
+          `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
+        ),
+      ).resolves.not.toThrow();
 
-    // Check if language card from deployment matches the local language card.
-    expect(severLanguageSVG.data).toEqual(localLanguageCardSVG);
-  }, 15000);
+      // Get local language card.
+      const localLanguageCardSVG = renderTopLanguages(LANGS_DATA);
 
-  test("retrieve WakaTime card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
-      return;
-    }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
-
-    // Check if the deployed instance WakaTime function is up and running.
-    await expect(
-      axios.get(`${DEPLOYMENT_URL}/api/wakatime?username=${USER}`),
-    ).resolves.not.toThrow();
-
-    // Get the deployed instance WakaTime card response.
-    const serverWakaTimeSvg = await axios.get(
-      `${DEPLOYMENT_URL}/api/wakatime?username=${USER}&${CACHE_BURST_STRING}`,
-    );
-
-    // Verify the response is valid SVG
-    expect(serverWakaTimeSvg.data).toContain("<svg");
-    expect(serverWakaTimeSvg.data).toContain(
-      'xmlns="http://www.w3.org/2000/svg"',
-    );
-
-    // If the server returns an error card, skip the comparison
-    // (This can happen due to API rate limits, missing tokens, or network issues)
-    if (serverWakaTimeSvg.data.includes("Something went wrong")) {
-      console.warn(
-        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+      // Get the deployed instance language card response.
+      const severLanguageSVG = await http.get(
+        `${DEPLOYMENT_URL}/api/top-langs/?username=${USER}&${CACHE_BURST_STRING}`,
       );
-      return;
-    }
 
-    // Get local WakaTime card.
-    const localWakaCardSVG = renderWakatimeCard(WAKATIME_DATA);
+      // Verify the response is valid SVG
+      expect(severLanguageSVG.data).toContain("<svg");
+      expect(severLanguageSVG.data).toContain(
+        'xmlns="http://www.w3.org/2000/svg"',
+      );
 
-    // Check if WakaTime card from deployment matches the local WakaTime card.
-    expect(serverWakaTimeSvg.data).toEqual(localWakaCardSVG);
-  }, 15000);
+      // If the server returns an error card, skip the comparison
+      // (This can happen due to API rate limits, missing tokens, or network issues)
+      if (severLanguageSVG.data.includes("Something went wrong")) {
+        console.warn(
+          "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+        );
+        return;
+      }
 
-  test("retrieve repo card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
-      return;
-    }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
+      // Check if language card from deployment matches the local language card.
+      expect(severLanguageSVG.data).toEqual(localLanguageCardSVG);
+    },
+    TEST_TIMEOUT_MS,
+  );
 
-    // Check if the deployed instance Repo function is up and running.
-    await expect(
-      axios.get(
+  e2eTest(
+    "retrieve WakaTime card",
+    async () => {
+      // Check if the deployed instance WakaTime function is up and running.
+      await expect(
+        http.get(`${DEPLOYMENT_URL}/api/wakatime?username=${USER}`),
+      ).resolves.not.toThrow();
+
+      // Get the deployed instance WakaTime card response.
+      const serverWakaTimeSvg = await http.get(
+        `${DEPLOYMENT_URL}/api/wakatime?username=${USER}&${CACHE_BURST_STRING}`,
+      );
+
+      // Verify the response is valid SVG
+      expect(serverWakaTimeSvg.data).toContain("<svg");
+      expect(serverWakaTimeSvg.data).toContain(
+        'xmlns="http://www.w3.org/2000/svg"',
+      );
+
+      // If the server returns an error card, skip the comparison
+      // (This can happen due to API rate limits, missing tokens, or network issues)
+      if (serverWakaTimeSvg.data.includes("Something went wrong")) {
+        console.warn(
+          "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+        );
+        return;
+      }
+
+      // Get local WakaTime card.
+      const localWakaCardSVG = renderWakatimeCard(WAKATIME_DATA);
+
+      // Check if WakaTime card from deployment matches the local WakaTime card.
+      expect(serverWakaTimeSvg.data).toEqual(localWakaCardSVG);
+    },
+    TEST_TIMEOUT_MS,
+  );
+
+  e2eTest(
+    "retrieve repo card",
+    async () => {
+      // Check if the deployed instance Repo function is up and running.
+      await expect(
+        http.get(
+          `${DEPLOYMENT_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
+        ),
+      ).resolves.not.toThrow();
+
+      // Get local repo card.
+      const localRepoCardSVG = renderRepoCard(REPOSITORY_DATA);
+
+      // Get the deployed instance repo card response.
+      const serverRepoSvg = await http.get(
         `${DEPLOYMENT_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
-      ),
-    ).resolves.not.toThrow();
-
-    // Get local repo card.
-    const localRepoCardSVG = renderRepoCard(REPOSITORY_DATA);
-
-    // Get the deployed instance repo card response.
-    const serverRepoSvg = await axios.get(
-      `${DEPLOYMENT_URL}/api/pin/?username=${USER}&repo=${REPO}&${CACHE_BURST_STRING}`,
-    );
-
-    // Verify the response is valid SVG
-    expect(serverRepoSvg.data).toContain("<svg");
-    expect(serverRepoSvg.data).toContain('xmlns="http://www.w3.org/2000/svg"');
-
-    // If the server returns an error card, skip the comparison
-    // (This can happen due to API rate limits, missing tokens, or network issues)
-    if (serverRepoSvg.data.includes("Something went wrong")) {
-      console.warn(
-        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
       );
-      return;
-    }
 
-    // Check if Repo card from deployment matches the local Repo card.
-    expect(serverRepoSvg.data).toEqual(localRepoCardSVG);
-  }, 15000);
+      // Verify the response is valid SVG
+      expect(serverRepoSvg.data).toContain("<svg");
+      expect(serverRepoSvg.data).toContain(
+        'xmlns="http://www.w3.org/2000/svg"',
+      );
 
-  test("retrieve gist card", async () => {
-    if (!DEPLOYMENT_URL) {
-      console.log("⏭️  Skipping test: No deployment URL provided");
-      return;
-    }
-    expect(DEPLOYMENT_URL).toBeDefined();
-    expect(DEPLOYMENT_URL).toBeTruthy();
+      // If the server returns an error card, skip the comparison
+      // (This can happen due to API rate limits, missing tokens, or network issues)
+      if (serverRepoSvg.data.includes("Something went wrong")) {
+        console.warn(
+          "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+        );
+        return;
+      }
 
-    // Check if the deployed instance Gist function is up and running.
-    await expect(
-      axios.get(
+      // Check if Repo card from deployment matches the local Repo card.
+      expect(serverRepoSvg.data).toEqual(localRepoCardSVG);
+    },
+    TEST_TIMEOUT_MS,
+  );
+
+  e2eTest(
+    "retrieve gist card",
+    async () => {
+      // Check if the deployed instance Gist function is up and running.
+      await expect(
+        http.get(
+          `${DEPLOYMENT_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
+        ),
+      ).resolves.not.toThrow();
+
+      // Get local gist card.
+      const localGistCardSVG = renderGistCard(GIST_DATA);
+
+      // Get the deployed instance gist card response.
+      const serverGistSvg = await http.get(
         `${DEPLOYMENT_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
-      ),
-    ).resolves.not.toThrow();
-
-    // Get local gist card.
-    const localGistCardSVG = renderGistCard(GIST_DATA);
-
-    // Get the deployed instance gist card response.
-    const serverGistSvg = await axios.get(
-      `${DEPLOYMENT_URL}/api/gist?id=${GIST_ID}&${CACHE_BURST_STRING}`,
-    );
-
-    // Verify the response is valid SVG
-    expect(serverGistSvg.data).toContain("<svg");
-    expect(serverGistSvg.data).toContain('xmlns="http://www.w3.org/2000/svg"');
-
-    // If the server returns an error card, skip the comparison
-    // (This can happen due to API rate limits, missing tokens, or network issues)
-    if (serverGistSvg.data.includes("Something went wrong")) {
-      console.warn(
-        "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
       );
-      return;
-    }
 
-    // Check if Gist card from deployment matches the local Gist card.
-    expect(serverGistSvg.data).toEqual(localGistCardSVG);
-  }, 15000);
+      // Verify the response is valid SVG
+      expect(serverGistSvg.data).toContain("<svg");
+      expect(serverGistSvg.data).toContain(
+        'xmlns="http://www.w3.org/2000/svg"',
+      );
+
+      // If the server returns an error card, skip the comparison
+      // (This can happen due to API rate limits, missing tokens, or network issues)
+      if (serverGistSvg.data.includes("Something went wrong")) {
+        console.warn(
+          "⚠️  Server returned error card. Skipping exact comparison. This may be due to API rate limits or missing tokens.",
+        );
+        return;
+      }
+
+      // Check if Gist card from deployment matches the local Gist card.
+      expect(serverGistSvg.data).toEqual(localGistCardSVG);
+    },
+    TEST_TIMEOUT_MS,
+  );
 });

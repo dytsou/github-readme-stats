@@ -7,10 +7,7 @@ export default defineConfig({
     include: ["tests/e2e/**/*.test.js"],
     testTimeout: 30000,
     pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    // Vitest 4 pool rework: poolOptions.* moved to top-level test options.
+    singleFork: true,
   },
 });
