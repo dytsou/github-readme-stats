@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^2.0.0
-        version: 2.0.4(hono@4.12.18)
+        version: 2.0.4(hono@4.12.23)
       axios:
         specifier: ^1.15.0
         version: 1.16.1
@@ -28,7 +28,7 @@ importers:
         version: 1.0.0
       hono:
         specifier: ^4.12.14
-        version: 4.12.18
+        version: 4.12.23
       word-wrap:
         specifier: ^1.2.5
         version: 1.2.5
@@ -1056,8 +1056,8 @@ packages:
     resolution: {integrity: sha512-MkUeB0cTIlppeSsndgESkfFD21T2nXPRaBStLtf3cAYA2bVEFdXlodZB0TukwZiobPD1Ksax5DK4RTZeaXCI3Q==}
     hasBin: true
 
-  hono@4.12.18:
-    resolution: {integrity: sha512-RWzP96k/yv0PQfyXnWjs6zot20TqfpfsNXhOnev8d1InAxubW93L11/oNUc3tQqn2G0bSdAOBpX+2uDFHV7kdQ==}
+  hono@4.12.23:
+    resolution: {integrity: sha512-eIaZ9qDgu7XV0pxOCrg7/WhnQ6Ivm22UcxhXx/A3dcbqbbYgBEkc6e/J/s7j2tS96zoB0S9VBdLwQNCWwUo4LA==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@6.0.0:
@@ -2065,9 +2065,9 @@ snapshots:
 
   '@exodus/bytes@1.15.0': {}
 
-  '@hono/node-server@2.0.4(hono@4.12.18)':
+  '@hono/node-server@2.0.4(hono@4.12.23)':
     dependencies:
-      hono: 4.12.18
+      hono: 4.12.23
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -2831,7 +2831,7 @@ snapshots:
 
   hjson@3.2.2: {}
 
-  hono@4.12.18: {}
+  hono@4.12.23: {}
 
   html-encoding-sniffer@6.0.0:
     dependencies:
