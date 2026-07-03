@@ -15,3 +15,6 @@ benchmarks
 
 # Cloudflare Workers (generated from wrangler.toml.example in CI)
 wrangler.toml
+
+# Generated API docs site
+publish/

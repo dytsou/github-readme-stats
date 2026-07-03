@@ -374,7 +374,7 @@ Use HTML with `align` attribute:
 
 ## API Documentation
 
-For comprehensive API documentation including all endpoints, parameters, response formats, error handling, and examples, see [API.md](API.md) or [API Documentation](https://dytsou.github.io/github-readme-stats/).
+For comprehensive API documentation including all endpoints, parameters, response formats, error handling, and examples, see [API.md](API.md) or [API Documentation](https://github-readme-stats-api-docs.pages.dev/).
 
 **OpenAPI Specification:** The API is also available as an OpenAPI 3.1.0 specification in [openapi.yaml](openapi.yaml). You can use this with tools like:
 - [Swagger UI](https://swagger.io/tools/swagger-ui/) for interactive API exploration

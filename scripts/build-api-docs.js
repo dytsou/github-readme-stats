@@ -1,0 +1,165 @@
+import { execSync } from "node:child_process";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const OPENAPI_URL = process.env.OPENAPI_URL || "/openapi.yaml";
+const OUT_DIR = process.env.API_DOCS_OUTPUT_DIR || "publish";
+
+const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GitHub Readme Stats API Documentation</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" />
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin: 0;
+      background: #fafafa;
+    }
+    .doc-switcher {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 12px;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+    .doc-switcher:hover {
+      opacity: 1;
+    }
+    .doc-switcher .option {
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 400;
+      color: #999;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .doc-switcher .option.active {
+      color: #bbb;
+      font-weight: 500;
+    }
+    .doc-switcher .option:hover {
+      color: #888;
+    }
+    .doc-switcher .separator {
+      width: 1px;
+      height: 12px;
+      background: #ddd;
+      margin: 0 2px;
+      opacity: 0.5;
+    }
+    #redoc-container {
+      display: none;
+    }
+    #swagger-ui {
+      padding-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="doc-switcher">
+    <div class="option active" id="swagger-option" data-view="swagger">
+      Swagger UI
+    </div>
+    <div class="separator"></div>
+    <div class="option" id="redoc-option" data-view="redoc">
+      Redocly
+    </div>
+  </div>
+  <div id="swagger-ui"></div>
+  <div id="redoc-container"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
+  <script src="https://unpkg.com/redoc@2.1.3/bundles/redoc.standalone.js"></script>
+  <script>
+    const OPENAPI_URL = ${JSON.stringify(OPENAPI_URL)};
+    let redocInitialized = false;
+
+    window.onload = function() {
+      SwaggerUIBundle({
+        url: OPENAPI_URL,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+      });
+    };
+
+    function switchView(view) {
+      const swaggerContainer = document.getElementById('swagger-ui');
+      const redocContainer = document.getElementById('redoc-container');
+      const swaggerOption = document.getElementById('swagger-option');
+      const redocOption = document.getElementById('redoc-option');
+
+      if (view === 'redoc') {
+        swaggerContainer.style.display = 'none';
+        redocContainer.style.display = 'block';
+        swaggerOption.classList.remove('active');
+        redocOption.classList.add('active');
+
+        if (!redocInitialized) {
+          Redoc.init(OPENAPI_URL, {
+            scrollYOffset: 0,
+            hideDownloadButton: false,
+            theme: {
+              colors: {
+                primary: {
+                  main: '#667eea'
+                }
+              }
+            }
+          }, document.getElementById('redoc-container'));
+          redocInitialized = true;
+        }
+      } else {
+        swaggerContainer.style.display = 'block';
+        redocContainer.style.display = 'none';
+        swaggerOption.classList.add('active');
+        redocOption.classList.remove('active');
+      }
+    }
+
+    document.getElementById('swagger-option').addEventListener('click', () => switchView('swagger'));
+    document.getElementById('redoc-option').addEventListener('click', () => switchView('redoc'));
+  </script>
+</body>
+</html>
+`;
+
+mkdirSync(OUT_DIR, { recursive: true });
+mkdirSync(join(OUT_DIR, "redocly"), { recursive: true });
+
+execSync(
+  `npx redocly build-docs openapi.yaml --output ${join(OUT_DIR, "redocly/index.html")}`,
+  {
+    stdio: "inherit",
+  },
+);
+
+writeFileSync(join(OUT_DIR, "index.html"), indexHtml);
+cpSync("openapi.yaml", join(OUT_DIR, "openapi.yaml"));
+cpSync("API.md", join(OUT_DIR, "API.md"));
+
+console.log(`API docs built in ${OUT_DIR}/`);
