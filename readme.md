@@ -292,13 +292,13 @@ Display your WakaTime coding statistics.
    > wrangler secret put GITHUB_PAT
    > ```
 
-4. **Deploy** with `pnpm run deploy` (local, [Cloudflare dashboard](https://dash.cloudflare.com/), or [GitHub Actions](.github/workflows/deploy.yml)):
+4. **Deploy:**
 
    ```bash
    pnpm run deploy
    ```
 
-   > Do not use `npx wrangler deploy` — it skips `wrangler.toml` generation and fails in CI.
+   Cloudflare CI runs `wrangler versions upload` after `pnpm install` — `wrangler.toml` is generated automatically during install. For manual deploys, use `pnpm run deploy`.
 
    - **Cloudflare Workers Builds:** set the deploy command to `pnpm run deploy` (or `pnpm run deploy:workers-builds` if you use the versions API). Do **not** use bare `wrangler` — it is not on `PATH` in the build environment; use `pnpm run …` or `pnpm wrangler …` instead. `wrangler.toml` is generated at deploy time and is not committed to git.
    - **GitHub Actions:** add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository secrets
