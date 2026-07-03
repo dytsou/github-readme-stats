@@ -49,7 +49,7 @@
     "update-license-year": "node scripts/update-license-year.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky",
+    "prepare": "husky && node scripts/generate-wrangler-config.js",
     "lint": "NPM_CONFIG_LOGLEVEL=error npx eslint --max-warnings 0 \"./src/**/*.js\" \"./scripts/**/*.js\" \"./tests/**/*.js\" \"./api/**/*.js\" \"./themes/**/*.js\"",
     "bench": "vitest run --config vitest.bench.config.js",
     "deploy": "node scripts/generate-wrangler-config.js && wrangler deploy",
