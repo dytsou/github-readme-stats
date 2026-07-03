@@ -55,7 +55,7 @@ export default {
         return c.json({
           status: "ok",
           env: {
-            hasPat1: !!env.PAT_1,
+            hasGithubPat: !!env.GITHUB_PAT,
             nodeEnv: process.env.NODE_ENV,
             isWorkers:
               typeof globalThis.process === "undefined" ||

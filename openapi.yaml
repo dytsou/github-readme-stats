@@ -825,19 +825,19 @@ components:
           items:
             type: string
           description: List of valid PATs
-          example: [PAT_1, PAT_2]
+          example: [GITHUB_PAT, GITHUB_PAT_2]
         expiredPATs:
           type: array
           items:
             type: string
           description: List of expired PATs
-          example: [PAT_3]
+          example: [GITHUB_PAT_3]
         exhaustedPATs:
           type: array
           items:
             type: string
           description: List of rate-limited PATs
-          example: [PAT_4]
+          example: [GITHUB_PAT_4]
         suspendedPATs:
           type: array
           items:

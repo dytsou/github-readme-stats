@@ -312,24 +312,24 @@ Get detailed information about Personal Access Tokens status.
 
 ```json
 {
-  "validPATs": ["PAT_1", "PAT_2"],
-  "expiredPATs": ["PAT_3"],
-  "exhaustedPATs": ["PAT_4"],
+  "validPATs": ["GITHUB_PAT", "GITHUB_PAT_2"],
+  "expiredPATs": ["GITHUB_PAT_3"],
+  "exhaustedPATs": ["GITHUB_PAT_4"],
   "suspendedPATs": [],
   "errorPATs": [],
   "details": {
-    "PAT_1": {
+    "GITHUB_PAT": {
       "status": "valid",
       "remaining": 4999
     },
-    "PAT_2": {
+    "GITHUB_PAT_2": {
       "status": "valid",
       "remaining": 5000
     },
-    "PAT_3": {
+    "GITHUB_PAT_3": {
       "status": "expired"
     },
-    "PAT_4": {
+    "GITHUB_PAT_4": {
       "status": "exhausted",
       "remaining": 0,
       "resetIn": "45 minutes"
@@ -356,13 +356,13 @@ GET /api/status/pat-info
 
 ```json
 {
-  "validPATs": ["PAT_1"],
+  "validPATs": ["GITHUB_PAT"],
   "expiredPATs": [],
   "exhaustedPATs": [],
   "suspendedPATs": [],
   "errorPATs": [],
   "details": {
-    "PAT_1": {
+    "GITHUB_PAT": {
       "status": "valid",
       "remaining": 4999
     }
@@ -412,7 +412,7 @@ Public instances may have rate limits. The GitHub API allows 5,000 requests per 
 
 For self-hosted instances, configure GitHub Personal Access Tokens (PATs) as environment variables:
 
-- `PAT_1`, `PAT_2`, `PAT_3`, etc.
+- `GITHUB_PAT`, `GITHUB_PAT_2`, `GITHUB_PAT_3`, etc.
 
 Each PAT should have the following scopes:
 - `repo` (for private repository access)
@@ -511,7 +511,7 @@ Configure your instance using these environment variables:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PAT_1`, `PAT_2`, etc. | GitHub Personal Access Tokens | `ghp_...` |
+| `GITHUB_PAT`, `GITHUB_PAT_2`, etc. | GitHub Personal Access Tokens | `ghp_...` |
 | `CACHE_SECONDS` | Cache duration in seconds (0 to disable) | `21600` |
 | `WHITELIST` | Comma-separated allowed usernames | `user1,user2` |
 | `GIST_WHITELIST` | Comma-separated allowed Gist IDs | `id1,id2` |

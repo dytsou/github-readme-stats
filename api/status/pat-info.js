@@ -7,6 +7,7 @@
  * @description This function is currently rate limited to 1 request per 5 minutes.
  */
 
+import { getGitHubPatKeys } from "../../src/common/github-pats.js";
 import { request } from "../../src/common/http.js";
 import { logger } from "../../src/common/log.js";
 import { dateDiff } from "../../src/common/ops.js";
@@ -45,9 +46,7 @@ const uptimeFetcher = (variables, token) => {
  *
  * @returns {string[]} Array of PAT environment variable names.
  */
-const getAllPATs = () => {
-  return Object.keys(process.env).filter((key) => /PAT_\d*$/.exec(key));
-};
+const getAllPATs = () => getGitHubPatKeys();
 
 /**
  * @typedef {(variables: Record<string, unknown>, token: string) => Promise<import('axios').AxiosResponse>} Fetcher

@@ -67,10 +67,10 @@ describe("Test /api/status/pat-info", () => {
   beforeAll(() => {
     // reset patenv first so that dotenv doesn't populate them with local envs
     process.env = {};
-    process.env.PAT_1 = "testPAT1";
-    process.env.PAT_2 = "testPAT2";
-    process.env.PAT_3 = "testPAT3";
-    process.env.PAT_4 = "testPAT4";
+    process.env.GITHUB_PAT = "testPAT1";
+    process.env.GITHUB_PAT_2 = "testPAT2";
+    process.env.GITHUB_PAT_3 = "testPAT3";
+    process.env.GITHUB_PAT_4 = "testPAT4";
   });
 
   it("should return only 'validPATs' if all PATs are valid", async () => {
@@ -90,26 +90,26 @@ describe("Test /api/status/pat-info", () => {
     expect(res.send).toHaveBeenCalledWith(
       JSON.stringify(
         {
-          validPATs: ["PAT_2", "PAT_3", "PAT_4"],
+          validPATs: ["GITHUB_PAT_2", "GITHUB_PAT_3", "GITHUB_PAT_4"],
           expiredPATs: [],
-          exhaustedPATs: ["PAT_1"],
+          exhaustedPATs: ["GITHUB_PAT"],
           suspendedPATs: [],
           errorPATs: [],
           details: {
-            PAT_1: {
+            GITHUB_PAT: {
               status: "exhausted",
               remaining: 0,
               resetIn: "0 minutes",
             },
-            PAT_2: {
+            GITHUB_PAT_2: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_3: {
+            GITHUB_PAT_3: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_4: {
+            GITHUB_PAT_4: {
               status: "valid",
               remaining: 4986,
             },
@@ -138,28 +138,28 @@ describe("Test /api/status/pat-info", () => {
     expect(res.send).toHaveBeenCalledWith(
       JSON.stringify(
         {
-          validPATs: ["PAT_2", "PAT_3", "PAT_4"],
+          validPATs: ["GITHUB_PAT_2", "GITHUB_PAT_3", "GITHUB_PAT_4"],
           expiredPATs: [],
           exhaustedPATs: [],
           suspendedPATs: [],
-          errorPATs: ["PAT_1"],
+          errorPATs: ["GITHUB_PAT"],
           details: {
-            PAT_1: {
+            GITHUB_PAT: {
               status: "error",
               error: {
                 type: "SOME_ERROR",
                 message: "This is a error",
               },
             },
-            PAT_2: {
+            GITHUB_PAT_2: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_3: {
+            GITHUB_PAT_3: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_4: {
+            GITHUB_PAT_4: {
               status: "valid",
               remaining: 4986,
             },
@@ -188,24 +188,24 @@ describe("Test /api/status/pat-info", () => {
     expect(res.send).toHaveBeenCalledWith(
       JSON.stringify(
         {
-          validPATs: ["PAT_2", "PAT_3", "PAT_4"],
-          expiredPATs: ["PAT_1"],
+          validPATs: ["GITHUB_PAT_2", "GITHUB_PAT_3", "GITHUB_PAT_4"],
+          expiredPATs: ["GITHUB_PAT"],
           exhaustedPATs: [],
           suspendedPATs: [],
           errorPATs: [],
           details: {
-            PAT_1: {
+            GITHUB_PAT: {
               status: "expired",
             },
-            PAT_2: {
+            GITHUB_PAT_2: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_3: {
+            GITHUB_PAT_3: {
               status: "valid",
               remaining: 4986,
             },
-            PAT_4: {
+            GITHUB_PAT_4: {
               status: "valid",
               remaining: 4986,
             },

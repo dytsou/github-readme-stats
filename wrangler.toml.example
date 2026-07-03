@@ -10,17 +10,14 @@ head_sampling_rate = 1
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
-persist = true
 invocation_logs = true
 
 [observability.traces]
 enabled = true
-persist = true
 head_sampling_rate = 1
 
 # For production, use Cloudflare secrets instead of [vars]:
-# wrangler secret put PAT_1
+# wrangler secret put GITHUB_PAT
 #
 # [vars]
-# PAT_1 = "your_pat_token_here"
-
+# GITHUB_PAT = "your_pat_token_here"

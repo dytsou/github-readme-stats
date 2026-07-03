@@ -1,14 +1,13 @@
 // @ts-check
 
 import { CustomError } from "./error.js";
+import { getGitHubPatKeys, getGitHubPatToken } from "./github-pats.js";
 import { logger } from "./log.js";
 
 // Script variables.
 
 // Count the number of GitHub API tokens available.
-const PATs = Object.keys(process.env).filter((key) =>
-  /PAT_\d*$/.exec(key),
-).length;
+const PATs = getGitHubPatKeys().length;
 const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
 
 /**
@@ -41,7 +40,7 @@ const retryer = async (fetcher, variables, retries = 0) => {
     let response = await fetcher(
       variables,
       // @ts-ignore
-      process.env[`PAT_${retries + 1}`],
+      getGitHubPatToken(retries),
       // used in tests for faking rate limit
       retries,
     );
@@ -57,7 +56,7 @@ const retryer = async (fetcher, variables, retries = 0) => {
     // if rate limit is hit increase the RETRIES and recursively call the retryer
     // with username, and current RETRIES
     if (isRateLimited) {
-      logger.log(`PAT_${retries + 1} Failed`);
+      logger.log(`${getGitHubPatKeys()[retries]} Failed`);
       retries++;
       // directly return from the function
       return retryer(fetcher, variables, retries);
@@ -82,7 +81,7 @@ const retryer = async (fetcher, variables, retries = 0) => {
       e?.response?.data?.message === "Sorry. Your account was suspended.";
 
     if (isBadCredential || isAccountSuspended) {
-      logger.log(`PAT_${retries + 1} Failed`);
+      logger.log(`${getGitHubPatKeys()[retries]} Failed`);
       retries++;
       // directly return from the function
       return retryer(fetcher, variables, retries);

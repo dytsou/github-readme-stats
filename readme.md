@@ -283,6 +283,13 @@ Display your WakaTime coding statistics.
    > **Note:** This project uses [pnpm](https://pnpm.io/) as the package manager. If you don't have pnpm installed, you can install it with `npm install -g pnpm`.
 
 3. **Configure `wrangler.toml`:**
+   ```bash
+   cp wrangler.toml.example wrangler.toml
+   sed -i 's/YYYY-MM-DD/2025-12-04/' wrangler.toml   # macOS: sed -i '' '...'
+   ```
+
+   Or copy the example manually and set `compatibility_date` to a recent date:
+
    ```toml
    name = "github-readme-stats"
    main = "src/worker.ts"
@@ -296,22 +303,20 @@ Display your WakaTime coding statistics.
    [observability.logs]
    enabled = true
    head_sampling_rate = 1
-   persist = true
    invocation_logs = true
 
    [observability.traces]
    enabled = true
-   persist = true
    head_sampling_rate = 1
 
    [vars]
-   PAT_1 = "your_pat_token_here"
+   GITHUB_PAT = "your_pat_token_here"
    ```
 
    > [!WARNING]
    > For production, use Cloudflare secrets instead of `[vars]`:
    > ```bash
-   > wrangler secret put PAT_1
+   > wrangler secret put GITHUB_PAT
    > ```
 
 4. **Deploy:**
@@ -323,12 +328,20 @@ Display your WakaTime coding statistics.
 
    **Option B: GitHub Actions (Recommended)**
    
+   The [deploy workflow](.github/workflows/deploy.yml) copies `wrangler.toml.example` to `wrangler.toml` and deploys automatically on push to `main`/`master`.
+   
    Set up the following secrets in your GitHub repository:
    - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token (create at [Cloudflare Dashboard > My Profile > API Tokens](https://dash.cloudflare.com/profile/api-tokens))
    - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID (found in the right sidebar of your Cloudflare dashboard)
-   - `PAT_1`: Your GitHub Personal Access Token (optional, if not set in `wrangler.toml`)
+   
+   Set `GITHUB_PAT` as a Worker secret in the Cloudflare dashboard (or run `wrangler secret put GITHUB_PAT` locally after generating `wrangler.toml`).
    
    The workflow will automatically deploy on every push to `main`/`master` branch, or you can trigger it manually from the Actions tab.
+
+   > **Note:** If you deploy via the Cloudflare dashboard instead, add this as your build command so `wrangler.toml` exists before deploy:
+   > ```bash
+   > cp wrangler.toml.example wrangler.toml && sed -i 's/YYYY-MM-DD/2025-12-04/' wrangler.toml && pnpm run deploy
+   > ```
 
 5. **Your instance will be available at:**
    ```
@@ -343,7 +356,7 @@ Configure your instance using these environment variables:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PAT_1`, `PAT_2`, etc. | GitHub Personal Access Tokens | `ghp_...` |
+| `GITHUB_PAT`, `GITHUB_PAT_2`, etc. | GitHub Personal Access Tokens | `ghp_...` |
 | `CACHE_SECONDS` | Cache duration in seconds (0 to disable) | `21600` |
 | `WHITELIST` | Comma-separated allowed usernames | `user1,user2` |
 | `GIST_WHITELIST` | Comma-separated allowed Gist IDs | `id1,id2` |

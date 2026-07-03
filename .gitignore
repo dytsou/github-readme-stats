@@ -13,5 +13,5 @@ benchmarks
 !.vscode/settings.json
 *.code-workspace
 
-# Cloudflare Workers
+# Cloudflare Workers (generated from wrangler.toml.example in CI)
 wrangler.toml
