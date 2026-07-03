@@ -35,14 +35,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate wrangler.toml
-        run: |
-          cp wrangler.toml.example wrangler.toml
-          sed -i 's/YYYY-MM-DD/2025-12-04/' wrangler.toml
-
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
+          preCommands: node scripts/generate-wrangler-config.js
