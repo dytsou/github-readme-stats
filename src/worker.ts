@@ -5,6 +5,7 @@ import repoCardHandler from "../api/pin.js";
 import topLangsHandler from "../api/top-langs.js";
 import wakatimeHandler from "../api/wakatime.js";
 import gistHandler from "../api/gist.js";
+import profileContextHandler from "../api/profile-context.js";
 import { setupWorkerEnv } from "./common/worker-env.js";
 import { adaptExpressHandler } from "./common/worker-adapter.js";
 import { encodeHTML } from "./common/html.js";
@@ -44,6 +45,16 @@ export default {
       app.get("/api/gist", adaptExpressHandler(gistHandler));
       // @ts-ignore - adaptExpressHandler returns a compatible handler
       app.get("/api/gist/", adaptExpressHandler(gistHandler));
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get(
+        "/api/profile/context",
+        adaptExpressHandler(profileContextHandler),
+      );
+      // @ts-ignore - adaptExpressHandler returns a compatible handler
+      app.get(
+        "/api/profile/context/",
+        adaptExpressHandler(profileContextHandler),
+      );
 
       // Handle root path
       app.get("/", (c) => {

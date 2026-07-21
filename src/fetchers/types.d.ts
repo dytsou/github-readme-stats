@@ -47,6 +47,21 @@ export type Lang = {
 
 export type TopLangData = Record<string, Lang>;
 
+export type LanguageEntry = {
+  name: string;
+  color: string;
+  bytes: number;
+  percent: number;
+};
+
+export type ProfileContextJson = {
+  username: string;
+  fetchedAt: string;
+  stats: Record<string, unknown>;
+  languages: LanguageEntry[];
+  summary?: string;
+};
+
 export type WakaTimeData = {
   categories: {
     digital: string;
