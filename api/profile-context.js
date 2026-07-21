@@ -44,7 +44,7 @@ const normalizeFormat = (format) => {
 };
 
 // @ts-ignore
-export default async (req, res) => {
+const profileContextHandler = async (req, res) => {
   const {
     username,
     format: rawFormat,
@@ -107,18 +107,18 @@ export default async (req, res) => {
         includeMerged,
         includeDiscussions,
         includeDiscussionsAnswers,
-        parseInt(commits_year, 10),
+        Number.parseInt(commits_year, 10),
       ),
       fetchTopLanguages(
         username,
         excludeRepos,
-        parseFloat(size_weight) || 1,
-        parseFloat(count_weight) || 0,
+        Number.parseFloat(size_weight) || 1,
+        Number.parseFloat(count_weight) || 0,
       ),
     ]);
 
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.PROFILE_CONTEXT.DEFAULT,
       min: CACHE_TTL.PROFILE_CONTEXT.MIN,
       max: CACHE_TTL.PROFILE_CONTEXT.MAX,
@@ -151,3 +151,5 @@ export default async (req, res) => {
     return handleJsonApiError({ res, error: err });
   }
 };
+
+export default profileContextHandler;

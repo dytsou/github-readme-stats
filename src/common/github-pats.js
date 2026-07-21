@@ -1,6 +1,7 @@
 // @ts-check
 
 const GITHUB_PAT_KEY_REGEX = /^GITHUB_PAT(_\d+)?$/;
+const GITHUB_PAT_INDEX_REGEX = /^GITHUB_PAT_(\d+)$/;
 
 /**
  * Returns the runtime environment object.
@@ -19,7 +20,7 @@ const getGitHubPatIndex = (key) => {
     return 1;
   }
 
-  const match = key.match(/^GITHUB_PAT_(\d+)$/);
+  const match = GITHUB_PAT_INDEX_REGEX.exec(key);
   return match ? Number(match[1]) : Number.NaN;
 };
 
