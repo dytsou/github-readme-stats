@@ -6,9 +6,12 @@ import { logger } from "./log.js";
 
 // Script variables.
 
-// Count the number of GitHub API tokens available.
-const PATs = getGitHubPatKeys().length;
-const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
+// Resolve at request time so Cloudflare Workers env is populated first.
+const getRetries = () =>
+  process.env.NODE_ENV === "test" ? 7 : getGitHubPatKeys().length;
+
+// Exported for tests (NODE_ENV=test → stable value of 7 at import time).
+const RETRIES = getRetries();
 
 /**
  * @typedef {import("axios").AxiosResponse} AxiosResponse Axios response.
@@ -24,11 +27,13 @@ const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
  * @returns {Promise<any>} The response from the fetcher function.
  */
 const retryer = async (fetcher, variables, retries = 0) => {
-  if (!RETRIES) {
+  const maxRetries = getRetries();
+
+  if (!maxRetries) {
     throw new CustomError("No GitHub API tokens found", CustomError.NO_TOKENS);
   }
 
-  if (retries > RETRIES) {
+  if (retries > maxRetries) {
     throw new CustomError(
       "Downtime due to GitHub API rate limiting",
       CustomError.MAX_RETRY,

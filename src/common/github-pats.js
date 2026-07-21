@@ -3,6 +3,14 @@
 const GITHUB_PAT_KEY_REGEX = /^GITHUB_PAT(_\d+)?$/;
 
 /**
+ * Returns the runtime environment object.
+ * In Cloudflare Workers, Wrangler inlines `process.env` at build time, so PAT
+ * secrets copied into `globalThis.process.env` must be read from there instead.
+ * @returns {NodeJS.ProcessEnv} Runtime environment variables.
+ */
+const getRuntimeEnv = () => globalThis.process?.env ?? process.env;
+
+/**
  * @param {string} key GitHub PAT environment variable name.
  * @returns {number} Sort index for the PAT key.
  */
@@ -19,7 +27,7 @@ const getGitHubPatIndex = (key) => {
  * @returns {string[]} Sorted GitHub PAT environment variable names.
  */
 const getGitHubPatKeys = () =>
-  Object.keys(process.env)
+  Object.keys(getRuntimeEnv())
     .filter((key) => GITHUB_PAT_KEY_REGEX.test(key))
     .sort((a, b) => getGitHubPatIndex(a) - getGitHubPatIndex(b));
 
@@ -29,7 +37,8 @@ const getGitHubPatKeys = () =>
  */
 const getGitHubPatToken = (index) => {
   const key = getGitHubPatKeys()[index];
-  return key ? process.env[key] : undefined;
+  const env = getRuntimeEnv();
+  return key ? env[key] : undefined;
 };
 
 export {
