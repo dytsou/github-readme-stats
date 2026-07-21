@@ -25,6 +25,8 @@ servers:
 tags:
   - name: Cards
     description: SVG card generation endpoints
+  - name: Agent
+    description: Agent-readable JSON and text context endpoints
   - name: Status
     description: Service status and health check endpoints
 
@@ -602,6 +604,112 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/profile/context:
+    get:
+      tags:
+        - Agent
+      summary: Get GitHub profile context for AI agents
+      description: |
+        Returns bundled GitHub stats and top languages as JSON or plain text for AI agents and automation tools.
+
+        Card-only styling parameters are ignored on this endpoint.
+      operationId: getProfileContext
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: GitHub username
+          schema:
+            type: string
+            example: octocat
+        - name: format
+          in: query
+          required: false
+          description: Response format
+          schema:
+            type: string
+            enum: [json, prose, both]
+            default: json
+        - name: include_all_commits
+          in: query
+          required: false
+          description: Count all commits via REST search (expensive)
+          schema:
+            type: boolean
+            default: false
+        - name: commits_year
+          in: query
+          required: false
+          description: Filter commits by year
+          schema:
+            type: integer
+        - name: exclude_repo
+          in: query
+          required: false
+          description:
+            Comma-separated repositories to exclude from star/language counts
+          schema:
+            type: string
+        - name: show
+          in: query
+          required: false
+          description:
+            Comma-separated optional stats to include (same as stats card)
+          schema:
+            type: string
+            example: prs_merged,reviews
+        - name: size_weight
+          in: query
+          required: false
+          description: Language ranking weight for byte count
+          schema:
+            type: number
+            default: 1
+        - name: count_weight
+          in: query
+          required: false
+          description: Language ranking weight for repository count
+          schema:
+            type: number
+            default: 0
+        - name: cache_seconds
+          in: query
+          required: false
+          description: Cache duration override in seconds
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profile context payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileContext"
+            text/plain:
+              schema:
+                type: string
+                description: Returned when format=prose
+        "400":
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonError"
+        "403":
+          description: Access denied by whitelist/blacklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonError"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/status/up:
     get:
       tags:
@@ -794,6 +902,51 @@ components:
         default: en
 
   schemas:
+    JsonError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: USER_NOT_FOUND
+            message:
+              type: string
+              example: User not found
+
+    ProfileContext:
+      type: object
+      properties:
+        username:
+          type: string
+          example: octocat
+        fetchedAt:
+          type: string
+          format: date-time
+        stats:
+          type: object
+          additionalProperties: true
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/LanguageEntry"
+        summary:
+          type: string
+          description: Present when format=both
+
+    LanguageEntry:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+        bytes:
+          type: number
+        percent:
+          type: number
+
     ShieldsResponse:
       type: object
       description: Shields.io compatible JSON response

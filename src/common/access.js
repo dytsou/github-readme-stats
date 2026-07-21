@@ -66,4 +66,57 @@ const guardAccess = ({ res, id, type, colors }) => {
   return { isPassed: true };
 };
 
-export { guardAccess };
+/**
+ * Guards access for JSON/text API routes.
+ *
+ * @param {Object} args The parameters object.
+ * @param {any} args.res The response object.
+ * @param {string} args.id Resource identifier (username or gist id).
+ * @param {"username"|"gist"|"wakatime"} args.type The type of identifier.
+ * @returns {{ isPassed: boolean, result?: any }} The result object indicating success or failure.
+ */
+const guardAccessJson = ({ res, id, type }) => {
+  if (!["username", "gist", "wakatime"].includes(type)) {
+    throw new Error(
+      'Invalid type. Expected "username", "gist", or "wakatime".',
+    );
+  }
+
+  const currentWhitelist = type === "gist" ? gistWhitelist : whitelist;
+  const notWhitelistedCode =
+    type === "gist" ? "GIST_NOT_WHITELISTED" : "NOT_WHITELISTED";
+  const notWhitelistedMsg =
+    type === "gist"
+      ? NOT_WHITELISTED_GIST_MESSAGE
+      : NOT_WHITELISTED_USERNAME_MESSAGE;
+
+  if (Array.isArray(currentWhitelist) && !currentWhitelist.includes(id)) {
+    res.statusCode = 403;
+    const result = res.send({
+      error: {
+        code: notWhitelistedCode,
+        message: notWhitelistedMsg,
+      },
+    });
+    return { isPassed: false, result };
+  }
+
+  if (
+    type === "username" &&
+    currentWhitelist === undefined &&
+    blacklist.includes(id)
+  ) {
+    res.statusCode = 403;
+    const result = res.send({
+      error: {
+        code: "BLACKLISTED",
+        message: BLACKLISTED_MESSAGE,
+      },
+    });
+    return { isPassed: false, result };
+  }
+
+  return { isPassed: true };
+};
+
+export { guardAccess, guardAccessJson };

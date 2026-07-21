@@ -5,6 +5,51 @@
 
 import { encodeHTML } from "./html.js";
 
+const DEFAULT_SVG_CONTENT_TYPE = "image/svg+xml; charset=utf-8";
+
+/**
+ * Resolves the response Content-Type for adapter responses.
+ *
+ * @param {Record<string, string>} headers Express-style response headers.
+ * @param {unknown} body Response body.
+ * @returns {string} Content-Type header value.
+ */
+const resolveResponseContentType = (headers, body) => {
+  const explicitType =
+    headers["Content-Type"] ||
+    headers["content-type"] ||
+    headers["CONTENT-TYPE"];
+
+  if (explicitType) {
+    return String(explicitType);
+  }
+
+  if (typeof body === "object" && body !== null) {
+    return "application/json";
+  }
+
+  return DEFAULT_SVG_CONTENT_TYPE;
+};
+
+/**
+ * Serializes a response body for the adapter Response object.
+ *
+ * @param {unknown} body Response body.
+ * @param {string} contentType Resolved Content-Type header.
+ * @returns {string} Serialized body.
+ */
+const serializeResponseBody = (body, contentType) => {
+  if (typeof body === "string") {
+    return body;
+  }
+
+  if (contentType.startsWith("application/json")) {
+    return JSON.stringify(body);
+  }
+
+  return String(body);
+};
+
 /**
  * Creates a mock Express response object that works with Hono context.
  *
@@ -14,8 +59,15 @@ export function createMockResponse() {
   const headers = {};
   let responseSent = false;
   let responseBody = null;
+  let statusCode = 200;
 
   return {
+    set statusCode(value) {
+      statusCode = value;
+    },
+    get statusCode() {
+      return statusCode;
+    },
     setHeader: (name, value) => {
       headers[name] = value;
     },
@@ -23,40 +75,35 @@ export function createMockResponse() {
       responseSent = true;
       responseBody = body;
 
-      // Ensure body is a string (Camo requires valid SVG)
-      const svgBody = typeof body === "string" ? body : String(body);
+      const contentType = resolveResponseContentType(headers, body);
+      const responseBodyText = serializeResponseBody(body, contentType);
 
-      // Build headers object
       const responseHeaders = new Headers();
+      responseHeaders.set("Content-Type", contentType);
 
-      // Set Content-Type first (required by GitHub Camo CDN - must be image/svg+xml)
-      responseHeaders.set("Content-Type", "image/svg+xml; charset=utf-8");
-
-      // Set Cache-Control if not already set (Camo expects cacheable responses)
       const cacheControl = headers["Cache-Control"] || headers["cache-control"];
       if (cacheControl) {
         responseHeaders.set("Cache-Control", String(cacheControl));
-      } else {
+      } else if (contentType === DEFAULT_SVG_CONTENT_TYPE) {
         responseHeaders.set("Cache-Control", "public, max-age=3600");
       }
 
-      // Set all other headers
       Object.entries(headers).forEach(([name, value]) => {
-        // Don't override Content-Type or Cache-Control if already set
         const lowerName = name.toLowerCase();
         if (lowerName !== "content-type" && lowerName !== "cache-control") {
           responseHeaders.set(name, String(value));
         }
       });
 
-      // Return Response with proper image content type for Camo compatibility
-      return new Response(svgBody, {
-        status: 200,
+      return new Response(responseBodyText, {
+        status: statusCode,
         headers: responseHeaders,
       });
     },
     _wasSent: () => responseSent,
     _getBody: () => responseBody,
+    _getHeaders: () => headers,
+    _getStatusCode: () => statusCode,
   };
 }
 
@@ -73,6 +120,41 @@ export function createMockRequest(c) {
 }
 
 /**
+ * Builds a fallback Response when the adapter cannot reconstruct one.
+ *
+ * @param {any} res Mock Express response.
+ * @returns {Response} Hono-compatible response.
+ */
+const buildFallbackResponse = (res) => {
+  const body = res._getBody();
+  if (body !== null) {
+    const headers = res._getHeaders();
+    const contentType = resolveResponseContentType(headers, body);
+    const responseBodyText = serializeResponseBody(body, contentType);
+    const responseHeaders = new Headers();
+    responseHeaders.set("Content-Type", contentType);
+
+    const cacheControl = headers["Cache-Control"] || headers["cache-control"];
+    if (cacheControl) {
+      responseHeaders.set("Cache-Control", String(cacheControl));
+    } else if (contentType === DEFAULT_SVG_CONTENT_TYPE) {
+      responseHeaders.set("Cache-Control", "public, max-age=3600");
+    }
+
+    return new Response(responseBodyText, {
+      status: res._getStatusCode(),
+      headers: responseHeaders,
+    });
+  }
+
+  const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">No response generated</text></svg>`;
+  return new Response(errorSvg, {
+    status: 500,
+    headers: { "Content-Type": DEFAULT_SVG_CONTENT_TYPE },
+  });
+};
+
+/**
  * Adapts an Express-style handler to work with Hono.
  *
  * @param {Function} expressHandler Express handler function (req, res) => {}
@@ -86,62 +168,33 @@ export function adaptExpressHandler(expressHandler) {
     try {
       const result = await expressHandler(req, res);
 
-      // If res.send() was called, it returns a Response object
       if (res._wasSent()) {
-        // If result is a Response (from res.send()), return it directly
         if (result instanceof Response) {
           return result;
         }
-        // Otherwise, result might be undefined or something else
-        // In that case, we already have the body from res._getBody()
-        const body = res._getBody();
-        if (body !== null) {
-          // Reconstruct the response with proper image content type for Camo
-          const svgBody = typeof body === "string" ? body : String(body);
-          return new Response(svgBody, {
-            status: 200,
-            headers: {
-              "Content-Type": "image/svg+xml; charset=utf-8",
-              "Cache-Control": "public, max-age=3600",
-            },
-          });
-        }
-        if (result !== undefined) {
-          return result;
-        }
-        return c;
+
+        return buildFallbackResponse(res);
       }
 
-      // If handler returns something directly (like a Response from guardAccess)
       if (result !== undefined) {
-        // If it's a Response, return it directly
         if (result instanceof Response) {
           return result;
         }
         return result;
       }
 
-      // Fallback - should not happen in normal flow
-      // Return SVG error card instead of text for Camo compatibility
-      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">No response generated</text></svg>`;
-      return new Response(errorSvg, {
-        status: 500,
-        headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
-      });
+      return buildFallbackResponse(res);
     } catch (error) {
-      // Log the error for debugging
       console.error("Adapter error:", error);
       console.error("Error stack:", error.stack);
       console.error("Request URL:", c.req.url);
       console.error("Request query:", c.req.query());
 
-      // Return SVG error card instead of text for Camo compatibility
-      // Sanitize error message to prevent XSS
       const safeMessage = encodeHTML(String(error.message || "Unknown error"));
       const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${safeMessage}</text></svg>`;
       return new Response(errorSvg, {
         status: 500,
-        headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
+        headers: { "Content-Type": DEFAULT_SVG_CONTENT_TYPE },
       });
     }
   };

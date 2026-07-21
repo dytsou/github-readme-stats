@@ -14,6 +14,8 @@ All endpoints are relative to your deployed instance. For example:
 
 All card endpoints return SVG images with `Content-Type: image/svg+xml; charset=utf-8`.
 
+Agent context endpoints return JSON (`application/json`) or plain text (`text/plain; charset=utf-8`) depending on the `format` parameter.
+
 Status endpoints return JSON with `Content-Type: application/json`.
 
 ## Common Parameters
@@ -257,7 +259,71 @@ SVG image with WakaTime statistics card.
 
 ---
 
-### 6. Status - Uptime Check
+### 6. Profile Context (Agent)
+
+Return bundled GitHub stats and top languages as JSON or plain text for AI agents and automation tools.
+
+**Endpoint:** `GET /api/profile/context`
+
+**Required Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `username` | string | GitHub username |
+
+**Optional Parameters:**
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `format` | string | Output shape (`json`, `prose`, `both`) | `json` |
+| `include_all_commits` | boolean | Count all commits via REST search (expensive) | `false` |
+| `commits_year` | number | Filter commits by year | Current year |
+| `exclude_repo` | string | Comma-separated repositories to exclude | - |
+| `show` | string | Optional stats (`reviews`, `discussions_started`, `discussions_answered`, `prs_merged`, `prs_merged_percentage`) | - |
+| `size_weight` | number | Language ranking weight for bytes | `1` |
+| `count_weight` | number | Language ranking weight for repo count | `0` |
+| `cache_seconds` | number | Cache duration override | `86400` (1 day) |
+
+Card styling parameters (`theme`, `hide`, `layout`, etc.) are ignored on this endpoint.
+
+**Example Request:**
+
+```
+GET /api/profile/context?username=octocat&format=both&show=prs_merged
+```
+
+**Example JSON Response (`format=json` or `format=both`):**
+
+```json
+{
+  "username": "octocat",
+  "fetchedAt": "2026-07-21T12:00:00.000Z",
+  "stats": {
+    "name": "The Octocat",
+    "totalStars": 100,
+    "totalCommits": 200,
+    "totalPRs": 10,
+    "totalReviews": 5,
+    "totalIssues": 3,
+    "contributedTo": 4,
+    "rank": { "level": "B+", "percentile": 75 }
+  },
+  "languages": [
+    { "name": "JavaScript", "color": "#f1e05a", "bytes": 750, "percent": 75 },
+    { "name": "TypeScript", "color": "#3178c6", "bytes": 250, "percent": 25 }
+  ]
+}
+```
+
+When `format=both`, a `summary` field contains the same content as `format=prose`.
+
+**Example Prose Response (`format=prose`):**
+
+Plain text suitable for LLM context injection, including rank explanation and language byte-share percentages.
+
+---
+
+### 7. Status - Uptime Check
 
 Check if the Personal Access Tokens (PATs) are still functional.
 
@@ -300,7 +366,7 @@ GET /api/status/up?type=json
 
 ---
 
-### 7. Status - PAT Information
+### 8. Status - PAT Information
 
 Get detailed information about Personal Access Tokens status.
 
@@ -381,7 +447,7 @@ All endpoints return appropriate HTTP status codes:
 - `404 Not Found`: Resource not found (user, repo, gist, etc.)
 - `500 Internal Server Error`: Server error
 
-Error responses are returned as SVG images (for card endpoints) or JSON (for status endpoints) with error messages.
+Error responses are returned as SVG images (for card endpoints) or JSON/plain text (for agent context and status endpoints) with error messages.
 
 ### Common Error Scenarios
 

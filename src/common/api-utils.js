@@ -7,7 +7,11 @@
 
 import { renderError } from "./render.js";
 import { validateColor, validateTheme } from "./color.js";
-import { MissingParamError, retrieveSecondaryMessage } from "./error.js";
+import {
+  MissingParamError,
+  CustomError,
+  retrieveSecondaryMessage,
+} from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
 
 /**
@@ -185,6 +189,117 @@ const setJsonContentType = (res) => {
 };
 
 /**
+ * Sets the standard plain-text content type header.
+ *
+ * @param {any} res - Express response object.
+ */
+const setTextContentType = (res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+};
+
+/**
+ * Maps an error to a JSON API error response payload and HTTP status.
+ *
+ * @param {Error|unknown} error - The error that occurred.
+ * @returns {{ status: number, body: { error: { code: string, message: string } } }} Error payload.
+ */
+const mapJsonApiError = (error) => {
+  if (error instanceof MissingParamError) {
+    return {
+      status: 400,
+      body: {
+        error: {
+          code: "MISSING_PARAM",
+          message: sanitizeErrorMessage(error.message),
+        },
+      },
+    };
+  }
+
+  if (error instanceof CustomError) {
+    if (error.type === CustomError.USER_NOT_FOUND) {
+      return {
+        status: 404,
+        body: {
+          error: {
+            code: "USER_NOT_FOUND",
+            message: "User not found",
+          },
+        },
+      };
+    }
+
+    return {
+      status: 502,
+      body: {
+        error: {
+          code: error.type || "UPSTREAM_ERROR",
+          message: sanitizeErrorMessage(error.message),
+        },
+      },
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      status: 500,
+      body: {
+        error: {
+          code: "INTERNAL_ERROR",
+          message: sanitizeErrorMessage(error.message),
+        },
+      },
+    };
+  }
+
+  return {
+    status: 500,
+    body: {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "An unknown error occurred",
+      },
+    },
+  };
+};
+
+/**
+ * Handles JSON API errors with cache headers and a structured response body.
+ *
+ * @param {Object} options - Error handling options.
+ * @param {any} options.res - Express response object.
+ * @param {Error|unknown} options.error - The error that occurred.
+ * @returns {any} The response result.
+ */
+const handleJsonApiError = ({ res, error }) => {
+  setErrorCacheHeaders(res);
+  setJsonContentType(res);
+  const { status, body } = mapJsonApiError(error);
+  res.statusCode = status;
+  return res.send(body);
+};
+
+/**
+ * Sends a JSON validation error response.
+ *
+ * @param {Object} options - Validation error options.
+ * @param {any} options.res - Express response object.
+ * @param {string} options.code - Machine-readable error code.
+ * @param {string} options.message - Human-readable error message.
+ * @returns {any} The response result.
+ */
+const sendJsonValidationError = ({ res, code, message }) => {
+  setJsonContentType(res);
+  res.statusCode = 400;
+  return res.send({
+    error: {
+      code,
+      message,
+    },
+  });
+};
+
+/**
  * Parses and validates a numeric parameter with bounds checking.
  *
  * @param {string|undefined} value - The value to parse.
@@ -214,8 +329,12 @@ const parseNumericParam = (value, defaultValue, min, max) => {
 export {
   createValidatedColorOptions,
   handleApiError,
+  handleJsonApiError,
+  mapJsonApiError,
   sendValidationError,
+  sendJsonValidationError,
   setSvgContentType,
   setJsonContentType,
+  setTextContentType,
   parseNumericParam,
 };
