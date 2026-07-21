@@ -85,7 +85,41 @@ const pickStatsFields = (
  * @returns {string} Plain-text summary.
  */
 const toProfileProse = ({ username, stats, languages }) => {
-  const lines = [
+  /** @type {string[]} */
+  const optionalStatLines = [];
+
+  if (stats.totalPRsMerged) {
+    optionalStatLines.push(
+      `Merged pull requests: ${kFormatter(stats.totalPRsMerged)} (${stats.mergedPRsPercentage.toFixed(1)}% merge rate).`,
+    );
+  }
+
+  if (stats.totalDiscussionsStarted) {
+    optionalStatLines.push(
+      `Discussions started: ${kFormatter(stats.totalDiscussionsStarted)}.`,
+    );
+  }
+
+  if (stats.totalDiscussionsAnswered) {
+    optionalStatLines.push(
+      `Discussion answers: ${kFormatter(stats.totalDiscussionsAnswered)}.`,
+    );
+  }
+
+  const languageLines =
+    languages.length === 0
+      ? ["Top languages: no language data found for public repositories."]
+      : [
+          "Top languages by byte share in public repositories (percent is share of tracked bytes, not repo count):",
+          ...languages
+            .slice(0, 10)
+            .map(
+              (lang) =>
+                `- ${lang.name}: ${lang.percent}% (${kFormatter(lang.bytes)} bytes)`,
+            ),
+        ];
+
+  return [
     `GitHub profile context for ${stats.name} (@${username})`,
     "",
     `Rank: ${stats.rank.level} (percentile score ${stats.rank.percentile}; derived from activity, not a GitHub badge).`,
@@ -95,48 +129,12 @@ const toProfileProse = ({ username, stats, languages }) => {
     `Pull request reviews: ${kFormatter(stats.totalReviews)}.`,
     `Issues opened + closed: ${kFormatter(stats.totalIssues)}.`,
     `Contributed to repositories: ${kFormatter(stats.contributedTo)}.`,
-  ];
-
-  if (stats.totalPRsMerged) {
-    lines.push(
-      `Merged pull requests: ${kFormatter(stats.totalPRsMerged)} (${stats.mergedPRsPercentage.toFixed(1)}% merge rate).`,
-    );
-  }
-
-  if (stats.totalDiscussionsStarted) {
-    lines.push(
-      `Discussions started: ${kFormatter(stats.totalDiscussionsStarted)}.`,
-    );
-  }
-
-  if (stats.totalDiscussionsAnswered) {
-    lines.push(
-      `Discussion answers: ${kFormatter(stats.totalDiscussionsAnswered)}.`,
-    );
-  }
-
-  lines.push("");
-  if (languages.length === 0) {
-    lines.push(
-      "Top languages: no language data found for public repositories.",
-    );
-  } else {
-    lines.push(
-      "Top languages by byte share in public repositories (percent is share of tracked bytes, not repo count):",
-    );
-    languages.slice(0, 10).forEach((lang) => {
-      lines.push(
-        `- ${lang.name}: ${lang.percent}% (${kFormatter(lang.bytes)} bytes)`,
-      );
-    });
-  }
-
-  lines.push("");
-  lines.push(
+    ...optionalStatLines,
+    "",
+    ...languageLines,
+    "",
     "Source: github-readme-stats fetchers (GraphQL). Rank percentile and language percents are computed by this service.",
-  );
-
-  return lines.join("\n");
+  ].join("\n");
 };
 
 /**

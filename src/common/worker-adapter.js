@@ -35,15 +35,14 @@ const resolveResponseContentType = (headers, body) => {
  * Serializes a response body for the adapter Response object.
  *
  * @param {unknown} body Response body.
- * @param {string} contentType Resolved Content-Type header.
  * @returns {string} Serialized body.
  */
-const serializeResponseBody = (body, contentType) => {
+const serializeResponseBody = (body) => {
   if (typeof body === "string") {
     return body;
   }
 
-  if (contentType.startsWith("application/json")) {
+  if (typeof body === "object" && body !== null) {
     return JSON.stringify(body);
   }
 
@@ -76,7 +75,7 @@ export function createMockResponse() {
       responseBody = body;
 
       const contentType = resolveResponseContentType(headers, body);
-      const responseBodyText = serializeResponseBody(body, contentType);
+      const responseBodyText = serializeResponseBody(body);
 
       const responseHeaders = new Headers();
       responseHeaders.set("Content-Type", contentType);
@@ -130,7 +129,7 @@ const buildFallbackResponse = (res) => {
   if (body !== null) {
     const headers = res._getHeaders();
     const contentType = resolveResponseContentType(headers, body);
-    const responseBodyText = serializeResponseBody(body, contentType);
+    const responseBodyText = serializeResponseBody(body);
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", contentType);
 
