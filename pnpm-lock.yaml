@@ -47,7 +47,7 @@ importers:
         version: 10.0.1(eslint@10.6.0)
       '@redocly/cli':
         specifier: ^2.37.0
-        version: 2.37.0
+        version: 2.40.0
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -755,8 +755,8 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@redocly/cli@2.37.0':
-    resolution: {integrity: sha512-2xKvVy2re6xiWfrWHJj633oEoVAYHisPsxEwoxtSxMqB+RhW2uqM98+JPjrLQPpj2m1bXrj08KXwpSFfojV0/g==}
+  '@redocly/cli@2.40.0':
+    resolution: {integrity: sha512-1uQ4GeNjhApy9EtypZgp70ZN5GC2JFfst3UkNEXSqkXgVIPGdEAnlz5Xwgax/4cEUGOvaZoM3X25iSQcqbplFg==}
     engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
     hasBin: true
 
@@ -2748,7 +2748,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@redocly/cli@2.37.0': {}
+  '@redocly/cli@2.40.0': {}
 
   '@rolldown/binding-android-arm64@1.0.0-rc.15':
     optional: true
