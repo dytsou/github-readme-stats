@@ -123,7 +123,7 @@ const isPreviewComment = (inputs, comment) => {
  * @param {string} owner Owner of the repository.
  * @param {string} repo Repository name.
  * @param {string} commenter Comment author.
- * @returns {Object | undefined} The GitHub comment object.
+ * @returns {Promise<Object | undefined>} The GitHub comment object.
  */
 const findComment = async (octokit, issueNumber, owner, repo, commenter) => {
   const parameters = {
@@ -164,7 +164,7 @@ const findComment = async (octokit, issueNumber, owner, repo, commenter) => {
  * @param {Object} owner Owner of the repository.
  * @param {number} commentId Comment ID.
  * @param {string} body Comment body.
- * @returns {string} The comment URL.
+ * @returns {Promise<string>} The comment URL.
  */
 const upsertComment = async (
   octokit,
