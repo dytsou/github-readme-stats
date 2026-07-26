@@ -79,7 +79,7 @@ jobs:
           PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
           SCOPE="${{ steps.package-name.outputs.scope }}"
           npm config set $SCOPE:registry https://npm.pkg.github.com
-          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
           if npm view $PACKAGE_NAME@$VERSION version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Version $VERSION already exists on GitHub Packages, will skip GitHub Packages publish"
@@ -87,6 +87,8 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "Version $VERSION is new on GitHub Packages, will publish"
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Install dependencies
@@ -111,7 +113,7 @@ jobs:
         id: publish-npmjs
         run: |
           npm config set registry https://registry.npmjs.org
-          npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"
           PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
           VERSION="${{ steps.package-version.outputs.version }}"
           pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org || {
@@ -137,7 +139,7 @@ jobs:
           PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
           VERSION="${{ steps.package-version.outputs.version }}"
           npm config set $SCOPE:registry https://npm.pkg.github.com
-          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          npm config set //npm.pkg.github.com/:_authToken "$NODE_AUTH_TOKEN"
           pnpm publish --no-git-checks --registry https://npm.pkg.github.com || {
             if npm view $PACKAGE_NAME@$VERSION version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
               echo "Version already exists, skipping publish"
