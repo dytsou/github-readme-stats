@@ -19,11 +19,11 @@ const RANK_ONLY_CARD_MIN_WIDTH = 290;
 const RANK_ONLY_CARD_DEFAULT_WIDTH = 290;
 
 /**
- * Long locales that need more space for text. Keep sorted alphabetically.
+ * Long locales that need more space for text.
  *
- * @type {(keyof typeof wakatimeCardLocales["wakatimecard.title"])[]}
+ * @type {Set<keyof typeof wakatimeCardLocales["wakatimecard.title"]>}
  */
-const LONG_LOCALES = [
+const LONG_LOCALES = new Set([
   "az",
   "bg",
   "cs",
@@ -50,7 +50,7 @@ const LONG_LOCALES = [
   "uk-ua",
   "uz",
   "zh-tw",
-];
+]);
 
 /**
  * Create a stats card text item.
@@ -83,7 +83,7 @@ const createTextNode = ({
   numberPrecision,
 }) => {
   const precision =
-    typeof numberPrecision === "number" && !isNaN(numberPrecision)
+    typeof numberPrecision === "number" && !Number.isNaN(numberPrecision)
       ? clampValue(numberPrecision, 0, 2)
       : undefined;
   const kValue =
@@ -354,6 +354,24 @@ const resolveStatsCardWidth = (card_width, defaultCardWidth, minCardWidth) => {
   return width;
 };
 
+/**
+ * Creates i18n instance for stats card.
+ *
+ * @param {string} name Username.
+ * @param {string|undefined} locale Locale.
+ * @returns {I18n} I18n instance.
+ */
+const createStatsCardI18n = (name, locale) => {
+  const apostrophe = /s$/i.test(name.trim()) ? "" : "s";
+  return new I18n({
+    locale,
+    translations: {
+      ...statCardLocales({ name, apostrophe }),
+      ...wakatimeCardLocales,
+    },
+  });
+};
+
 const renderStatsCard = (stats, options = {}) => {
   const {
     name,
@@ -397,7 +415,7 @@ const renderStatsCard = (stats, options = {}) => {
     show = [],
   } = options;
 
-  const lheight = parseInt(String(line_height), 10);
+  const lheight = Number.parseInt(String(line_height), 10);
 
   // returns theme based colors with proper overrides and defaults
   const { titleColor, iconColor, textColor, bgColor, borderColor, ringColor } =
@@ -411,14 +429,7 @@ const renderStatsCard = (stats, options = {}) => {
       theme,
     });
 
-  const apostrophe = /s$/i.test(name.trim()) ? "" : "s";
-  const i18n = new I18n({
-    locale,
-    translations: {
-      ...statCardLocales({ name, apostrophe }),
-      ...wakatimeCardLocales,
-    },
-  });
+  const i18n = createStatsCardI18n(name, locale);
 
   // Meta data for creating text nodes with createTextNode function
   const STATS = {};
@@ -475,7 +486,7 @@ const renderStatsCard = (stats, options = {}) => {
   };
 
   // @ts-ignore
-  const isLongLocale = locale ? LONG_LOCALES.includes(locale) : false;
+  const isLongLocale = locale ? LONG_LOCALES.has(locale) : false;
 
   // filter out hidden stats defined by user & create the text nodes
   const statItems = Object.keys(STATS)
