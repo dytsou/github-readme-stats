@@ -259,6 +259,98 @@ const getTotalCommitsYearLabel = (include_all_commits, commits_year, i18n) =>
  * @param {Partial<StatCardOptions>} options The card options.
  * @returns {string} The stats card SVG object.
  */
+
+/**
+ * Builds the optional/extra stats entries controlled by the `show` option.
+ *
+ * @param {object} args - Stats source values and options.
+ * @returns {Record<string, object>} Extra stats entries to merge into STATS.
+ */
+const buildOptionalStatsEntries = ({
+  show,
+  i18n,
+  totalPRsMerged,
+  mergedPRsPercentage,
+  number_precision,
+  totalReviews,
+  totalDiscussionsStarted,
+  totalDiscussionsAnswered,
+}) => {
+  /** @type {Record<string, object>} */
+  const optional = {};
+
+  if (show.includes("prs_merged")) {
+    optional.prs_merged = {
+      icon: icons.prs_merged,
+      label: i18n.t("statcard.prs-merged"),
+      value: totalPRsMerged,
+      id: "prs_merged",
+    };
+  }
+
+  if (show.includes("prs_merged_percentage")) {
+    optional.prs_merged_percentage = {
+      icon: icons.prs_merged_percentage,
+      label: i18n.t("statcard.prs-merged-percentage"),
+      value: mergedPRsPercentage.toFixed(
+        typeof number_precision === "number" && !Number.isNaN(number_precision)
+          ? clampValue(number_precision, 0, 2)
+          : 2,
+      ),
+      id: "prs_merged_percentage",
+      unitSymbol: "%",
+    };
+  }
+
+  if (show.includes("reviews")) {
+    optional.reviews = {
+      icon: icons.reviews,
+      label: i18n.t("statcard.reviews"),
+      value: totalReviews,
+      id: "reviews",
+    };
+  }
+
+  if (show.includes("discussions_started")) {
+    optional.discussions_started = {
+      icon: icons.discussions_started,
+      label: i18n.t("statcard.discussions-started"),
+      value: totalDiscussionsStarted,
+      id: "discussions_started",
+    };
+  }
+
+  if (show.includes("discussions_answered")) {
+    optional.discussions_answered = {
+      icon: icons.discussions_answered,
+      label: i18n.t("statcard.discussions-answered"),
+      value: totalDiscussionsAnswered,
+      id: "discussions_answered",
+    };
+  }
+
+  return optional;
+};
+
+/**
+ * Resolves stats card width from the requested value and computed defaults.
+ *
+ * @param {number|undefined} card_width - Requested width.
+ * @param {number} defaultCardWidth - Default width.
+ * @param {number} minCardWidth - Minimum allowed width.
+ * @returns {number} Resolved width.
+ */
+const resolveStatsCardWidth = (card_width, defaultCardWidth, minCardWidth) => {
+  let width =
+    card_width === undefined || card_width === null || Number.isNaN(card_width)
+      ? defaultCardWidth
+      : card_width;
+  if (width < minCardWidth) {
+    return minCardWidth;
+  }
+  return width;
+};
+
 const renderStatsCard = (stats, options = {}) => {
   const {
     name,
@@ -351,37 +443,19 @@ const renderStatsCard = (stats, options = {}) => {
     id: "prs",
   };
 
-  if (show.includes("prs_merged")) {
-    STATS.prs_merged = {
-      icon: icons.prs_merged,
-      label: i18n.t("statcard.prs-merged"),
-      value: totalPRsMerged,
-      id: "prs_merged",
-    };
-  }
-
-  if (show.includes("prs_merged_percentage")) {
-    STATS.prs_merged_percentage = {
-      icon: icons.prs_merged_percentage,
-      label: i18n.t("statcard.prs-merged-percentage"),
-      value: mergedPRsPercentage.toFixed(
-        typeof number_precision === "number" && !isNaN(number_precision)
-          ? clampValue(number_precision, 0, 2)
-          : 2,
-      ),
-      id: "prs_merged_percentage",
-      unitSymbol: "%",
-    };
-  }
-
-  if (show.includes("reviews")) {
-    STATS.reviews = {
-      icon: icons.reviews,
-      label: i18n.t("statcard.reviews"),
-      value: totalReviews,
-      id: "reviews",
-    };
-  }
+  Object.assign(
+    STATS,
+    buildOptionalStatsEntries({
+      show,
+      i18n,
+      totalPRsMerged,
+      mergedPRsPercentage,
+      number_precision,
+      totalReviews,
+      totalDiscussionsStarted,
+      totalDiscussionsAnswered,
+    }),
+  );
 
   STATS.issues = {
     icon: icons.issues,
@@ -389,23 +463,6 @@ const renderStatsCard = (stats, options = {}) => {
     value: totalIssues,
     id: "issues",
   };
-
-  if (show.includes("discussions_started")) {
-    STATS.discussions_started = {
-      icon: icons.discussions_started,
-      label: i18n.t("statcard.discussions-started"),
-      value: totalDiscussionsStarted,
-      id: "discussions_started",
-    };
-  }
-  if (show.includes("discussions_answered")) {
-    STATS.discussions_answered = {
-      icon: icons.discussions_answered,
-      label: i18n.t("statcard.discussions-answered"),
-      value: totalDiscussionsAnswered,
-      id: "discussions_answered",
-    };
-  }
 
   STATS.contribs = {
     icon: icons.contribs,
@@ -497,14 +554,7 @@ const renderStatsCard = (stats, options = {}) => {
       : statItems.length
         ? RANK_CARD_DEFAULT_WIDTH
         : RANK_ONLY_CARD_DEFAULT_WIDTH) + iconWidth;
-  let width = card_width
-    ? isNaN(card_width)
-      ? defaultCardWidth
-      : card_width
-    : defaultCardWidth;
-  if (width < minCardWidth) {
-    width = minCardWidth;
-  }
+  let width = resolveStatsCardWidth(card_width, defaultCardWidth, minCardWidth);
 
   const card = new Card({
     customTitle: custom_title,
