@@ -94,7 +94,7 @@ jobs:
           steps.check-npmjs.outputs.exists == 'false' ||
           steps.check-github.outputs.exists == 'false'
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Verify package
         if:
