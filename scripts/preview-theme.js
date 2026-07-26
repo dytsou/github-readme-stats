@@ -338,11 +338,11 @@ const parseJSON = (json) => {
 
     // Fix incorrect open bracket (if any).
     const splitJson = parsedJson
-      .split(/(\s*}\s*,\s*)(?=[\w"-]+:)/)
+      .split(/(}[ \t\n\r]*,)(?=[ \t\n\r]*[\w"-]+:)/)
       .filter((x) => typeof x !== "string" || !!x.trim()); // Split json into array of strings and objects.
     if (splitJson[0].replace(/\s+/g, "") === "},") {
       splitJson[0] = "},";
-      if (/}\s*,?\s*$/.test(splitJson[1])) {
+      if (/}\s*(?:,\s*)?$/.test(splitJson[1])) {
         splitJson.shift();
       } else {
         splitJson.push(splitJson.shift());
