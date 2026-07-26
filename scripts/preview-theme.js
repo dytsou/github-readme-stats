@@ -386,11 +386,16 @@ const DRY_RUN = process.env.DRY_RUN === "true" || false;
  * @param {object} args - Theme validation arguments.
  * @returns {{ previewBody: string, isValid: boolean }} Preview markdown and validity.
  */
-const buildThemePreviewSection = ({ themeName, colors, ccc }) => {
-  const warnings = [];
-  const errors = [];
-  let isValid = true;
 
+/**
+ * Validates theme name conventions.
+ *
+ * @param {string} themeName - Theme name.
+ * @returns {{ warnings: string[], isValid: boolean }} Name validation result.
+ */
+const validateThemeName = (themeName) => {
+  const warnings = [];
+  let isValid = true;
   if (themeNameAlreadyExists(themeName)) {
     warnings.push("Theme name already taken");
     isValid = false;
@@ -399,86 +404,94 @@ const buildThemePreviewSection = ({ themeName, colors, ccc }) => {
     warnings.push("Theme name isn't in snake_case");
     isValid = false;
   }
+  return { warnings, isValid };
+};
+
+/**
+ * Validates a single theme color value.
+ *
+ * @param {string} colorKey - Color property name.
+ * @param {string} colorValue - Color property value.
+ * @returns {string|undefined} Error message when invalid.
+ */
+const validateThemeColorValue = (colorKey, colorValue) => {
+  if (colorValue[0] === "#") {
+    return `Theme color property \`${colorKey}\` should not start with '#'`;
+  }
+  if (colorValue.length > COLOR_PROPS[colorKey]) {
+    return `Theme color property \`${colorKey}\` can not be longer than \`${COLOR_PROPS[colorKey]}\` characters`;
+  }
+  const isGradient =
+    colorKey === "bg_color" && colorValue.split(",").length > 1;
+  const isValid = isGradient
+    ? isValidGradient(colorValue.split(","))
+    : isValidHexColor(colorValue);
+  if (!isValid) {
+    return `Theme color property \`${colorKey}\` is not a valid hex color: <code>${colorValue}</code>`;
+  }
+  return undefined;
+};
+
+/**
+ * Validates theme color properties.
+ *
+ * @param {object|undefined} colors - Theme colors.
+ * @returns {{ warnings: string[], errors: string[], invalidColors: boolean }} Color validation result.
+ */
+const validateThemeColors = (colors) => {
+  const warnings = [];
+  const errors = [];
+  if (!colors) {
+    warnings.push("Theme colors are missing");
+    return { warnings, errors, invalidColors: true };
+  }
+
+  const missingKeys = REQUIRED_COLOR_PROPS.filter(
+    (x) => !Object.keys(colors).includes(x),
+  );
+  const extraKeys = Object.keys(colors).filter(
+    (x) => !ACCEPTED_COLOR_PROPS.includes(x),
+  );
+  if (missingKeys.length > 0 || extraKeys.length > 0) {
+    for (const missingKey of missingKeys) {
+      errors.push(`Theme color properties \`${missingKey}\` are missing`);
+    }
+    for (const extraKey of extraKeys) {
+      warnings.push(`Theme color properties \`${extraKey}\` is not supported`);
+    }
+    return { warnings, errors, invalidColors: true };
+  }
 
   let invalidColors = false;
-  if (colors) {
-    const missingKeys = REQUIRED_COLOR_PROPS.filter(
-      (x) => !Object.keys(colors).includes(x),
-    );
-    const extraKeys = Object.keys(colors).filter(
-      (x) => !ACCEPTED_COLOR_PROPS.includes(x),
-    );
-    if (missingKeys.length > 0 || extraKeys.length > 0) {
-      for (const missingKey of missingKeys) {
-        errors.push(`Theme color properties \`${missingKey}\` are missing`);
-      }
-      for (const extraKey of extraKeys) {
-        warnings.push(
-          `Theme color properties \`${extraKey}\` is not supported`,
-        );
-      }
+  for (const [colorKey, colorValue] of Object.entries(colors)) {
+    const error = validateThemeColorValue(colorKey, colorValue);
+    if (error) {
+      errors.push(error);
       invalidColors = true;
-    } else {
-      for (const [colorKey, colorValue] of Object.entries(colors)) {
-        if (colorValue[0] === "#") {
-          errors.push(
-            `Theme color property \`${colorKey}\` should not start with '#'`,
-          );
-          invalidColors = true;
-        } else if (colorValue.length > COLOR_PROPS[colorKey]) {
-          errors.push(
-            `Theme color property \`${colorKey}\` can not be longer than \`${COLOR_PROPS[colorKey]}\` characters`,
-          );
-          invalidColors = true;
-        } else if (
-          !(colorKey === "bg_color" && colorValue.split(",").length > 1
-            ? isValidGradient(colorValue.split(","))
-            : isValidHexColor(colorValue))
-        ) {
-          errors.push(
-            `Theme color property \`${colorKey}\` is not a valid hex color: <code>${colorValue}</code>`,
-          );
-          invalidColors = true;
-        }
-      }
     }
-  } else {
-    warnings.push("Theme colors are missing");
-    invalidColors = true;
   }
+  return { warnings, errors, invalidColors };
+};
 
-  const titledName = themeName.charAt(0).toUpperCase() + themeName.slice(1);
-  if (invalidColors) {
-    return {
-      isValid: false,
-      previewBody: `
-          \r### ${titledName} theme preview
-          
-          \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
-          \r${errors.map((error) => `- :x: ${error}.\n`).join("")}
-
-          \r>:x: Cannot create theme preview.
-        `,
-    };
-  }
-
-  const titleColor = colors.title_color;
-  const iconColor = colors.icon_color;
-  const textColor = colors.text_color;
-  const bgColor = colors.bg_color;
-  const borderColor = colors.border_color;
-  const url = getGRSLink(colors);
+/**
+ * Checks AA contrast for theme color pairs against background.
+ *
+ * @param {object} colors - Theme colors.
+ * @param {ColorContrastChecker} ccc - Contrast checker.
+ * @returns {string[]} Contrast warnings.
+ */
+const collectContrastWarnings = (colors, ccc) => {
+  const warnings = [];
   const colorPairs = {
-    title_color: [titleColor, bgColor],
-    icon_color: [iconColor, bgColor],
-    text_color: [textColor, bgColor],
+    title_color: [colors.title_color, colors.bg_color],
+    icon_color: [colors.icon_color, colors.bg_color],
+    text_color: [colors.text_color, colors.bg_color],
   };
-  Object.keys(colorPairs).forEach((item) => {
+  for (const item of Object.keys(colorPairs)) {
     let color1 = colorPairs[item][0];
     let color2 = colorPairs[item][1];
-    const isGradientColor = color2.split(",").length > 1;
-    if (isGradientColor) {
-      return;
+    if (color2.split(",").length > 1) {
+      continue;
     }
     color1 = color1.length === 4 ? color1.slice(0, 3) : color1.slice(0, 6);
     color2 = color2.length === 4 ? color2.slice(0, 3) : color2.slice(0, 6);
@@ -487,25 +500,83 @@ const buildThemePreviewSection = ({ themeName, colors, ccc }) => {
       warnings.push(
         `\`${item}\` does not pass [AA contrast ratio](${permalink})`,
       );
-      isValid = false;
     }
-  });
+  }
+  return warnings;
+};
 
-  return {
-    isValid,
-    previewBody: `
+/**
+ * Builds markdown for an invalid theme preview.
+ *
+ * @param {string} titledName - Display theme name.
+ * @param {string[]} warnings - Warnings.
+ * @param {string[]} errors - Errors.
+ * @returns {string} Preview markdown.
+ */
+const buildInvalidThemePreviewBody = (titledName, warnings, errors) => `
+          \r### ${titledName} theme preview
+          
+          \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
+          \r${errors.map((error) => `- :x: ${error}.\n`).join("")}
+
+          \r>:x: Cannot create theme preview.
+        `;
+
+/**
+ * Builds markdown for a valid theme preview.
+ *
+ * @param {object} args - Preview args.
+ * @returns {string} Preview markdown.
+ */
+const buildValidThemePreviewBody = ({ titledName, colors, warnings }) => {
+  const titleColor = colors.title_color;
+  const iconColor = colors.icon_color;
+  const textColor = colors.text_color;
+  const bgColor = colors.bg_color;
+  const borderColor = colors.border_color;
+  const url = getGRSLink(colors);
+  const borderPart = borderColor
+    ? ` | border_color: <code>#${borderColor}</code>`
+    : "";
+  return `
         \r### ${titledName} theme preview
         
         \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
 
-        \ntitle_color: <code>#${titleColor}</code> | icon_color: <code>#${iconColor}</code> | text_color: <code>#${textColor}</code> | bg_color: <code>#${bgColor}</code>${
-          borderColor ? ` | border_color: <code>#${borderColor}</code>` : ""
-        }
+        \ntitle_color: <code>#${titleColor}</code> | icon_color: <code>#${iconColor}</code> | text_color: <code>#${textColor}</code> | bg_color: <code>#${bgColor}</code>${borderPart}
 
         \r[Preview Link](${url})
 
         \r[![](${url})](${url})
-      `,
+      `;
+};
+
+/**
+ * Validates a single theme contribution and appends its preview section.
+ *
+ * @param {object} args - Theme validation arguments.
+ * @returns {{ previewBody: string, isValid: boolean }} Preview markdown and validity.
+ */
+const buildThemePreviewSection = ({ themeName, colors, ccc }) => {
+  const nameResult = validateThemeName(themeName);
+  const colorResult = validateThemeColors(colors);
+  const warnings = [...nameResult.warnings, ...colorResult.warnings];
+  const errors = [...colorResult.errors];
+  const titledName = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+
+  if (colorResult.invalidColors) {
+    return {
+      isValid: false,
+      previewBody: buildInvalidThemePreviewBody(titledName, warnings, errors),
+    };
+  }
+
+  const contrastWarnings = collectContrastWarnings(colors, ccc);
+  warnings.push(...contrastWarnings);
+
+  return {
+    isValid: nameResult.isValid && contrastWarnings.length === 0,
+    previewBody: buildValidThemePreviewBody({ titledName, colors, warnings }),
   };
 };
 
