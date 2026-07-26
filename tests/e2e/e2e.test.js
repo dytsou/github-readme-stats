@@ -198,7 +198,8 @@ async function computeSkipReason() {
 
 const skipReason = await computeSkipReason();
 if (skipReason) {
-  console.warn(`Skipping E2E tests: ${skipReason}`);
+  // Avoid logging potentially user-controlled preflight error details (S5145).
+  console.warn("Skipping E2E tests due to preflight failure");
 }
 
 const e2eTest = skipReason ? test.skip : test;
