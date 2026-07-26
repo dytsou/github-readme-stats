@@ -81,7 +81,7 @@ export default async (req, res) => {
   try {
     const stats = await fetchWakatimeStats({ username, api_domain });
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.WAKATIME_CARD.DEFAULT,
       min: CACHE_TTL.WAKATIME_CARD.MIN,
       max: CACHE_TTL.WAKATIME_CARD.MAX,
@@ -97,7 +97,7 @@ export default async (req, res) => {
           typeof custom_title === "string" ? custom_title : undefined,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),
-        card_width: parseInt(card_width, 10),
+        card_width: Number.parseInt(card_width, 10),
         hide: parseArray(hide),
         line_height,
         title_color: colorOptions.title_color,

@@ -40,8 +40,8 @@ export default async (req, res) => {
   // Only allow supported locales - validate and sanitize to prevent XSS
   // Validate and sanitize border_radius to prevent XSS
   const border_radius = (() => {
-    const br = parseFloat(rawBorderRadius);
-    if (isNaN(br)) {
+    const br = Number.parseFloat(rawBorderRadius);
+    if (Number.isNaN(br)) {
       return 4.5;
     }
     // Clamp to reasonable range; SVG border radius shouldn't exceed half width/height.
