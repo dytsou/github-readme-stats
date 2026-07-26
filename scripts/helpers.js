@@ -35,7 +35,7 @@ export const getRepoInfo = (ctx) => {
 export const getGithubToken = () => {
   const token = getInput("github_token") || process.env.GITHUB_TOKEN;
   if (!token) {
-    throw Error("Could not find github token");
+    throw new Error("Could not find github token");
   }
   return token;
 };
