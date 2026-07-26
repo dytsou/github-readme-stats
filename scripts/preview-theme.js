@@ -379,6 +379,136 @@ const DRY_RUN = process.env.DRY_RUN === "true" || false;
  *
  * @returns {Promise<void>} Promise.
  */
+
+/**
+ * Validates a single theme contribution and appends its preview section.
+ *
+ * @param {object} args - Theme validation arguments.
+ * @returns {{ previewBody: string, isValid: boolean }} Preview markdown and validity.
+ */
+const buildThemePreviewSection = ({ themeName, colors, ccc }) => {
+  const warnings = [];
+  const errors = [];
+  let isValid = true;
+
+  if (themeNameAlreadyExists(themeName)) {
+    warnings.push("Theme name already taken");
+    isValid = false;
+  }
+  if (themeName !== snakeCase(themeName)) {
+    warnings.push("Theme name isn't in snake_case");
+    isValid = false;
+  }
+
+  let invalidColors = false;
+  if (colors) {
+    const missingKeys = REQUIRED_COLOR_PROPS.filter(
+      (x) => !Object.keys(colors).includes(x),
+    );
+    const extraKeys = Object.keys(colors).filter(
+      (x) => !ACCEPTED_COLOR_PROPS.includes(x),
+    );
+    if (missingKeys.length > 0 || extraKeys.length > 0) {
+      for (const missingKey of missingKeys) {
+        errors.push(`Theme color properties \`${missingKey}\` are missing`);
+      }
+      for (const extraKey of extraKeys) {
+        warnings.push(
+          `Theme color properties \`${extraKey}\` is not supported`,
+        );
+      }
+      invalidColors = true;
+    } else {
+      for (const [colorKey, colorValue] of Object.entries(colors)) {
+        if (colorValue[0] === "#") {
+          errors.push(
+            `Theme color property \`${colorKey}\` should not start with '#'`,
+          );
+          invalidColors = true;
+        } else if (colorValue.length > COLOR_PROPS[colorKey]) {
+          errors.push(
+            `Theme color property \`${colorKey}\` can not be longer than \`${COLOR_PROPS[colorKey]}\` characters`,
+          );
+          invalidColors = true;
+        } else if (
+          !(colorKey === "bg_color" && colorValue.split(",").length > 1
+            ? isValidGradient(colorValue.split(","))
+            : isValidHexColor(colorValue))
+        ) {
+          errors.push(
+            `Theme color property \`${colorKey}\` is not a valid hex color: <code>${colorValue}</code>`,
+          );
+          invalidColors = true;
+        }
+      }
+    }
+  } else {
+    warnings.push("Theme colors are missing");
+    invalidColors = true;
+  }
+
+  const titledName = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+  if (invalidColors) {
+    return {
+      isValid: false,
+      previewBody: `
+          \r### ${titledName} theme preview
+          
+          \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
+          \r${errors.map((error) => `- :x: ${error}.\n`).join("")}
+
+          \r>:x: Cannot create theme preview.
+        `,
+    };
+  }
+
+  const titleColor = colors.title_color;
+  const iconColor = colors.icon_color;
+  const textColor = colors.text_color;
+  const bgColor = colors.bg_color;
+  const borderColor = colors.border_color;
+  const url = getGRSLink(colors);
+  const colorPairs = {
+    title_color: [titleColor, bgColor],
+    icon_color: [iconColor, bgColor],
+    text_color: [textColor, bgColor],
+  };
+  Object.keys(colorPairs).forEach((item) => {
+    let color1 = colorPairs[item][0];
+    let color2 = colorPairs[item][1];
+    const isGradientColor = color2.split(",").length > 1;
+    if (isGradientColor) {
+      return;
+    }
+    color1 = color1.length === 4 ? color1.slice(0, 3) : color1.slice(0, 6);
+    color2 = color2.length === 4 ? color2.slice(0, 3) : color2.slice(0, 6);
+    if (!ccc.isLevelAA(`#${color1}`, `#${color2}`)) {
+      const permalink = getWebAimLink(color1, color2);
+      warnings.push(
+        `\`${item}\` does not pass [AA contrast ratio](${permalink})`,
+      );
+      isValid = false;
+    }
+  });
+
+  return {
+    isValid,
+    previewBody: `
+        \r### ${titledName} theme preview
+        
+        \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
+
+        \ntitle_color: <code>#${titleColor}</code> | icon_color: <code>#${iconColor}</code> | text_color: <code>#${textColor}</code> | bg_color: <code>#${bgColor}</code>${
+          borderColor ? ` | border_color: <code>#${borderColor}</code>` : ""
+        }
+
+        \r[Preview Link](${url})
+
+        \r[![](${url})](${url})
+      `,
+  };
+};
+
 export const run = async () => {
   try {
     debug("Retrieve action information from context...");
@@ -450,134 +580,13 @@ export const run = async () => {
     let previewBody = "";
     for (const theme in themeObject) {
       debug(`Create theme preview for ${theme}...`);
-      const themeName = theme;
-      const colors = themeObject[theme];
-      const warnings = [];
-      const errors = [];
-
-      // Check if the theme name is valid.
-      debug("Theme preview body: Check if the theme name is valid...");
-      if (themeNameAlreadyExists(themeName)) {
-        warnings.push("Theme name already taken");
-        themeValid[theme] = false;
-      }
-      if (themeName !== snakeCase(themeName)) {
-        warnings.push("Theme name isn't in snake_case");
-        themeValid[theme] = false;
-      }
-
-      // Check if the theme colors are valid.
-      debug("Theme preview body: Check if the theme colors are valid...");
-      let invalidColors = false;
-      if (colors) {
-        const missingKeys = REQUIRED_COLOR_PROPS.filter(
-          (x) => !Object.keys(colors).includes(x),
-        );
-        const extraKeys = Object.keys(colors).filter(
-          (x) => !ACCEPTED_COLOR_PROPS.includes(x),
-        );
-        if (missingKeys.length > 0 || extraKeys.length > 0) {
-          for (const missingKey of missingKeys) {
-            errors.push(`Theme color properties \`${missingKey}\` are missing`);
-          }
-
-          for (const extraKey of extraKeys) {
-            warnings.push(
-              `Theme color properties \`${extraKey}\` is not supported`,
-            );
-          }
-          invalidColors = true;
-        } else {
-          for (const [colorKey, colorValue] of Object.entries(colors)) {
-            if (colorValue[0] === "#") {
-              errors.push(
-                `Theme color property \`${colorKey}\` should not start with '#'`,
-              );
-              invalidColors = true;
-            } else if (colorValue.length > COLOR_PROPS[colorKey]) {
-              errors.push(
-                `Theme color property \`${colorKey}\` can not be longer than \`${COLOR_PROPS[colorKey]}\` characters`,
-              );
-              invalidColors = true;
-            } else if (
-              !(colorKey === "bg_color" && colorValue.split(",").length > 1
-                ? isValidGradient(colorValue.split(","))
-                : isValidHexColor(colorValue))
-            ) {
-              errors.push(
-                `Theme color property \`${colorKey}\` is not a valid hex color: <code>${colorValue}</code>`,
-              );
-              invalidColors = true;
-            }
-          }
-        }
-      } else {
-        warnings.push("Theme colors are missing");
-        invalidColors = true;
-      }
-      if (invalidColors) {
-        themeValid[theme] = false;
-        previewBody += `
-          \r### ${
-            themeName.charAt(0).toUpperCase() + themeName.slice(1)
-          } theme preview
-          
-          \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
-          \r${errors.map((error) => `- :x: ${error}.\n`).join("")}
-
-          \r>:x: Cannot create theme preview.
-        `;
-        continue;
-      }
-
-      // Check color contrast.
-      debug("Theme preview body: Check color contrast...");
-      const titleColor = colors.title_color;
-      const iconColor = colors.icon_color;
-      const textColor = colors.text_color;
-      const bgColor = colors.bg_color;
-      const borderColor = colors.border_color;
-      const url = getGRSLink(colors);
-      const colorPairs = {
-        title_color: [titleColor, bgColor],
-        icon_color: [iconColor, bgColor],
-        text_color: [textColor, bgColor],
-      };
-      Object.keys(colorPairs).forEach((item) => {
-        let color1 = colorPairs[item][0];
-        let color2 = colorPairs[item][1];
-        const isGradientColor = color2.split(",").length > 1;
-        if (isGradientColor) {
-          return;
-        }
-        color1 = color1.length === 4 ? color1.slice(0, 3) : color1.slice(0, 6);
-        color2 = color2.length === 4 ? color2.slice(0, 3) : color2.slice(0, 6);
-        if (!ccc.isLevelAA(`#${color1}`, `#${color2}`)) {
-          const permalink = getWebAimLink(color1, color2);
-          warnings.push(
-            `\`${item}\` does not pass [AA contrast ratio](${permalink})`,
-          );
-          themeValid[theme] = false;
-        }
+      const section = buildThemePreviewSection({
+        themeName: theme,
+        colors: themeObject[theme],
+        ccc,
       });
-
-      // Create theme preview body.
-      debug("Theme preview body: Create theme preview body...");
-      previewBody += `
-        \r### ${
-          themeName.charAt(0).toUpperCase() + themeName.slice(1)
-        } theme preview
-        
-        \r${warnings.map((warning) => `- :warning: ${warning}.\n`).join("")}
-
-        \ntitle_color: <code>#${titleColor}</code> | icon_color: <code>#${iconColor}</code> | text_color: <code>#${textColor}</code> | bg_color: <code>#${bgColor}</code>${
-          borderColor ? ` | border_color: <code>#${borderColor}</code>` : ""
-        }
-
-        \r[Preview Link](${url})
-
-        \r[![](${url})](${url})
-      `;
+      themeValid[theme] = section.isValid;
+      previewBody += section.previewBody;
     }
 
     // Create comment body.
