@@ -187,7 +187,7 @@ const trimTopLanguages = (topLangs, langs_count, hide) => {
 
   // filter out languages to be hidden
   langs = langs
-    .sort((a, b) => b.size - a.size)
+    .toSorted((a, b) => b.size - a.size)
     .filter((lang) => {
       // @ts-ignore
       return !langsToHide[lowercaseTrim(lang.name)];
@@ -333,7 +333,7 @@ const createLanguageTextNode = ({
   const maxGap = 20 + measureText(`${longestLang.name} ${percent}%`, 11);
   return flexLayout({
     items: layouts,
-    gap: maxGap < minGap ? minGap : maxGap,
+    gap: Math.max(minGap, maxGap),
   }).join("");
 };
 
@@ -413,7 +413,7 @@ const renderCompactLayout = (
   let progressOffset = 0;
   const compactProgressBar = langs
     .map((lang) => {
-      const percentage = parseFloat(
+      const percentage = Number.parseFloat(
         ((lang.size / totalLanguageSize) * offsetWidth).toFixed(2),
       );
 
@@ -641,11 +641,11 @@ const createDonutPaths = (cx, cy, radius, percentages) => {
   let endAngle = 0;
 
   const totalPercent = percentages.reduce((acc, curr) => acc + curr, 0);
-  for (let i = 0; i < percentages.length; i++) {
+  for (const percentage of percentages) {
     const tmpPath = {};
 
-    let percent = parseFloat(
-      ((percentages[i] / totalPercent) * 100).toFixed(2),
+    let percent = Number.parseFloat(
+      ((percentage / totalPercent) * 100).toFixed(2),
     );
 
     endAngle = 3.6 * percent + startAngle;
@@ -680,7 +680,7 @@ const renderDonutLayout = (langs, width, totalLanguageSize, statsFormat) => {
 
   const colors = langs.map((lang) => lang.color);
   const langsPercents = langs.map((lang) =>
-    parseFloat(((lang.size / totalLanguageSize) * 100).toFixed(2)),
+    Number.parseFloat(((lang.size / totalLanguageSize) * 100).toFixed(2)),
   );
 
   const langPaths = createDonutPaths(centerX, centerY, radius, langsPercents);
@@ -862,7 +862,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
       totalLanguageSize,
       stats_format,
     );
-  } else if (layout === "compact" || hide_progress == true) {
+  } else if (layout === "compact" || hide_progress) {
     height =
       calculateCompactLayoutHeight(langs.length) + (hide_progress ? -25 : 0);
 
