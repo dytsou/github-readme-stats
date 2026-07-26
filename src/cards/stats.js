@@ -240,12 +240,15 @@ const getStyles = ({
  * @param {I18n} i18n The I18n instance.
  * @returns {string} The label corresponding to the options.
  */
-const getTotalCommitsYearLabel = (include_all_commits, commits_year, i18n) =>
-  include_all_commits
-    ? ""
-    : commits_year
-      ? ` (${commits_year})`
-      : ` (${i18n.t("wakatimecard.lastyear")})`;
+const getTotalCommitsYearLabel = (include_all_commits, commits_year, i18n) => {
+  if (include_all_commits) {
+    return "";
+  }
+  if (commits_year) {
+    return ` (${commits_year})`;
+  }
+  return ` (${i18n.t("wakatimecard.lastyear")})`;
+};
 
 /**
  * @typedef {import('../fetchers/types').StatsData} StatsData
@@ -506,10 +509,11 @@ const renderStatsCard = (stats, options = {}) => {
 
   // Calculate the card height depending on how many items there are
   // but if rank circle is visible clamp the minimum height to `150`
-  let height = Math.max(
-    45 + (statItems.length + 1) * lheight,
-    hide_rank ? 0 : statItems.length ? 150 : 180,
-  );
+  let minHeight = 0;
+  if (!hide_rank) {
+    minHeight = statItems.length ? 150 : 180;
+  }
+  let height = Math.max(45 + (statItems.length + 1) * lheight, minHeight);
 
   // the lower the user's percentile the better
   const progress = 100 - rank.percentile;
@@ -523,13 +527,13 @@ const renderStatsCard = (stats, options = {}) => {
   });
 
   const calculateTextWidth = () => {
-    return measureText(
-      custom_title
-        ? custom_title
-        : statItems.length
-          ? i18n.t("statcard.title")
-          : i18n.t("statcard.ranktitle"),
-    );
+    let titleText = i18n.t("statcard.ranktitle");
+    if (custom_title) {
+      titleText = custom_title;
+    } else if (statItems.length) {
+      titleText = i18n.t("statcard.title");
+    }
+    return measureText(titleText);
   };
 
   /*
@@ -538,22 +542,25 @@ const renderStatsCard = (stats, options = {}) => {
     Numbers are picked by looking at existing dimensions on production.
   */
   const iconWidth = show_icons && statItems.length ? 16 + /* padding */ 1 : 0;
-  const minCardWidth =
-    (hide_rank
-      ? clampValue(
-          50 /* padding */ + calculateTextWidth() * 2,
-          CARD_MIN_WIDTH,
-          Infinity,
-        )
-      : statItems.length
-        ? RANK_CARD_MIN_WIDTH
-        : RANK_ONLY_CARD_MIN_WIDTH) + iconWidth;
-  const defaultCardWidth =
-    (hide_rank
-      ? CARD_DEFAULT_WIDTH
-      : statItems.length
-        ? RANK_CARD_DEFAULT_WIDTH
-        : RANK_ONLY_CARD_DEFAULT_WIDTH) + iconWidth;
+  let baseMinCardWidth = RANK_ONLY_CARD_MIN_WIDTH;
+  if (hide_rank) {
+    baseMinCardWidth = clampValue(
+      50 /* padding */ + calculateTextWidth() * 2,
+      CARD_MIN_WIDTH,
+      Infinity,
+    );
+  } else if (statItems.length) {
+    baseMinCardWidth = RANK_CARD_MIN_WIDTH;
+  }
+  const minCardWidth = baseMinCardWidth + iconWidth;
+
+  let baseDefaultCardWidth = RANK_ONLY_CARD_DEFAULT_WIDTH;
+  if (hide_rank) {
+    baseDefaultCardWidth = CARD_DEFAULT_WIDTH;
+  } else if (statItems.length) {
+    baseDefaultCardWidth = RANK_CARD_DEFAULT_WIDTH;
+  }
+  const defaultCardWidth = baseDefaultCardWidth + iconWidth;
   let width = resolveStatsCardWidth(card_width, defaultCardWidth, minCardWidth);
 
   const card = new Card({

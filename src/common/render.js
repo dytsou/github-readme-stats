@@ -177,12 +177,12 @@ const renderError = ({
   const safeTitleColor = escapeCSSValue(titleColor);
   const safeTextColor = escapeCSSValue(textColor);
   // Handle both string colors and gradient arrays (for gradients, use first color as fallback)
-  const safeBgColor =
-    typeof bgColor === "string"
-      ? escapeCSSValue(bgColor)
-      : Array.isArray(bgColor) && bgColor.length > 0
-        ? escapeCSSValue(`#${bgColor[0]}`)
-        : "#1f2328"; // Default fallback color
+  let safeBgColor = "#1f2328"; // Default fallback color
+  if (typeof bgColor === "string") {
+    safeBgColor = escapeCSSValue(bgColor);
+  } else if (Array.isArray(bgColor) && bgColor.length > 0) {
+    safeBgColor = escapeCSSValue(`#${bgColor[0]}`);
+  }
   const safeBorderColor = escapeCSSValue(borderColor);
 
   return `
