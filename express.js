@@ -8,6 +8,7 @@ import profileContext from "./api/profile-context.js";
 import express from "express";
 
 const app = express();
+app.disable("x-powered-by");
 const router = express.Router();
 
 router.get("/", statsCard);
