@@ -331,10 +331,7 @@ const parseJSON = (json) => {
         "PR diff is not a valid theme JSON object.",
       );
     }
-  } catch (error) {
-    // Resolve eslint no-unused-vars
-    error;
-
+  } catch {
     // Remove trailing commas (if any).
     let parsedJson = json.replace(/(,\s*})/g, "}");
 
