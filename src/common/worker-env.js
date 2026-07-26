@@ -3,7 +3,7 @@
 // Initialize process.env early to prevent errors during module imports
 // This is safe because if we're in Node.js, process.env already exists
 // If we're in Workers, we'll populate it later via setupWorkerEnv
-if (typeof globalThis.process === "undefined") {
+if (globalThis.process === undefined) {
   globalThis.process = { env: {} };
 }
 
@@ -17,7 +17,7 @@ export function isCloudflareWorkers() {
   // These exist at import time, before setupWorkerEnv is called
   // In Workers, process.env typically doesn't exist or is empty at import time
   return (
-    typeof globalThis.process === "undefined" ||
+    globalThis.process === undefined ||
     !globalThis.process.env ||
     Object.keys(globalThis.process.env).length === 0
   );
@@ -33,7 +33,7 @@ export function isCloudflareWorkers() {
 export function setupWorkerEnv(env) {
   // Copy all env vars to process.env
   // Cloudflare Workers don't have process.env, so we create a mock
-  if (typeof globalThis.process === "undefined") {
+  if (globalThis.process === undefined) {
     globalThis.process = { env: {} };
   }
 
