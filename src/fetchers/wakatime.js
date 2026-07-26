@@ -7,7 +7,7 @@ import { CustomError, MissingParamError } from "../common/error.js";
  * Allowed WakaTime API domains whitelist.
  * Only these domains are permitted to prevent SSRF attacks.
  */
-const ALLOWED_WAKATIME_DOMAINS = ["wakatime.com", "api.wakatime.com"];
+const ALLOWED_WAKATIME_DOMAINS = new Set(["wakatime.com", "api.wakatime.com"]);
 
 /**
  * Validates that the provided domain is in the allowed whitelist.
@@ -36,7 +36,7 @@ const isValidWakatimeDomain = (domain) => {
   }
 
   // Check against whitelist using only the extracted hostname
-  return ALLOWED_WAKATIME_DOMAINS.includes(hostname);
+  return ALLOWED_WAKATIME_DOMAINS.has(hostname);
 };
 
 /**
@@ -70,14 +70,11 @@ const fetchWakatimeStats = async ({ username, api_domain }) => {
       const urlObj = new URL(`https://${domainWithoutProtocol}`);
       const extractedHostname = urlObj.hostname.toLowerCase();
 
-      // Select domain from whitelist using explicit lookup
-      // This ensures domain can only be one of the whitelisted constants
-      if (extractedHostname === "wakatime.com") {
-        domain = "wakatime.com";
-      } else if (extractedHostname === "api.wakatime.com") {
-        domain = "api.wakatime.com";
-      }
-      // If extractedHostname doesn't match whitelist, domain remains default "wakatime.com"
+      const ALLOWED_DOMAINS = {
+        "wakatime.com": "wakatime.com",
+        "api.wakatime.com": "api.wakatime.com",
+      };
+      domain = ALLOWED_DOMAINS[extractedHostname] ?? domain;
     } catch {
       // Should not happen if validation passed, but domain already set to safe default
     }
