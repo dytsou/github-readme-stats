@@ -301,26 +301,23 @@ const sendJsonValidationError = ({ res, code, message }) => {
 };
 
 /**
- * Parses and validates a numeric parameter with bounds checking.
- *
- * @param {string|undefined} value - The value to parse.
- * @param {number|undefined} defaultValue - Default value if parsing fails.
- * @param {number} [min] - Minimum allowed value.
- * @param {number} [max] - Maximum allowed value.
- * @returns {number|undefined} The parsed and clamped value.
- */
-
-/**
- * Returns true when a username was provided but is not a valid GitHub username.
- * Missing/empty values are left for MissingParamError handling.
+ * Resolves a GitHub username from the request query.
+ * Missing/empty values return undefined for MissingParamError handling.
+ * Invalid values return null.
  *
  * @param {unknown} username - Raw username from the request query.
- * @returns {boolean} Whether the provided username is invalid.
+ * @returns {string|null|undefined} Sanitized username, null if invalid, undefined if missing.
  */
-const isInvalidProvidedGithubUsername = (username) =>
-  username != null &&
-  username !== "" &&
-  (typeof username !== "string" || !githubUsernameRegex.test(username));
+const sanitizeGithubUsername = (username) => {
+  if (username == null || username === "") {
+    return undefined;
+  }
+  if (typeof username !== "string") {
+    return null;
+  }
+  const match = githubUsernameRegex.exec(username);
+  return match ? match[0] : null;
+};
 
 /**
  * Sends a validation error when the provided GitHub username is invalid.
@@ -332,7 +329,7 @@ const isInvalidProvidedGithubUsername = (username) =>
  * @returns {any|undefined} Response result when invalid; otherwise undefined.
  */
 const sendInvalidGithubUsernameError = ({ res, username, colorOptions }) => {
-  if (!isInvalidProvidedGithubUsername(username)) {
+  if (sanitizeGithubUsername(username) !== null) {
     return undefined;
   }
   return sendValidationError({
@@ -343,12 +340,21 @@ const sendInvalidGithubUsernameError = ({ res, username, colorOptions }) => {
   });
 };
 
+/**
+ * Parses and validates a numeric parameter with bounds checking.
+ *
+ * @param {string|undefined} value - The value to parse.
+ * @param {number|undefined} defaultValue - Default value if parsing fails.
+ * @param {number} [min] - Minimum allowed value.
+ * @param {number} [max] - Maximum allowed value.
+ * @returns {number|undefined} The parsed and clamped value.
+ */
 const parseNumericParam = (value, defaultValue, min, max) => {
   if (value === undefined || value === null) {
     return defaultValue;
   }
-  const parsed = parseFloat(value);
-  if (isNaN(parsed)) {
+  const parsed = Number.parseFloat(value);
+  if (Number.isNaN(parsed)) {
     return defaultValue;
   }
   let result = parsed;
@@ -372,6 +378,6 @@ export {
   setJsonContentType,
   setTextContentType,
   parseNumericParam,
-  isInvalidProvidedGithubUsername,
+  sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
 };

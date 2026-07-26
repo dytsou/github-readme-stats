@@ -5,6 +5,7 @@ import { guardAccess } from "../src/common/access.js";
 import {
   createValidatedColorOptions,
   handleApiError,
+  sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
   setSvgContentType,
 } from "../src/common/api-utils.js";
@@ -71,9 +72,11 @@ export default async (req, res) => {
     return invalidUsernameResponse;
   }
 
+  const safeUsername = sanitizeGithubUsername(username);
+
   const access = guardAccess({
     res,
-    id: username,
+    id: safeUsername,
     type: "username",
     colors: colorOptions,
   });
@@ -82,9 +85,9 @@ export default async (req, res) => {
   }
 
   try {
-    const repoData = await fetchRepo(username, repo);
+    const repoData = await fetchRepo(safeUsername, repo);
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.PIN_CARD.DEFAULT,
       min: CACHE_TTL.PIN_CARD.MIN,
       max: CACHE_TTL.PIN_CARD.MAX,
@@ -101,12 +104,12 @@ export default async (req, res) => {
 
     const renderOptions = {
       hide_border: parseBoolean(hide_border),
-      title_color,
-      icon_color,
-      text_color,
-      bg_color,
-      theme,
-      border_color,
+      title_color: colorOptions.title_color,
+      icon_color: typeof icon_color === "string" ? icon_color : undefined,
+      text_color: colorOptions.text_color,
+      bg_color: colorOptions.bg_color,
+      theme: colorOptions.theme,
+      border_color: colorOptions.border_color,
       show_owner: parseBoolean(show_owner),
       locale,
       description_lines_count,

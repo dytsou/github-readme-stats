@@ -5,6 +5,7 @@ import { guardAccess } from "../src/common/access.js";
 import {
   createValidatedColorOptions,
   handleApiError,
+  sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
   setSvgContentType,
 } from "../src/common/api-utils.js";
@@ -77,9 +78,11 @@ export default async (req, res) => {
     return invalidUsernameResponse;
   }
 
+  const safeUsername = sanitizeGithubUsername(username);
+
   const access = guardAccess({
     res,
-    id: username,
+    id: safeUsername,
     type: "username",
     colors: colorOptions,
   });
@@ -90,17 +93,17 @@ export default async (req, res) => {
   try {
     const showStats = parseArray(show);
     const stats = await fetchStats(
-      username,
+      safeUsername,
       parseBoolean(include_all_commits),
       parseArray(exclude_repo),
       showStats.includes("prs_merged") ||
         showStats.includes("prs_merged_percentage"),
       showStats.includes("discussions_started"),
       showStats.includes("discussions_answered"),
-      parseInt(commits_year, 10),
+      Number.parseInt(commits_year, 10),
     );
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.STATS_CARD.DEFAULT,
       min: CACHE_TTL.STATS_CARD.MIN,
       max: CACHE_TTL.STATS_CARD.MAX,
@@ -120,24 +123,24 @@ export default async (req, res) => {
       show_icons: parseBoolean(show_icons),
       hide_title: parseBoolean(hide_title),
       hide_border: parseBoolean(hide_border),
-      card_width: parseInt(card_width, 10),
+      card_width: Number.parseInt(card_width, 10),
       hide_rank: parseBoolean(hide_rank),
       include_all_commits: parseBoolean(include_all_commits),
-      commits_year: parseInt(commits_year, 10),
+      commits_year: Number.parseInt(commits_year, 10),
       line_height,
-      title_color,
-      ring_color,
-      icon_color,
-      text_color,
+      title_color: colorOptions.title_color,
+      ring_color: typeof ring_color === "string" ? ring_color : undefined,
+      icon_color: typeof icon_color === "string" ? icon_color : undefined,
+      text_color: colorOptions.text_color,
       text_bold: parseBoolean(text_bold),
-      bg_color,
-      theme,
+      bg_color: colorOptions.bg_color,
+      theme: colorOptions.theme,
       // Validate custom_title is a string (prevents array from duplicate query params)
       // Card.js handles HTML encoding internally
       custom_title: typeof custom_title === "string" ? custom_title : undefined,
-      border_color,
+      border_color: colorOptions.border_color,
       number_format,
-      number_precision: parseInt(number_precision, 10),
+      number_precision: Number.parseInt(number_precision, 10),
       locale,
       disable_animations: parseBoolean(disable_animations),
       rank_icon,
