@@ -7,6 +7,7 @@ import {
   handleApiError,
   setSvgContentType,
   parseNumericParam,
+  resolveRequestLocale,
 } from "../src/common/api-utils.js";
 import {
   CACHE_TTL,
@@ -15,7 +16,6 @@ import {
 } from "../src/common/cache.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
-import { isLocaleAvailable } from "../src/translations.js";
 
 /** @type {number} */
 const DEFAULT_BORDER_RADIUS = 4.5;
@@ -58,10 +58,7 @@ export default async function wakatimeCardHandler(req, res) {
   } = req.query;
 
   // Only allow supported locales - validate and sanitize to prevent XSS
-  const locale =
-    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
-      ? rawLocale.toLowerCase()
-      : undefined;
+  const locale = resolveRequestLocale(rawLocale);
 
   setSvgContentType(res);
 

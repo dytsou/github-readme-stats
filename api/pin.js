@@ -1,22 +1,19 @@
 // @ts-check
 
 import { renderRepoCard } from "../src/cards/repo.js";
-import { guardAccess } from "../src/common/access.js";
 import {
-  createValidatedColorOptions,
+  applyOptionalBorderRadius,
   handleApiError,
-  sanitizeGithubUsername,
-  sendInvalidGithubUsernameError,
-  setSvgContentType,
+  prepareUsernameSvgAccess,
+  resolveRequestLocale,
 } from "../src/common/api-utils.js";
 import {
   CACHE_TTL,
   resolveCacheSeconds,
   setCacheHeaders,
 } from "../src/common/cache.js";
-import { clampValue, parseBoolean } from "../src/common/ops.js";
+import { parseBoolean } from "../src/common/ops.js";
 import { fetchRepo } from "../src/fetchers/repo.js";
-import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
 /**
@@ -44,8 +41,7 @@ export default async function pinCardHandler(req, res) {
     description_lines_count,
   } = req.query;
 
-  // Only allow supported locales - validate and sanitize to prevent XSS
-  // Validate and sanitize border_radius to prevent XSS
+  // Validate and sanitize border_radius early for the pin-card default path.
   const border_radius = (() => {
     const br = Number.parseFloat(rawBorderRadius);
     if (Number.isNaN(br)) {
@@ -54,43 +50,23 @@ export default async function pinCardHandler(req, res) {
     // Clamp to reasonable range; SVG border radius shouldn't exceed half width/height.
     return Math.max(0, Math.min(br, 50));
   })();
-  const locale =
-    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
-      ? rawLocale.toLowerCase()
-      : undefined;
-
-  setSvgContentType(res);
-
-  // Create validated color options once for reuse
-  const colorOptions = createValidatedColorOptions({
-    title_color,
-    icon_color,
-    text_color,
-    bg_color,
-    border_color,
-    theme,
-  });
-
-  const invalidUsernameResponse = sendInvalidGithubUsernameError({
+  const locale = resolveRequestLocale(rawLocale);
+  const access = prepareUsernameSvgAccess({
     res,
     username,
-    colorOptions,
+    colorParams: {
+      title_color,
+      icon_color,
+      text_color,
+      bg_color,
+      border_color,
+      theme,
+    },
   });
-  if (invalidUsernameResponse) {
-    return invalidUsernameResponse;
-  }
-
-  const safeUsername = sanitizeGithubUsername(username);
-
-  const access = guardAccess({
-    res,
-    id: safeUsername,
-    type: "username",
-    colors: colorOptions,
-  });
-  if (!access.isPassed) {
+  if (!access.ok) {
     return access.result;
   }
+  const { colorOptions, safeUsername } = access;
 
   try {
     const repoData = await fetchRepo(safeUsername, repo);
@@ -102,13 +78,6 @@ export default async function pinCardHandler(req, res) {
     });
 
     setCacheHeaders(res, cacheSeconds);
-
-    // Sanitize border_radius: parse, clamp, only include if valid
-    const borderRadiusNum = Number(border_radius);
-    const sanitizedBorderRadius =
-      Number.isFinite(borderRadiusNum) && border_radius !== undefined
-        ? clampValue(borderRadiusNum, 0, 50)
-        : undefined;
 
     const renderOptions = {
       hide_border: parseBoolean(hide_border),
@@ -122,11 +91,7 @@ export default async function pinCardHandler(req, res) {
       locale,
       description_lines_count,
     };
-
-    // Only include border_radius if it's valid, otherwise let Card use default
-    if (sanitizedBorderRadius !== undefined) {
-      renderOptions.border_radius = sanitizedBorderRadius;
-    }
+    applyOptionalBorderRadius(renderOptions, border_radius);
 
     return res.send(renderRepoCard(repoData, renderOptions));
   } catch (err) {

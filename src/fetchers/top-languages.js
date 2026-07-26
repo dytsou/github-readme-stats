@@ -4,7 +4,7 @@ import { retryer } from "../common/retryer.js";
 import { logger } from "../common/log.js";
 import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
-import { wrapTextMultiline } from "../common/fmt.js";
+import { throwIfGraphQLErrors } from "../common/graphql.js";
 import { request } from "../common/http.js";
 
 /**
@@ -80,25 +80,10 @@ const fetchTopLanguages = async (
     );
   }
 
-  if (res.data.errors) {
-    logger.error(res.data.errors);
-    if (res.data.errors[0].type === "NOT_FOUND") {
-      throw new CustomError(
-        res.data.errors[0].message || "Could not fetch user.",
-        CustomError.USER_NOT_FOUND,
-      );
-    }
-    if (res.data.errors[0].message) {
-      throw new CustomError(
-        wrapTextMultiline(res.data.errors[0].message, 90, 1)[0],
-        res.statusText,
-      );
-    }
-    throw new CustomError(
-      "Something went wrong while trying to retrieve the language data using the GraphQL API.",
-      CustomError.GRAPHQL_ERROR,
-    );
-  }
+  throwIfGraphQLErrors(
+    res,
+    "Something went wrong while trying to retrieve the language data using the GraphQL API.",
+  );
 
   // Check if user data exists
   if (!res.data?.data?.user) {

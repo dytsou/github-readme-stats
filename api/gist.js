@@ -5,6 +5,7 @@ import { guardAccess } from "../src/common/access.js";
 import {
   createValidatedColorOptions,
   handleApiError,
+  resolveRequestLocale,
   setSvgContentType,
 } from "../src/common/api-utils.js";
 import {
@@ -14,7 +15,6 @@ import {
 } from "../src/common/cache.js";
 import { parseBoolean } from "../src/common/ops.js";
 import { fetchGist } from "../src/fetchers/gist.js";
-import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
 /**
@@ -41,10 +41,7 @@ export default async function gistCardHandler(req, res) {
   } = req.query;
 
   // Only allow supported locales - validate and sanitize to prevent XSS
-  const locale =
-    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
-      ? rawLocale.toLowerCase()
-      : undefined;
+  const locale = resolveRequestLocale(rawLocale);
 
   setSvgContentType(res);
 
