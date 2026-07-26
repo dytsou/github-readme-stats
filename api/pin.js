@@ -19,7 +19,14 @@ import { fetchRepo } from "../src/fetchers/repo.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function pinCardHandler(req, res) {
   const {
     username,
     repo,
@@ -124,4 +131,4 @@ export default async (req, res) => {
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
-};
+}
