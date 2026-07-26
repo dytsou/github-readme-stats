@@ -780,6 +780,26 @@ const getDefaultLanguagesCountByLayout = ({ layout, hide_progress }) => {
  * @param {Partial<TopLangOptions>} options Card options.
  * @returns {string} Language card SVG object.
  */
+
+/**
+ * Resolves the top-languages card width, clamping invalid or undersized values.
+ *
+ * @param {number|undefined} card_width - Requested card width.
+ * @returns {number} Resolved card width.
+ */
+const resolveTopLanguagesCardWidth = (card_width) => {
+  if (card_width === undefined || card_width === null) {
+    return DEFAULT_CARD_WIDTH;
+  }
+  if (Number.isNaN(card_width)) {
+    return DEFAULT_CARD_WIDTH;
+  }
+  if (card_width < MIN_CARD_WIDTH) {
+    return MIN_CARD_WIDTH;
+  }
+  return card_width;
+};
+
 const renderTopLanguages = (topLangs, options = {}) => {
   const {
     hide_title = false,
@@ -812,13 +832,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
     hide,
   );
 
-  let width = card_width
-    ? isNaN(card_width)
-      ? DEFAULT_CARD_WIDTH
-      : card_width < MIN_CARD_WIDTH
-        ? MIN_CARD_WIDTH
-        : card_width
-    : DEFAULT_CARD_WIDTH;
+  let width = resolveTopLanguagesCardWidth(card_width);
   let height = calculateNormalLayoutHeight(langs.length);
 
   // returns theme based colors with proper overrides and defaults
