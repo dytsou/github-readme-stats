@@ -42,10 +42,7 @@ const fallbackColor = (color, fallbackColor) => {
     gradient = colors;
   }
 
-  return (
-    (gradient ? gradient : isValidHexColor(color) && `#${color}`) ||
-    fallbackColor
-  );
+  return gradient || (isValidHexColor(color) && `#${color}`) || fallbackColor;
 };
 
 /**
@@ -133,7 +130,7 @@ const getCardColors = ({
     typeof iconColor !== "string" ||
     typeof borderColor !== "string"
   ) {
-    throw new Error(
+    throw new TypeError(
       "Unexpected behavior, all colors except background should be string.",
     );
   }
