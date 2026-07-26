@@ -87,7 +87,7 @@ export default async (req, res) => {
   try {
     const repoData = await fetchRepo(safeUsername, repo);
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.PIN_CARD.DEFAULT,
       min: CACHE_TTL.PIN_CARD.MIN,
       max: CACHE_TTL.PIN_CARD.MAX,
