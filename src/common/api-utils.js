@@ -13,6 +13,7 @@ import {
   retrieveSecondaryMessage,
 } from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
+import githubUsernameRegex from "github-username-regex";
 
 /**
  * @typedef {Object} ColorOptions
@@ -308,6 +309,40 @@ const sendJsonValidationError = ({ res, code, message }) => {
  * @param {number} [max] - Maximum allowed value.
  * @returns {number|undefined} The parsed and clamped value.
  */
+
+/**
+ * Returns true when a username was provided but is not a valid GitHub username.
+ * Missing/empty values are left for MissingParamError handling.
+ *
+ * @param {unknown} username - Raw username from the request query.
+ * @returns {boolean} Whether the provided username is invalid.
+ */
+const isInvalidProvidedGithubUsername = (username) =>
+  username != null &&
+  username !== "" &&
+  (typeof username !== "string" || !githubUsernameRegex.test(username));
+
+/**
+ * Sends a validation error when the provided GitHub username is invalid.
+ *
+ * @param {Object} options - Validation options.
+ * @param {any} options.res - Express response object.
+ * @param {unknown} options.username - Raw username from the request query.
+ * @param {ColorOptions} options.colorOptions - Validated color options.
+ * @returns {any|undefined} Response result when invalid; otherwise undefined.
+ */
+const sendInvalidGithubUsernameError = ({ res, username, colorOptions }) => {
+  if (!isInvalidProvidedGithubUsername(username)) {
+    return undefined;
+  }
+  return sendValidationError({
+    res,
+    message: "Invalid username",
+    secondaryMessage: "Please provide a valid GitHub username",
+    colorOptions,
+  });
+};
+
 const parseNumericParam = (value, defaultValue, min, max) => {
   if (value === undefined || value === null) {
     return defaultValue;
@@ -337,4 +372,6 @@ export {
   setJsonContentType,
   setTextContentType,
   parseNumericParam,
+  isInvalidProvidedGithubUsername,
+  sendInvalidGithubUsernameError,
 };

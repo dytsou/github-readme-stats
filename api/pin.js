@@ -5,7 +5,7 @@ import { guardAccess } from "../src/common/access.js";
 import {
   createValidatedColorOptions,
   handleApiError,
-  sendValidationError,
+  sendInvalidGithubUsernameError,
   setSvgContentType,
 } from "../src/common/api-utils.js";
 import {
@@ -15,7 +15,6 @@ import {
 } from "../src/common/cache.js";
 import { clampValue, parseBoolean } from "../src/common/ops.js";
 import { fetchRepo } from "../src/fetchers/repo.js";
-import githubUsernameRegex from "github-username-regex";
 import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
@@ -63,19 +62,13 @@ export default async (req, res) => {
     theme,
   });
 
-  // Reject attacker-controlled usernames before they reach SVG rendering.
-  // Leave missing/empty values to existing MissingParamError handling.
-  if (
-    username != null &&
-    username !== "" &&
-    (typeof username !== "string" || !githubUsernameRegex.test(username))
-  ) {
-    return sendValidationError({
-      res,
-      message: "Invalid username",
-      secondaryMessage: "Please provide a valid GitHub username",
-      colorOptions,
-    });
+  const invalidUsernameResponse = sendInvalidGithubUsernameError({
+    res,
+    username,
+    colorOptions,
+  });
+  if (invalidUsernameResponse) {
+    return invalidUsernameResponse;
   }
 
   const access = guardAccess({
