@@ -323,6 +323,24 @@ const isInvalidProvidedGithubUsername = (username) =>
   (typeof username !== "string" || !githubUsernameRegex.test(username));
 
 /**
+ * Returns a sanitized GitHub username when present and valid.
+ * Missing/empty values return undefined for MissingParamError handling.
+ *
+ * @param {unknown} username - Raw username from the request query.
+ * @returns {string|undefined} Sanitized username, or undefined when missing.
+ */
+const sanitizeGithubUsername = (username) => {
+  if (username == null || username === "") {
+    return undefined;
+  }
+  if (typeof username !== "string") {
+    return null;
+  }
+  const match = username.match(githubUsernameRegex);
+  return match ? match[0] : null;
+};
+
+/**
  * Sends a validation error when the provided GitHub username is invalid.
  *
  * @param {Object} options - Validation options.
@@ -373,5 +391,6 @@ export {
   setTextContentType,
   parseNumericParam,
   isInvalidProvidedGithubUsername,
+  sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
 };
