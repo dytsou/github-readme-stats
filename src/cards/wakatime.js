@@ -220,7 +220,7 @@ const getStyles = ({
  * @returns {number} The normalized width value.
  */
 const normalizeCardWidth = ({ value, layout }) => {
-  if (value === undefined || value === null || isNaN(value)) {
+  if (value === undefined || value === null || Number.isNaN(value)) {
     return DEFAULT_CARD_WIDTH;
   }
   return Math.max(
@@ -370,7 +370,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
     translations: wakatimeCardLocales,
   });
 
-  const lheight = parseInt(String(line_height), 10);
+  const lheight = Number.parseInt(String(line_height), 10);
 
   const langsCount = clampValue(langs_count, 1, langs_count);
 

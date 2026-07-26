@@ -14,7 +14,7 @@ const kFormatter = (num, precision) => {
   const abs = Math.abs(num);
   const sign = Math.sign(num);
 
-  if (typeof precision === "number" && !isNaN(precision)) {
+  if (typeof precision === "number" && !Number.isNaN(precision)) {
     return (sign * (abs / 1000)).toFixed(precision) + "k";
   }
 
@@ -22,7 +22,7 @@ const kFormatter = (num, precision) => {
     return sign * abs;
   }
 
-  return sign * parseFloat((abs / 1000).toFixed(1)) + "k";
+  return sign * Number.parseFloat((abs / 1000).toFixed(1)) + "k";
 };
 
 /**

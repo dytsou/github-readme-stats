@@ -46,7 +46,7 @@ const parseArray = (str) => {
  */
 const clampValue = (number, min, max) => {
   // @ts-ignore
-  if (Number.isNaN(parseInt(number, 10))) {
+  if (Number.isNaN(Number.parseInt(number, 10))) {
     return min;
   }
   return Math.max(min, Math.min(number, max));

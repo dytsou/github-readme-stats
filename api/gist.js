@@ -63,7 +63,7 @@ export default async (req, res) => {
   try {
     const gistData = await fetchGist(id);
     const cacheSeconds = resolveCacheSeconds({
-      requested: parseInt(cache_seconds, 10),
+      requested: Number.parseInt(cache_seconds, 10),
       def: CACHE_TTL.GIST_CARD.DEFAULT,
       min: CACHE_TTL.GIST_CARD.MIN,
       max: CACHE_TTL.GIST_CARD.MAX,
@@ -73,20 +73,25 @@ export default async (req, res) => {
 
     return res.send(
       renderGistCard(gistData, {
-        title_color,
-        icon_color,
-        text_color,
-        bg_color,
-        theme,
+        title_color: colorOptions.title_color,
+        icon_color: typeof icon_color === "string" ? icon_color : undefined,
+        text_color: colorOptions.text_color,
+        bg_color: colorOptions.bg_color,
+        theme: colorOptions.theme,
         border_radius: (() => {
           // Validate border_radius: must be a finite number between 0 and 50
-          const num = parseFloat(border_radius);
-          if (isNaN(num) || !isFinite(num) || num < 0 || num > 50) {
+          const num = Number.parseFloat(border_radius);
+          if (
+            Number.isNaN(num) ||
+            !Number.isFinite(num) ||
+            num < 0 ||
+            num > 50
+          ) {
             return undefined; // Let card use its default
           }
           return num;
         })(),
-        border_color,
+        border_color: colorOptions.border_color,
         locale,
         show_owner: parseBoolean(show_owner),
         hide_border: parseBoolean(hide_border),

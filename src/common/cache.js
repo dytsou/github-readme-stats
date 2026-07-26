@@ -76,11 +76,15 @@ const CACHE_TTL = {
  * @returns {number} The resolved cache seconds.
  */
 const resolveCacheSeconds = ({ requested, def, min, max }) => {
-  let cacheSeconds = clampValue(isNaN(requested) ? def : requested, min, max);
+  let cacheSeconds = clampValue(
+    Number.isNaN(requested) ? def : requested,
+    min,
+    max,
+  );
 
   if (process.env.CACHE_SECONDS) {
-    const envCacheSeconds = parseInt(process.env.CACHE_SECONDS, 10);
-    if (!isNaN(envCacheSeconds)) {
+    const envCacheSeconds = Number.parseInt(process.env.CACHE_SECONDS, 10);
+    if (!Number.isNaN(envCacheSeconds)) {
       cacheSeconds = envCacheSeconds;
     }
   }
@@ -130,10 +134,10 @@ const setCacheHeaders = (res, cacheSeconds) => {
  */
 const setErrorCacheHeaders = (res) => {
   const envCacheSeconds = process.env.CACHE_SECONDS
-    ? parseInt(process.env.CACHE_SECONDS, 10)
-    : NaN;
+    ? Number.parseInt(process.env.CACHE_SECONDS, 10)
+    : Number.NaN;
   if (
-    (!isNaN(envCacheSeconds) && envCacheSeconds < 1) ||
+    (!Number.isNaN(envCacheSeconds) && envCacheSeconds < 1) ||
     process.env.NODE_ENV === "development"
   ) {
     disableCaching(res);
