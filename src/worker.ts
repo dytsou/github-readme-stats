@@ -69,7 +69,7 @@ export default {
             hasGithubPat: !!env.GITHUB_PAT,
             nodeEnv: process.env.NODE_ENV,
             isWorkers:
-              typeof globalThis.process === "undefined" ||
+              globalThis.process === undefined ||
               !globalThis.process.env ||
               Object.keys(globalThis.process.env).length === 0,
           },
