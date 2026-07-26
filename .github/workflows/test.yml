@@ -9,7 +9,10 @@ on:
       - main
       - master
 
-permissions: read-all
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
 
 jobs:
   build:
