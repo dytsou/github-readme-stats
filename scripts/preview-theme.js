@@ -415,7 +415,7 @@ const validateThemeName = (themeName) => {
  * @returns {string|undefined} Error message when invalid.
  */
 const validateThemeColorValue = (colorKey, colorValue) => {
-  if (colorValue[0] === "#") {
+  if (colorValue.startsWith("#")) {
     return `Theme color property \`${colorKey}\` should not start with '#'`;
   }
   if (colorValue.length > COLOR_PROPS[colorKey]) {
