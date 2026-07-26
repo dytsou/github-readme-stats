@@ -69,6 +69,8 @@ export default async function statsCardHandler(req, res) {
   // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({
     title_color,
+    ring_color,
+    icon_color,
     text_color,
     bg_color,
     border_color,
@@ -135,8 +137,8 @@ export default async function statsCardHandler(req, res) {
       commits_year: Number.parseInt(commits_year, 10),
       line_height,
       title_color: colorOptions.title_color,
-      ring_color: typeof ring_color === "string" ? ring_color : undefined,
-      icon_color: typeof icon_color === "string" ? icon_color : undefined,
+      ring_color: colorOptions.ring_color,
+      icon_color: colorOptions.icon_color,
       text_color: colorOptions.text_color,
       text_bold: parseBoolean(text_bold),
       bg_color: colorOptions.bg_color,

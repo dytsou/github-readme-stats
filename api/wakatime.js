@@ -13,7 +13,6 @@ import {
   resolveCacheSeconds,
   setCacheHeaders,
 } from "../src/common/cache.js";
-import { validateColor } from "../src/common/color.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
 import { isLocaleAvailable } from "../src/translations.js";
@@ -69,6 +68,7 @@ export default async function wakatimeCardHandler(req, res) {
   // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({
     title_color,
+    icon_color,
     text_color,
     bg_color,
     border_color,
@@ -108,7 +108,7 @@ export default async function wakatimeCardHandler(req, res) {
         hide: parseArray(hide),
         line_height,
         title_color: colorOptions.title_color,
-        icon_color: validateColor(icon_color),
+        icon_color: colorOptions.icon_color,
         text_color: colorOptions.text_color,
         bg_color: colorOptions.bg_color,
         // @ts-ignore - validateTheme ensures theme is valid ThemeNames
