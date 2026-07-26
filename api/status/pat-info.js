@@ -196,7 +196,14 @@ const getPATInfo = async (fetcher, variables) => {
  * @param {import('express').Response} res The response.
  * @returns {Promise<void>} The response.
  */
-export default async (_req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function patInfoHandler(_req, res) {
   setJsonContentType(res);
 
   try {
@@ -215,4 +222,4 @@ export default async (_req, res) => {
     const safeMessage = encodeHTML(errorMessage);
     res.send("Something went wrong: " + safeMessage);
   }
-};
+}

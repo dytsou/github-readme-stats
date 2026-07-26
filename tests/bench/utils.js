@@ -46,7 +46,7 @@ const measurePerformance = async (fn) => {
  */
 const computeStats = (samples) => {
   const sorted = [...samples].sort((a, b) => (a < b ? -1 : 1));
-  const toNumber = (b) => Number(b); // safe for typical short benches
+  const toNumber = Number; // safe for typical short benches
   const n = sorted.length;
   const sum = sorted.reduce((a, b) => a + b, 0n);
   const avg = Number(sum) / n;

@@ -825,7 +825,7 @@ describe("Test renderTopLanguages", () => {
       langs_count: 1,
     };
     document.body.innerHTML = renderTopLanguages(langs, { ...options });
-    expect(queryAllByTestId(document.body, "lang-name").length).toBe(
+    expect(queryAllByTestId(document.body, "lang-name")).toHaveLength(
       options.langs_count,
     );
   });
@@ -836,7 +836,7 @@ describe("Test renderTopLanguages", () => {
       langs_count: 2,
     };
     document.body.innerHTML = renderTopLanguages(langs, { ...options });
-    expect(queryAllByTestId(document.body, "lang-name").length).toBe(
+    expect(queryAllByTestId(document.body, "lang-name")).toHaveLength(
       options.langs_count,
     );
   });

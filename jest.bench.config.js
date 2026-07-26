@@ -9,5 +9,5 @@ export default {
     "<rootDir>/node_modules/",
     "<rootDir>/tests/e2e/",
   ],
-  testRegex: "(\\.bench)\\.(ts|tsx|js)$",
+  testRegex: String.raw`(\.bench)\.(ts|tsx|js)$`,
 };

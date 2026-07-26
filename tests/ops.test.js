@@ -21,11 +21,11 @@ describe("Test ops.js", () => {
     expect(parseBoolean("TRUE")).toBe(true);
     expect(parseBoolean("FALSE")).toBe(false);
 
-    expect(parseBoolean("1")).toBe(undefined);
-    expect(parseBoolean("0")).toBe(undefined);
-    expect(parseBoolean("")).toBe(undefined);
+    expect(parseBoolean("1")).toBeUndefined();
+    expect(parseBoolean("0")).toBeUndefined();
+    expect(parseBoolean("")).toBeUndefined();
     // @ts-ignore
-    expect(parseBoolean(undefined)).toBe(undefined);
+    expect(parseBoolean(undefined)).toBeUndefined();
   });
 
   it("should test parseArray", () => {

@@ -124,10 +124,10 @@ const iconWithLabel = (icon, label, testid, iconSize) => {
 // Script parameters.
 const ERROR_CARD_LENGTH = 576.5;
 
-const UPSTREAM_API_ERRORS = [
+const UPSTREAM_API_ERRORS = new Set([
   TRY_AGAIN_LATER,
   SECONDARY_ERROR_MESSAGES.MAX_RETRY,
-];
+]);
 
 /**
  * Renders error message on the card.
@@ -196,7 +196,7 @@ const renderError = ({
       ERROR_CARD_LENGTH - 1
     }" height="99%" rx="4.5" fill="${safeBgColor}" stroke="${safeBorderColor}"/>
     <text x="25" y="45" class="text">Something went wrong!${
-      UPSTREAM_API_ERRORS.includes(secondaryMessage) || !show_repo_link
+      UPSTREAM_API_ERRORS.has(secondaryMessage) || !show_repo_link
         ? ""
         : " file an issue at https://tiny.one/readme-stats"
     }</text>
@@ -243,9 +243,10 @@ const measureText = (str, fontSize = 10) => {
   return (
     str
       .split("")
-      .map((c) =>
-        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
-      )
+      .map((c) => {
+        const code = c.codePointAt(0) ?? 0;
+        return code < widths.length ? widths[code] : avg;
+      })
       .reduce((acc, cur) => acc + cur, 0) * fontSize
   );
 };

@@ -14,13 +14,19 @@ import {
   resolveCacheSeconds,
   setCacheHeaders,
 } from "../src/common/cache.js";
-import { parseArray, parseBoolean } from "../src/common/ops.js";
-import { clampValue } from "../src/common/ops.js";
+import { parseArray, parseBoolean, clampValue } from "../src/common/ops.js";
 import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function statsCardHandler(req, res) {
   const {
     username,
     hide,
@@ -156,4 +162,4 @@ export default async (req, res) => {
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
-};
+}

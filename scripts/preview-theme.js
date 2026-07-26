@@ -7,11 +7,11 @@ dotenv.config();
 import { debug, setFailed } from "@actions/core";
 import github from "@actions/github";
 import ColorContrastChecker from "color-contrast-checker";
-import { info } from "console";
+import { info } from "node:console";
 import Hjson from "hjson";
 import snakeCase from "lodash.snakecase";
 import parse from "parse-diff";
-import { inspect } from "util";
+import { inspect } from "node:util";
 import { isValidHexColor, isValidGradient } from "../src/common/color.js";
 import { themes } from "../themes/index.js";
 import { getGithubToken, getRepoInfo } from "./helpers.js";
@@ -84,7 +84,7 @@ const getPrNumber = () => {
 
   const pullRequest = github.context.payload.pull_request;
   if (!pullRequest) {
-    throw Error("Could not get pull request number from context");
+    throw new Error("Could not get pull request number from context");
   }
   return pullRequest.number;
 };
@@ -277,13 +277,11 @@ const addRemoveLabel = async (octokit, prNumber, owner, repo, label, add) => {
     pull_number: prNumber,
   });
   if (add) {
-    if (!res.data.labels.find((l) => l.name === label)) {
+    if (!res.data.labels.some((l) => l.name === label)) {
       await addLabel(octokit, prNumber, owner, repo, [label]);
     }
-  } else {
-    if (res.data.labels.find((l) => l.name === label)) {
-      await removeLabel(octokit, prNumber, owner, repo, label);
-    }
+  } else if (res.data.labels.some((l) => l.name === label)) {
+    await removeLabel(octokit, prNumber, owner, repo, label);
   }
 };
 
@@ -340,11 +338,11 @@ const parseJSON = (json) => {
 
     // Fix incorrect open bracket (if any).
     const splitJson = parsedJson
-      .split(/([\s\r\s]*}[\s\r\s]*,[\s\r\s]*)(?=[\w"-]+:)/)
+      .split(/(}[ \t\n\r]*,)(?=[ \t\n\r]*[\w"-]+:)/)
       .filter((x) => typeof x !== "string" || !!x.trim()); // Split json into array of strings and objects.
     if (splitJson[0].replace(/\s+/g, "") === "},") {
       splitJson[0] = "},";
-      if (/\s*}\s*,?\s*$/.test(splitJson[1])) {
+      if (/}\s*(?:,\s*)?$/.test(splitJson[1])) {
         splitJson.shift();
       } else {
         splitJson.push(splitJson.shift());
@@ -664,7 +662,7 @@ export const run = async () => {
     debug("Create comment body...");
     commentBody += `
       \r${
-        Object.values(themeValid).every((value) => value)
+        Object.values(themeValid).every(Boolean)
           ? THEME_PR_SUCCESS_TEXT
           : THEME_PR_FAIL_TEXT
       }
@@ -676,7 +674,7 @@ export const run = async () => {
         .join("\r")}
 
       \r${
-        Object.values(themeValid).every((value) => value)
+        Object.values(themeValid).every(Boolean)
           ? "**Result:** :heavy_check_mark: All themes are valid."
           : "**Result:** :x: Some themes are invalid.\n\n" + FAIL_TEXT
       }
@@ -706,7 +704,7 @@ export const run = async () => {
     debug(
       "Change review state and add/remove `invalid` label based on whether all themes passed...",
     );
-    const themesValid = Object.values(themeValid).every((value) => value);
+    const themesValid = Object.values(themeValid).every(Boolean);
     const reviewState = themesValid ? "APPROVE" : "REQUEST_CHANGES";
     const reviewReason = themesValid
       ? undefined
@@ -761,4 +759,4 @@ export const run = async () => {
   }
 };
 
-run();
+await run();

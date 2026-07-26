@@ -105,7 +105,7 @@ jobs:
         run: |
           # pnpm doesn't support --dry-run, so we pack and then remove the tarball
           pnpm pack
-          rm -f *.tgz || true
+          rm -f ./*.tgz || true
 
       # 1) Publish to npmjs
       - name: Publish to npmjs

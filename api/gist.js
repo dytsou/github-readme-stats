@@ -17,7 +17,14 @@ import { fetchGist } from "../src/fetchers/gist.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 // @ts-ignore
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function gistCardHandler(req, res) {
   const {
     id,
     title_color,
@@ -100,4 +107,4 @@ export default async (req, res) => {
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
-};
+}

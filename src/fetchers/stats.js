@@ -241,7 +241,7 @@ const fetchStats = async (
   include_merged_pull_requests = false,
   include_discussions = false,
   include_discussions_answers = false,
-  commits_year,
+  commits_year = undefined,
 ) => {
   if (!username) {
     throw new MissingParamError(["username"]);

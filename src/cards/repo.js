@@ -83,8 +83,8 @@ const renderRepoCard = (repo, options = {}) => {
 
   const lineHeight = 10;
   const header = show_owner ? nameWithOwner : name;
-  const langName = (primaryLanguage && primaryLanguage.name) || "Unspecified";
-  const langColor = (primaryLanguage && primaryLanguage.color) || "#333";
+  const langName = primaryLanguage?.name || "Unspecified";
+  const langColor = primaryLanguage?.color || "#333";
   const descriptionMaxLines = description_lines_count
     ? clampValue(description_lines_count, 1, DESCRIPTION_MAX_LINES)
     : DESCRIPTION_MAX_LINES;

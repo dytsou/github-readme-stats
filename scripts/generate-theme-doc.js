@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 import { themes } from "../themes/index.js";
 
 const TARGET_FILE = "./themes/README.md";

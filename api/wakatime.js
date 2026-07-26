@@ -25,7 +25,14 @@ const DEFAULT_BORDER_RADIUS = 4.5;
 const MAX_BORDER_RADIUS = 20;
 
 // @ts-ignore
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function wakatimeCardHandler(req, res) {
   const {
     username,
     title_color,
@@ -126,4 +133,4 @@ export default async (req, res) => {
     // which replaces unsafe patterns containing user data with safe alternatives
     return handleApiError({ res, error: err, colorOptions });
   }
-};
+}
