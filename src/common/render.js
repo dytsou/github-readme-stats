@@ -246,7 +246,7 @@ const measureText = (str, fontSize = 10) => {
       .map((c) =>
         c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
       )
-      .reduce((cur, acc) => acc + cur) * fontSize
+      .reduce((acc, cur) => acc + cur, 0) * fontSize
   );
 };
 
