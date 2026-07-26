@@ -174,16 +174,17 @@ const renderRepoCard = (repo, options = {}) => {
     .badge rect { opacity: 0.2 }
   `);
 
+  let badgeSvg = "";
+  if (isTemplate) {
+    // @ts-ignore
+    badgeSvg = getBadgeSVG(i18n.t("repocard.template"), colors.textColor);
+  } else if (isArchived) {
+    // @ts-ignore
+    badgeSvg = getBadgeSVG(i18n.t("repocard.archived"), colors.textColor);
+  }
+
   return card.render(`
-    ${
-      isTemplate
-        ? // @ts-ignore
-          getBadgeSVG(i18n.t("repocard.template"), colors.textColor)
-        : isArchived
-          ? // @ts-ignore
-            getBadgeSVG(i18n.t("repocard.archived"), colors.textColor)
-          : ""
-    }
+    ${badgeSvg}
 
     <text class="description" x="25" y="-5">
       ${descriptionSvg}
