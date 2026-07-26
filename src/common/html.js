@@ -31,14 +31,14 @@ const escapeCSSValue = (value) => {
 
   // Escape quotes and special characters that could break out of attribute context
   return strValue
-    .replaceAll("\\", "\\\\") // Escape backslashes first
-    .replaceAll('"', '\\"') // Escape double quotes
-    .replaceAll("'", "\\'") // Escape single quotes
-    .replaceAll("\n", "\\A ") // Escape newlines
+    .replaceAll("\\", String.raw`\\`) // Escape backslashes first
+    .replaceAll('"', String.raw`\"`) // Escape double quotes
+    .replaceAll("'", String.raw`\'`) // Escape single quotes
+    .replaceAll("\n", String.raw`\A `) // Escape newlines
     .replaceAll("\r", "") // Remove carriage returns
     .replaceAll("\f", "") // Remove form feeds
-    .replaceAll("<", "\\3C ") // Escape less-than
-    .replaceAll(">", "\\3E "); // Escape greater-than
+    .replaceAll("<", String.raw`\3C `) // Escape less-than
+    .replaceAll(">", String.raw`\3E `); // Escape greater-than
 };
 
 export { encodeHTML, escapeCSSValue };
