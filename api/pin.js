@@ -5,6 +5,7 @@ import { guardAccess } from "../src/common/access.js";
 import {
   createValidatedColorOptions,
   handleApiError,
+  sendInvalidGithubUsernameError,
   setSvgContentType,
 } from "../src/common/api-utils.js";
 import {
@@ -60,6 +61,15 @@ export default async (req, res) => {
     border_color,
     theme,
   });
+
+  const invalidUsernameResponse = sendInvalidGithubUsernameError({
+    res,
+    username,
+    colorOptions,
+  });
+  if (invalidUsernameResponse) {
+    return invalidUsernameResponse;
+  }
 
   const access = guardAccess({
     res,
