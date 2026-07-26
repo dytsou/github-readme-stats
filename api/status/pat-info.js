@@ -77,6 +77,72 @@ const getAllPATs = () => getGitHubPatKeys();
  * @param {Record<string, unknown>} variables Fetcher variables.
  * @returns {Promise<PATInfo>} The response.
  */
+
+/**
+ * Records the status for a successful PAT GraphQL response.
+ *
+ * @param {Record<string, PATDetails>} details - Accumulated PAT details.
+ * @param {string} pat - PAT environment variable name.
+ * @param {{ data: { errors?: Array<{type: string, message: string}>, data?: { rateLimit?: { remaining: number, resetAt: string } } } }} response - GraphQL response.
+ * @returns {void}
+ */
+const recordPatResponse = (details, pat, response) => {
+  const errors = response.data.errors;
+  const hasErrors = Boolean(errors);
+  const errorType = errors?.[0]?.type;
+  const isRateLimited =
+    (hasErrors && errorType === "RATE_LIMITED") ||
+    response.data.data?.rateLimit?.remaining === 0;
+
+  if (hasErrors && errorType !== "RATE_LIMITED") {
+    details[pat] = {
+      status: "error",
+      error: {
+        type: errors[0].type,
+        message: errors[0].message,
+      },
+    };
+    return;
+  }
+
+  if (isRateLimited) {
+    const now = new Date();
+    const resetAt = new Date(response.data?.data?.rateLimit?.resetAt);
+    details[pat] = {
+      status: "exhausted",
+      remaining: 0,
+      resetIn: dateDiff(resetAt, now) + " minutes",
+    };
+    return;
+  }
+
+  details[pat] = {
+    status: "valid",
+    remaining: response.data.data.rateLimit.remaining,
+  };
+};
+
+/**
+ * Records known PAT authentication failures, or rethrows unknown errors.
+ *
+ * @param {Record<string, PATDetails>} details - Accumulated PAT details.
+ * @param {string} pat - PAT environment variable name.
+ * @param {any} err - Caught error.
+ * @returns {void}
+ */
+const recordPatFailure = (details, pat, err) => {
+  const errorMessage = err?.response?.data?.message?.toLowerCase();
+  if (errorMessage === "bad credentials") {
+    details[pat] = { status: "expired" };
+    return;
+  }
+  if (errorMessage === "sorry. your account was suspended.") {
+    details[pat] = { status: "suspended" };
+    return;
+  }
+  throw err;
+};
+
 const getPATInfo = async (fetcher, variables) => {
   /** @type {Record<string, PATDetails>} */
   const details = {};
@@ -90,49 +156,9 @@ const getPATInfo = async (fetcher, variables) => {
       }
 
       const response = await fetcher(variables, token);
-      const errors = response.data.errors;
-      const hasErrors = Boolean(errors);
-      const errorType = errors?.[0]?.type;
-      const isRateLimited =
-        (hasErrors && errorType === "RATE_LIMITED") ||
-        response.data.data?.rateLimit?.remaining === 0;
-
-      // Store PATs with errors
-      if (hasErrors && errorType !== "RATE_LIMITED") {
-        details[pat] = {
-          status: "error",
-          error: {
-            type: errors[0].type,
-            message: errors[0].message,
-          },
-        };
-        continue;
-      }
-
-      if (isRateLimited) {
-        const now = new Date();
-        const resetAt = new Date(response.data?.data?.rateLimit?.resetAt);
-        details[pat] = {
-          status: "exhausted",
-          remaining: 0,
-          resetIn: dateDiff(resetAt, now) + " minutes",
-        };
-      } else {
-        details[pat] = {
-          status: "valid",
-          remaining: response.data.data.rateLimit.remaining,
-        };
-      }
+      recordPatResponse(details, pat, response);
     } catch (err) {
-      // Handle known error responses
-      const errorMessage = err?.response?.data?.message?.toLowerCase();
-      if (errorMessage === "bad credentials") {
-        details[pat] = { status: "expired" };
-      } else if (errorMessage === "sorry. your account was suspended.") {
-        details[pat] = { status: "suspended" };
-      } else {
-        throw err;
-      }
+      recordPatFailure(details, pat, err);
     }
   }
 
