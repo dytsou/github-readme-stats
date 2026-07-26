@@ -49,10 +49,10 @@ const ACCEPTED_COLOR_PROPS = Object.keys(COLOR_PROPS);
 const REQUIRED_COLOR_PROPS = ACCEPTED_COLOR_PROPS.slice(0, 4);
 const INVALID_REVIEW_COMMENT = (commentUrl) =>
   `Some themes are invalid. See the [Automated Theme Preview](${commentUrl}) comment above for more information.`;
-var OCTOKIT;
-var OWNER;
-var REPO;
-var PULL_REQUEST_ID;
+let OCTOKIT;
+let OWNER;
+let REPO;
+let PULL_REQUEST_ID;
 
 /**
  * Incorrect JSON format error.
