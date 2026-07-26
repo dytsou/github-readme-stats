@@ -85,7 +85,14 @@ const normalizeResponseType = (type) => {
  * @param {import('express').Response} res The response.
  * @returns {Promise<void>} Nothing.
  */
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function upHandler(req, res) {
   const responseType = normalizeResponseType(req.query.type);
 
   setJsonContentType(res);
@@ -126,4 +133,4 @@ export default async (req, res) => {
     const safeMessage = encodeHTML(errorMessage);
     res.send("Something went wrong: " + safeMessage);
   }
-};
+}
