@@ -46,7 +46,7 @@ jobs:
 
       - name: Install dependencies and generate readme
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --ignore-scripts
           pnpm run theme-readme-gen
         env:
           CI: true
