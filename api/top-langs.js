@@ -18,14 +18,24 @@ import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
-/** @type {readonly string[]} */
-const VALID_LAYOUTS = ["compact", "normal", "donut", "donut-vertical", "pie"];
-
-/** @type {readonly string[]} */
-const VALID_STATS_FORMATS = ["bytes", "percentages"];
+const VALID_LAYOUTS = new Set([
+  "compact",
+  "normal",
+  "donut",
+  "donut-vertical",
+  "pie",
+]);
+const VALID_STATS_FORMATS = new Set(["bytes", "percentages"]);
 
 // @ts-ignore
-export default async (req, res) => {
+/**
+ * Vercel/Express request handler.
+ *
+ * @param {any} req Request object.
+ * @param {any} res Response object.
+ * @returns {Promise<any>} Handler result.
+ */
+export default async function topLangsCardHandler(req, res) {
   const {
     username,
     hide,
@@ -92,7 +102,7 @@ export default async (req, res) => {
   // Validate layout parameter
   if (
     layout !== undefined &&
-    (typeof layout !== "string" || !VALID_LAYOUTS.includes(layout))
+    (typeof layout !== "string" || !VALID_LAYOUTS.has(layout))
   ) {
     return sendValidationError({
       res,
@@ -105,8 +115,7 @@ export default async (req, res) => {
   // Validate stats_format parameter
   if (
     stats_format !== undefined &&
-    (typeof stats_format !== "string" ||
-      !VALID_STATS_FORMATS.includes(stats_format))
+    (typeof stats_format !== "string" || !VALID_STATS_FORMATS.has(stats_format))
   ) {
     return sendValidationError({
       res,
@@ -160,4 +169,4 @@ export default async (req, res) => {
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
-};
+}
