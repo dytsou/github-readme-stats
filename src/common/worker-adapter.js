@@ -42,11 +42,27 @@ const serializeResponseBody = (body) => {
     return body;
   }
 
-  if (typeof body === "object" && body !== null) {
+  if (body === null || body === undefined) {
+    return "";
+  }
+
+  if (typeof body === "object") {
     return JSON.stringify(body);
   }
 
-  return String(body);
+  if (
+    typeof body === "number" ||
+    typeof body === "boolean" ||
+    typeof body === "bigint"
+  ) {
+    return `${body}`;
+  }
+
+  if (typeof body === "symbol" || typeof body === "function") {
+    return body.toString();
+  }
+
+  return "";
 };
 
 /**
