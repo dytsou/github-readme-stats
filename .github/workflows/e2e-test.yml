@@ -10,7 +10,11 @@ on:
       - master
   deployment_status:
 
-permissions: read-all
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  deployments: read
 
 jobs:
   e2eTests:
