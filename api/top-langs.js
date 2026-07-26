@@ -8,6 +8,7 @@ import {
   sendValidationError,
   setSvgContentType,
   parseNumericParam,
+  resolveRequestLocale,
 } from "../src/common/api-utils.js";
 import {
   CACHE_TTL,
@@ -16,7 +17,6 @@ import {
 } from "../src/common/cache.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
-import { isLocaleAvailable } from "../src/translations.js";
 
 const VALID_LAYOUTS = new Set([
   "compact",
@@ -62,10 +62,7 @@ export default async function topLangsCardHandler(req, res) {
   } = req.query;
 
   // Only allow supported locales - validate and sanitize to prevent XSS
-  const locale =
-    typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
-      ? rawLocale.toLowerCase()
-      : undefined;
+  const locale = resolveRequestLocale(rawLocale);
 
   // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({

@@ -13,6 +13,9 @@ import {
   retrieveSecondaryMessage,
 } from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
+import { guardAccess } from "./access.js";
+import { clampValue } from "./ops.js";
+import { isLocaleAvailable } from "../translations.js";
 import githubUsernameRegex from "github-username-regex";
 
 /**
@@ -349,6 +352,81 @@ const sendInvalidGithubUsernameError = ({ res, username, colorOptions }) => {
 };
 
 /**
+ * Resolve a request locale query value to a supported locale code.
+ *
+ * @param {unknown} rawLocale Raw locale from the query string.
+ * @returns {string|undefined} Lowercased locale when supported; otherwise undefined.
+ */
+const resolveRequestLocale = (rawLocale) => {
+  return typeof rawLocale === "string" && isLocaleAvailable(rawLocale)
+    ? rawLocale.toLowerCase()
+    : undefined;
+};
+
+/**
+ * Sanitize an optional border_radius query value for SVG cards.
+ *
+ * @param {unknown} border_radius Raw border radius from the query string.
+ * @returns {number|undefined} Clamped radius, or undefined when invalid/missing.
+ */
+const sanitizeOptionalBorderRadius = (border_radius) => {
+  const borderRadiusNum = Number(border_radius);
+  return Number.isFinite(borderRadiusNum) && border_radius !== undefined
+    ? clampValue(borderRadiusNum, 0, 50)
+    : undefined;
+};
+
+/**
+ * Apply a sanitized border_radius to render options when valid.
+ *
+ * @param {Record<string, unknown>} renderOptions Card render options.
+ * @param {unknown} border_radius Raw border radius from the query string.
+ * @returns {Record<string, unknown>} The same render options object.
+ */
+const applyOptionalBorderRadius = (renderOptions, border_radius) => {
+  const sanitizedBorderRadius = sanitizeOptionalBorderRadius(border_radius);
+  if (sanitizedBorderRadius !== undefined) {
+    renderOptions.border_radius = sanitizedBorderRadius;
+  }
+  return renderOptions;
+};
+
+/**
+ * Prepare a username-based SVG card request: content-type, colors, username, access.
+ *
+ * @param {Object} options Preparation options.
+ * @param {any} options.res Express response object.
+ * @param {unknown} options.username Raw username from the query string.
+ * @param {RawColorParams} options.colorParams Raw color query parameters.
+ * @returns {{ ok: true, colorOptions: ColorOptions, safeUsername: string } | { ok: false, result: any }} Prepared access context or early response.
+ */
+const prepareUsernameSvgAccess = ({ res, username, colorParams }) => {
+  setSvgContentType(res);
+  const colorOptions = createValidatedColorOptions(colorParams);
+  const invalidUsernameResponse = sendInvalidGithubUsernameError({
+    res,
+    username,
+    colorOptions,
+  });
+  if (invalidUsernameResponse) {
+    return { ok: false, result: invalidUsernameResponse };
+  }
+
+  const safeUsername = /** @type {string} */ (sanitizeGithubUsername(username));
+  const access = guardAccess({
+    res,
+    id: safeUsername,
+    type: "username",
+    colors: colorOptions,
+  });
+  if (!access.isPassed) {
+    return { ok: false, result: access.result };
+  }
+
+  return { ok: true, colorOptions, safeUsername };
+};
+
+/**
  * Parses and validates a numeric parameter with bounds checking.
  *
  * @param {string|undefined} value - The value to parse.
@@ -388,4 +466,8 @@ export {
   parseNumericParam,
   sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
+  resolveRequestLocale,
+  sanitizeOptionalBorderRadius,
+  applyOptionalBorderRadius,
+  prepareUsernameSvgAccess,
 };
