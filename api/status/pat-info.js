@@ -147,7 +147,7 @@ const getPATInfo = async (fetcher, variables) => {
 
   // Sort details by key for consistent output
   const sortedDetails = Object.keys(details)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .reduce((obj, key) => {
       obj[key] = details[key];
       return obj;
