@@ -326,8 +326,9 @@ const renderWakatimeCompactLayout = ({
   };
 };
 
-const renderWakatimeCard = (stats = {}, options) => {
-  options = options ?? { hide: [] };
+const renderWakatimeCard = (stats, options) => {
+  stats ??= {};
+  options ??= { hide: [] };
   let { languages = [] } = stats;
   const {
     hide_title = false,
