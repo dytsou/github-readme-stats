@@ -51,6 +51,7 @@ export default async function gistCardHandler(req, res) {
   // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({
     title_color,
+    icon_color,
     text_color,
     bg_color,
     border_color,
@@ -81,7 +82,7 @@ export default async function gistCardHandler(req, res) {
     return res.send(
       renderGistCard(gistData, {
         title_color: colorOptions.title_color,
-        icon_color: typeof icon_color === "string" ? icon_color : undefined,
+        icon_color: colorOptions.icon_color,
         text_color: colorOptions.text_color,
         bg_color: colorOptions.bg_color,
         theme: colorOptions.theme,

@@ -22,6 +22,8 @@ import githubUsernameRegex from "github-username-regex";
  * @property {string|undefined} bg_color
  * @property {string|undefined} border_color
  * @property {string|undefined} theme
+ * @property {string|undefined} icon_color
+ * @property {string|undefined} ring_color
  */
 
 /**
@@ -31,6 +33,8 @@ import githubUsernameRegex from "github-username-regex";
  * @property {string} [bg_color]
  * @property {string} [border_color]
  * @property {string} [theme]
+ * @property {string} [icon_color]
+ * @property {string} [ring_color]
  */
 
 /**
@@ -46,12 +50,16 @@ const createValidatedColorOptions = ({
   bg_color,
   border_color,
   theme,
+  icon_color,
+  ring_color,
 }) => ({
   title_color: validateColor(title_color),
   text_color: validateColor(text_color),
   bg_color: validateColor(bg_color),
   border_color: validateColor(border_color),
   theme: validateTheme(theme),
+  icon_color: validateColor(icon_color),
+  ring_color: validateColor(ring_color),
 });
 
 /**
