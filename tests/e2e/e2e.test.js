@@ -202,10 +202,16 @@ if (skipReason) {
   console.warn("Skipping E2E tests due to preflight failure");
 }
 
-const e2eTest = skipReason ? test.skip : test;
+describe("E2E suite configuration", () => {
+  test("defines deployment preflight checks", () => {
+    expect(typeof computeSkipReason).toBe("function");
+  });
+});
 
-describe("Fetch Cards", () => {
-  e2eTest(
+const describeFetchCards = skipReason ? describe.skip : describe;
+
+describeFetchCards("Fetch Cards", () => {
+  test(
     "retrieve stats card",
     async () => {
       // Check if the deployed instance stats card function is up and running.
@@ -244,7 +250,7 @@ describe("Fetch Cards", () => {
     TEST_TIMEOUT_MS,
   );
 
-  e2eTest(
+  test(
     "retrieve language card",
     async () => {
       // Check if the deployed instance language card function is up and running.
@@ -286,7 +292,7 @@ describe("Fetch Cards", () => {
     TEST_TIMEOUT_MS,
   );
 
-  e2eTest(
+  test(
     "retrieve WakaTime card",
     async () => {
       // Check if the deployed instance WakaTime function is up and running.
@@ -323,7 +329,7 @@ describe("Fetch Cards", () => {
     TEST_TIMEOUT_MS,
   );
 
-  e2eTest(
+  test(
     "retrieve repo card",
     async () => {
       // Check if the deployed instance Repo function is up and running.
@@ -362,7 +368,7 @@ describe("Fetch Cards", () => {
     TEST_TIMEOUT_MS,
   );
 
-  e2eTest(
+  test(
     "retrieve gist card",
     async () => {
       // Check if the deployed instance Gist function is up and running.
