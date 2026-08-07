@@ -3,6 +3,7 @@
 import { renderGistCard } from "../src/cards/gist.js";
 import { guardAccess } from "../src/common/access.js";
 import {
+  applyOptionalBorderRadius,
   createValidatedColorOptions,
   handleApiError,
   resolveRequestLocale,
@@ -40,12 +41,10 @@ export default async function gistCardHandler(req, res) {
     hide_border,
   } = req.query;
 
-  // Only allow supported locales - validate and sanitize to prevent XSS
   const locale = resolveRequestLocale(rawLocale);
 
   setSvgContentType(res);
 
-  // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({
     title_color,
     icon_color,
@@ -76,32 +75,20 @@ export default async function gistCardHandler(req, res) {
 
     setCacheHeaders(res, cacheSeconds);
 
-    return res.send(
-      renderGistCard(gistData, {
-        title_color: colorOptions.title_color,
-        icon_color: colorOptions.icon_color,
-        text_color: colorOptions.text_color,
-        bg_color: colorOptions.bg_color,
-        theme: colorOptions.theme,
-        border_radius: (() => {
-          // Validate border_radius: must be a finite number between 0 and 50
-          const num = Number.parseFloat(border_radius);
-          if (
-            Number.isNaN(num) ||
-            !Number.isFinite(num) ||
-            num < 0 ||
-            num > 50
-          ) {
-            return undefined; // Let card use its default
-          }
-          return num;
-        })(),
-        border_color: colorOptions.border_color,
-        locale,
-        show_owner: parseBoolean(show_owner),
-        hide_border: parseBoolean(hide_border),
-      }),
-    );
+    const renderOptions = {
+      title_color: colorOptions.title_color,
+      icon_color: colorOptions.icon_color,
+      text_color: colorOptions.text_color,
+      bg_color: colorOptions.bg_color,
+      theme: colorOptions.theme,
+      border_color: colorOptions.border_color,
+      locale,
+      show_owner: parseBoolean(show_owner),
+      hide_border: parseBoolean(hide_border),
+    };
+    applyOptionalBorderRadius(renderOptions, border_radius);
+
+    return res.send(renderGistCard(gistData, renderOptions));
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }

@@ -7,8 +7,29 @@ import wakatimeHandler from "../api/wakatime.js";
 import gistHandler from "../api/gist.js";
 import profileContextHandler from "../api/profile-context.js";
 import { setupWorkerEnv } from "./common/worker-env.js";
-import { adaptExpressHandler } from "./common/worker-adapter.js";
-import { encodeHTML } from "./common/html.js";
+import {
+  adaptExpressHandler,
+  svgErrorResponse,
+} from "./common/worker-adapter.js";
+
+const SVG = "image/svg+xml; charset=utf-8";
+
+const registerGet = (app, path, expressHandler) => {
+  const handler = adaptExpressHandler(expressHandler);
+  // @ts-ignore - adaptExpressHandler returns a compatible handler
+  app.get(path, handler);
+  // @ts-ignore - adaptExpressHandler returns a compatible handler
+  app.get(`${path}/`, handler);
+};
+
+const cardRoutes = [
+  ["/api", statsHandler],
+  ["/api/pin", repoCardHandler],
+  ["/api/top-langs", topLangsHandler],
+  ["/api/wakatime", wakatimeHandler],
+  ["/api/gist", gistHandler],
+  ["/api/profile/context", profileContextHandler],
+];
 
 /**
  * Cloudflare Workers entry point
@@ -17,51 +38,18 @@ import { encodeHTML } from "./common/html.js";
 export default {
   async fetch(request, env, ctx) {
     try {
-      // Set up process.env from Cloudflare Workers env
       setupWorkerEnv(env);
 
-      // Create Hono app
       const app = new Hono();
 
-      // Adapt Express handlers to Hono
-      // Support both with and without trailing slashes
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api", adaptExpressHandler(statsHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/", adaptExpressHandler(statsHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/pin", adaptExpressHandler(repoCardHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/pin/", adaptExpressHandler(repoCardHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/top-langs", adaptExpressHandler(topLangsHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/top-langs/", adaptExpressHandler(topLangsHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/wakatime", adaptExpressHandler(wakatimeHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/wakatime/", adaptExpressHandler(wakatimeHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/gist", adaptExpressHandler(gistHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get("/api/gist/", adaptExpressHandler(gistHandler));
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get(
-        "/api/profile/context",
-        adaptExpressHandler(profileContextHandler),
-      );
-      // @ts-ignore - adaptExpressHandler returns a compatible handler
-      app.get(
-        "/api/profile/context/",
-        adaptExpressHandler(profileContextHandler),
-      );
+      for (const [path, handler] of cardRoutes) {
+        registerGet(app, path, handler);
+      }
 
-      // Handle root path
       app.get("/", (c) => {
         return c.text("GitHub Readme Stats API - Worker is running");
       });
 
-      // Test endpoint for debugging
       app.get("/test", (c) => {
         return c.json({
           status: "ok",
@@ -76,7 +64,6 @@ export default {
         });
       });
 
-      // Debug endpoint to test query parsing
       app.get("/debug/query", (c) => {
         return c.json({
           url: c.req.url,
@@ -85,43 +72,30 @@ export default {
         });
       });
 
-      // Handle 404 - return SVG for Camo compatibility
-      app.notFound((c) => {
-        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="#333">Not Found</text></svg>`;
-        return new Response(errorSvg, {
-          status: 404,
-          headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
-        });
+      // ponytail: Camo expects SVG bodies even on 404
+      app.notFound(() => {
+        return new Response(
+          `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="#333">Not Found</text></svg>`,
+          { status: 404, headers: { "Content-Type": SVG } },
+        );
       });
 
-      // Handle errors - return SVG for Camo compatibility
       app.onError((err, c) => {
         console.error("Worker Error:", err);
         console.error("Error stack:", err.stack);
         console.error("Request URL:", c.req.url);
-        // Sanitize error message to prevent XSS
-        const safeMessage = encodeHTML(String(err.message || "Unknown error"));
-        const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${safeMessage}</text></svg>`;
-        return new Response(errorSvg, {
-          status: 500,
-          headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
-        });
+        return svgErrorResponse(err.message || "Unknown error");
       });
 
       return app.fetch(request, env, ctx);
     } catch (error) {
-      // Catch any errors during setup - return SVG for Camo compatibility
       console.error("Worker setup error:", error);
       console.error("Error stack:", (error as Error).stack);
-      // Sanitize error message to prevent XSS
-      const safeMessage = encodeHTML(
-        String((error as Error).message || "Unknown error"),
+      return svgErrorResponse(
+        (error as Error).message || "Unknown error",
+        500,
+        "Worker setup failed",
       );
-      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Worker setup failed: ${safeMessage}</text></svg>`;
-      return new Response(errorSvg, {
-        status: 500,
-        headers: { "Content-Type": "image/svg+xml; charset=utf-8" },
-      });
     }
   },
 };

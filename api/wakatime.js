@@ -6,7 +6,7 @@ import {
   createValidatedColorOptions,
   handleApiError,
   setSvgContentType,
-  parseNumericParam,
+  applyOptionalBorderRadius,
   resolveRequestLocale,
 } from "../src/common/api-utils.js";
 import {
@@ -16,12 +16,6 @@ import {
 } from "../src/common/cache.js";
 import { parseArray, parseBoolean } from "../src/common/ops.js";
 import { fetchWakatimeStats } from "../src/fetchers/wakatime.js";
-
-/** @type {number} */
-const DEFAULT_BORDER_RADIUS = 4.5;
-
-/** @type {number} */
-const MAX_BORDER_RADIUS = 20;
 
 // @ts-ignore
 /**
@@ -57,12 +51,10 @@ export default async function wakatimeCardHandler(req, res) {
     disable_animations,
   } = req.query;
 
-  // Only allow supported locales - validate and sanitize to prevent XSS
   const locale = resolveRequestLocale(rawLocale);
 
   setSvgContentType(res);
 
-  // Create validated color options once for reuse
   const colorOptions = createValidatedColorOptions({
     title_color,
     icon_color,
@@ -93,41 +85,31 @@ export default async function wakatimeCardHandler(req, res) {
 
     setCacheHeaders(res, cacheSeconds);
 
-    return res.send(
-      renderWakatimeCard(stats, {
-        // Validate custom_title is a string (prevents array from duplicate query params)
-        // Card.js handles HTML encoding internally
-        custom_title:
-          typeof custom_title === "string" ? custom_title : undefined,
-        hide_title: parseBoolean(hide_title),
-        hide_border: parseBoolean(hide_border),
-        card_width: Number.parseInt(card_width, 10),
-        hide: parseArray(hide),
-        line_height,
-        title_color: colorOptions.title_color,
-        icon_color: colorOptions.icon_color,
-        text_color: colorOptions.text_color,
-        bg_color: colorOptions.bg_color,
-        // @ts-ignore - validateTheme ensures theme is valid ThemeNames
-        theme: colorOptions.theme,
-        hide_progress,
-        border_radius: parseNumericParam(
-          border_radius,
-          DEFAULT_BORDER_RADIUS,
-          0,
-          MAX_BORDER_RADIUS,
-        ),
-        border_color: colorOptions.border_color,
-        locale,
-        layout,
-        langs_count,
-        display_format,
-        disable_animations: parseBoolean(disable_animations),
-      }),
-    );
+    const renderOptions = {
+      custom_title: typeof custom_title === "string" ? custom_title : undefined,
+      hide_title: parseBoolean(hide_title),
+      hide_border: parseBoolean(hide_border),
+      card_width: Number.parseInt(card_width, 10),
+      hide: parseArray(hide),
+      line_height,
+      title_color: colorOptions.title_color,
+      icon_color: colorOptions.icon_color,
+      text_color: colorOptions.text_color,
+      bg_color: colorOptions.bg_color,
+      // @ts-ignore - validateTheme ensures theme is valid ThemeNames
+      theme: colorOptions.theme,
+      hide_progress,
+      border_color: colorOptions.border_color,
+      locale,
+      layout,
+      langs_count,
+      display_format,
+      disable_animations: parseBoolean(disable_animations),
+    };
+    applyOptionalBorderRadius(renderOptions, border_radius, 20, 4.5);
+
+    return res.send(renderWakatimeCard(stats, renderOptions));
   } catch (err) {
-    // handleApiError sanitizes error messages via sanitizeErrorMessage()
-    // which replaces unsafe patterns containing user data with safe alternatives
     return handleApiError({ res, error: err, colorOptions });
   }
 }

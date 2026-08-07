@@ -36,20 +36,11 @@ export default async function pinCardHandler(req, res) {
     show_owner,
     cache_seconds,
     locale: rawLocale,
-    border_radius: rawBorderRadius,
+    border_radius,
     border_color,
     description_lines_count,
   } = req.query;
 
-  // Validate and sanitize border_radius early for the pin-card default path.
-  const border_radius = (() => {
-    const br = Number.parseFloat(rawBorderRadius);
-    if (Number.isNaN(br)) {
-      return 4.5;
-    }
-    // Clamp to reasonable range; SVG border radius shouldn't exceed half width/height.
-    return Math.max(0, Math.min(br, 50));
-  })();
   const locale = resolveRequestLocale(rawLocale);
   const access = prepareUsernameSvgAccess({
     res,
