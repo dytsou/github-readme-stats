@@ -13,7 +13,7 @@ import { wakatimeCardLocales } from "../translations.js";
  * @description Using ES module JSON import which works in modern Node.js and Cloudflare Workers.
  */
 // @ts-ignore - JSON import
-import languageColors from "../common/languageColors.json";
+import languageColors from "../common/languageColors.json" with { type: "json" };
 
 const DEFAULT_CARD_WIDTH = 495;
 const MIN_CARD_WIDTH = 250;

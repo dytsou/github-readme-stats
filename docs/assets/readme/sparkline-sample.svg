@@ -1,0 +1,82 @@
+
+      <svg
+        width="300"
+        height="165"
+        viewBox="0 0 300 165"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-labelledby="descId"
+      >
+        <title id="titleId"></title>
+        <desc id="descId"></desc>
+        <style>
+          .header {
+            font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
+            fill: #fe428e;
+            animation: fadeInAnimation 0.8s ease-in-out forwards;
+          }
+          @supports(-moz-appearance: auto) {
+            /* Selector detects Firefox */
+            .header { font-size: 15.5px; }
+          }
+          .spark-end-label { font: 600 10px 'Segoe UI', Ubuntu, Sans-Serif; fill: #a9fef7; opacity: 0.75 }
+    .spark-meta { font: 600 11px 'Segoe UI', Ubuntu, Sans-Serif; fill: #a9fef7; opacity: 0.75 }
+    .spark-area { fill: #fe428e; opacity: 0.22 }
+    .spark { fill: none; stroke: #fe428e; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round }
+    .spark-grid { stroke: #a9fef7; stroke-width: 1; opacity: 0.1 }
+    .spark-empty { font: 400 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: #a9fef7; opacity: 0.8 }
+
+          
+          
+      * { animation-duration: 0s !important; animation-delay: 0s !important; }
+      .stagger { opacity: 1 !important; }
+      #rect-mask rect { animation: none !important; }
+      .lang-progress { animation: none !important; }
+    
+        </style>
+
+        
+
+        <rect
+          data-testid="card-bg"
+          x="0.5"
+          y="0.5"
+          rx="4.5"
+          height="99%"
+          stroke="#e4e2e2"
+          width="299"
+          fill="#141321"
+          stroke-opacity="1"
+        />
+
+        
+      <g
+        data-testid="card-title"
+        transform="translate(25, 35)"
+      >
+        <g transform="translate(0, 0)">
+      <text
+        x="0"
+        y="0"
+        class="header"
+        data-testid="header"
+      >alex-chen/awesome-workers</text>
+    </g>
+      </g>
+    
+
+        <g
+          data-testid="main-card-body"
+          transform="translate(0, 55)"
+        >
+          
+    <line class="spark-grid" x1="14" y1="29.5" x2="286" y2="29.5"/><line class="spark-grid" x1="14" y1="49" x2="286" y2="49"/><line class="spark-grid" x1="14" y1="68.5" x2="286" y2="68.5"/>
+    <path data-testid="sparkline-area" class="spark-area" d="M 14,15.701136978884676 L 23.066666666666666,15.278830536004321 L 32.13333333333333,15.06767731456415 L 41.2,14.729832160259875 L 50.266666666666666,14.60314022739577 L 59.33333333333333,14.265295073091494 L 68.4,14.138603140227403 L 77.46666666666667,13.800757985923127 L 86.53333333333333,13.674066053059022 L 95.6,13.674066053059022 L 104.66666666666666,13.631835408770982 L 113.73333333333332,13.378451543042772 L 122.80000000000001,13.336220898754732 L 131.86666666666667,13.082837033026522 L 140.93333333333334,13.040606388738496 L 150,13.040606388738496 L 159.06666666666666,12.998375744450456 L 168.13333333333333,12.829453167298325 L 177.2,12.44937736870601 L 186.26666666666665,12.280454791553879 L 195.33333333333331,11.90037899296155 L 204.39999999999998,11.90037899296155 L 213.46666666666664,11.520303194369248 L 222.53333333333336,11.351380617217103 L 231.60000000000002,11.055766107200867 L 240.66666666666669,10.971304818624802 L 249.73333333333335,10.675690308608552 L 258.8,10.675690308608552 L 267.8666666666667,10.380075798592316 L 276.93333333333334,10.29561451001625 L 286,10 L 286,88 L 14,88 Z"/>
+    <polyline data-testid="sparkline" class="spark" points="14,15.701136978884676 23.066666666666666,15.278830536004321 32.13333333333333,15.06767731456415 41.2,14.729832160259875 50.266666666666666,14.60314022739577 59.33333333333333,14.265295073091494 68.4,14.138603140227403 77.46666666666667,13.800757985923127 86.53333333333333,13.674066053059022 95.6,13.674066053059022 104.66666666666666,13.631835408770982 113.73333333333332,13.378451543042772 122.80000000000001,13.336220898754732 131.86666666666667,13.082837033026522 140.93333333333334,13.040606388738496 150,13.040606388738496 159.06666666666666,12.998375744450456 168.13333333333333,12.829453167298325 177.2,12.44937736870601 186.26666666666665,12.280454791553879 195.33333333333331,11.90037899296155 204.39999999999998,11.90037899296155 213.46666666666664,11.520303194369248 222.53333333333336,11.351380617217103 231.60000000000002,11.055766107200867 240.66666666666669,10.971304818624802 249.73333333333335,10.675690308608552 258.8,10.675690308608552 267.8666666666667,10.380075798592316 276.93333333333334,10.29561451001625 286,10"/>
+    <circle data-testid="sparkline-end" cx="286" cy="10" r="3.5" fill="#fe428e"/>
+    <text data-testid="sparkline-total" class="spark-end-label" x="286" y="8" text-anchor="end">842 commits</text>
+    <text data-testid="sparkline-meta" class="spark-meta" x="150" y="96" text-anchor="middle">+135 in 30d</text>
+        </g>
+      </svg>
+    

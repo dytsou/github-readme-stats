@@ -1,11 +1,53 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { renderGistCard } from "../src/cards/gist.js";
+import { renderHeatmapCard } from "../src/cards/heatmap.js";
+import { renderSparklineCard } from "../src/cards/sparkline.js";
+import { renderStreakCard } from "../src/cards/streak.js";
 import { renderRepoCard } from "../src/cards/repo.js";
 import { renderStatsCard } from "../src/cards/stats.js";
 import { renderTopLanguages } from "../src/cards/top-languages.js";
 import { renderWakatimeCard } from "../src/cards/wakatime.js";
 
 const OUT = "docs/assets/readme";
+
+/**
+ * Illustrative contribution calendar for readme previews (not live API data).
+ * @returns {import("../src/fetchers/contributions.js").ContributionsData} Mock contributions payload.
+ */
+const buildMockContributions = () => {
+  /** @type {{ date: string, count: number }[]} */
+  const days = [];
+  /** @type {{ contributionDays: { date: string, contributionCount: number }[] }[]} */
+  const weeks = [];
+  const start = new Date("2025-08-10T12:00:00Z");
+
+  for (let w = 0; w < 53; w++) {
+    const contributionDays = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(start);
+      date.setUTCDate(start.getUTCDate() + w * 7 + d);
+      const dateStr = date.toISOString().slice(0, 10);
+      const count =
+        (w + d) % 11 === 0 ? 0 : Math.min(12, ((w * 3 + d * 5) % 10) + 1);
+      contributionDays.push({ date: dateStr, contributionCount: count });
+      days.push({ date: dateStr, count });
+    }
+    weeks.push({ contributionDays });
+  }
+
+  const totalContributions = days.reduce((sum, day) => sum + day.count, 0);
+
+  return {
+    name: "Alex Chen",
+    days,
+    streak: {
+      total: totalContributions,
+      current: 12,
+      longest: 34,
+    },
+    calendar: { totalContributions, weeks },
+  };
+};
 
 /** Illustrative fixtures for readme preview SVGs (not live API data). */
 const readmeSampleMock = {
@@ -113,6 +155,12 @@ export function generateReadmeSamples(outDir = OUT) {
   mkdirSync(outDir, { recursive: true });
 
   const { stats, langs, repo, gist, wakatime } = readmeSampleMock;
+  const contributions = buildMockContributions();
+  const commitSparkline = {
+    name: readmeSampleMock.repo.nameWithOwner,
+    days: contributions.days,
+    totalCommits: 842,
+  };
   const preview = { theme: "radical", disable_animations: true };
 
   const files = {
@@ -136,6 +184,12 @@ export function generateReadmeSamples(outDir = OUT) {
       ...preview,
       layout: "compact",
     }),
+    "streak-sample.svg": renderStreakCard(contributions, preview),
+    "sparkline-sample.svg": renderSparklineCard(commitSparkline, {
+      ...preview,
+      days: 30,
+    }),
+    "heatmap-sample.svg": renderHeatmapCard(contributions, preview),
   };
 
   for (const [name, svg] of Object.entries(files)) {

@@ -9,11 +9,16 @@ Dynamically generated GitHub stats cards for your README.
 ## Table of contents
 
 - [Quick Start](#quick-start)
-- [GitHub Stats Card](#github-stats-card)
-- [Top Languages Card](#top-languages-card)
-- [Repository Card](#repository-card)
+- [User Cards](#user-cards)
+  - [GitHub Stats Card](#github-stats-card)
+  - [Top Languages Card](#top-languages-card)
+  - [Streak Card](#streak-card)
+  - [Heatmap Card](#heatmap-card)
+  - [WakaTime Card](#wakatime-card)
+- [Repository Cards](#repository-cards)
+  - [Repository Card](#repository-card)
+  - [Sparkline Card](#sparkline-card)
 - [Gist Card](#gist-card)
-- [WakaTime Card](#wakatime-card)
 - [Deployment](#deployment)
 - [Configuration](#configuration)
 - [API Documentation](#api-documentation)
@@ -32,7 +37,11 @@ Dynamically generated GitHub stats cards for your README.
 ![GitHub Stats](https://YOUR-INSTANCE.WORKERS.DEV/api?username=YOUR_USERNAME)
 ```
 
-## GitHub Stats Card
+## User Cards
+
+Cards keyed by GitHub `username`.
+
+### GitHub Stats Card
 
 Display your GitHub statistics including stars, commits, pull requests, and more.
 
@@ -69,7 +78,7 @@ Use GitHub's theme context tags for automatic dark/light mode:
 
 See [all available themes](themes/README.md). All options: [API.md — Stats Card](API.md#1-stats-card).
 
-## Top Languages Card
+### Top Languages Card
 
 Display your most frequently used programming languages.
 
@@ -97,47 +106,57 @@ Display your most frequently used programming languages.
 
 All options: [API.md — Top Languages Card](API.md#2-top-languages-card).
 
-## Repository Card
+### Streak Card
 
-Pin additional repositories beyond GitHub's 6-repo limit.
+Display GitHub contribution streak statistics with current streak as the hero metric.
 
-![Example repository card](docs/assets/readme/pin-sample.svg)
-
-### Basic Usage
-
-```markdown
-![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=REPO_NAME)
-```
-
-### Example
-
-```markdown
-![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=github-readme-stats&show_owner=true)
-```
-
-All options: [API.md — Repository Card](API.md#3-repository-card).
-
-## Gist Card
-
-Display GitHub Gists in your README.
-
-![Example gist card](docs/assets/readme/gist-sample.svg)
+![Example streak card](docs/assets/readme/streak-sample.svg)
 
 ### Basic Usage
 
 ```markdown
-![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=GIST_ID)
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME)
+```
+
+### Examples
+
+**Weekly streak mode:**
+
+```markdown
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME&mode=weekly&theme=radical)
+```
+
+**Hide longest streak:**
+
+```markdown
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME&hide_longest=true)
+```
+
+All options: [API.md — Streak Card](API.md#7-streak-card).
+
+### Heatmap Card
+
+Render a GitHub-style contribution heatmap grid.
+
+![Example heatmap card](docs/assets/readme/heatmap-sample.svg)
+
+### Basic Usage
+
+```markdown
+![Contribution Heatmap](https://YOUR-INSTANCE.WORKERS.DEV/api/heatmap?username=YOUR_USERNAME)
 ```
 
 ### Example
 
+**Custom cell colors:**
+
 ```markdown
-![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=bbfce31e0217a3689c8d961a356cb10d&show_owner=true)
+![Contribution Heatmap](https://YOUR-INSTANCE.WORKERS.DEV/api/heatmap?username=YOUR_USERNAME&heatmap_colors=161b22,0e4429,006d32,26a641,39d353)
 ```
 
-All options: [API.md — Gist Card](API.md#4-gist-card).
+All options: [API.md — Heatmap Card](API.md#9-heatmap-card).
 
-## WakaTime Card
+### WakaTime Card
 
 Display your WakaTime coding statistics.
 
@@ -159,6 +178,70 @@ Display your WakaTime coding statistics.
 ```
 
 All options: [API.md — WakaTime Card](API.md#5-waka-time-card).
+
+## Repository Cards
+
+Cards keyed by repository owner and name (`username` + `repo`).
+
+### Repository Card
+
+Pin additional repositories beyond GitHub's 6-repo limit.
+
+![Example repository card](docs/assets/readme/pin-sample.svg)
+
+### Basic Usage
+
+```markdown
+![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=REPO_NAME)
+```
+
+### Example
+
+```markdown
+![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=github-readme-stats&show_owner=true)
+```
+
+All options: [API.md — Repository Card](API.md#3-repository-card).
+
+### Sparkline Card
+
+Render a cumulative commit history sparkline for **one repository** (like star history), using default-branch commits over the last N days (default 30).
+
+![Example sparkline card](docs/assets/readme/sparkline-sample.svg)
+
+### Basic Usage
+
+```markdown
+![Repo Commit Sparkline](https://YOUR-INSTANCE.WORKERS.DEV/api/sparkline?username=OWNER&repo=REPO_NAME)
+```
+
+### Example
+
+```markdown
+![Repo Commit Sparkline](https://YOUR-INSTANCE.WORKERS.DEV/api/sparkline?username=OWNER&repo=REPO_NAME&days=14&theme=radical)
+```
+
+All options: [API.md — Sparkline Card](API.md#8-sparkline-card).
+
+## Gist Card
+
+Display GitHub Gists in your README.
+
+![Example gist card](docs/assets/readme/gist-sample.svg)
+
+### Basic Usage
+
+```markdown
+![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=GIST_ID)
+```
+
+### Example
+
+```markdown
+![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=bbfce31e0217a3689c8d961a356cb10d&show_owner=true)
+```
+
+All options: [API.md — Gist Card](API.md#4-gist-card).
 
 ## Deployment
 

@@ -47,6 +47,7 @@ Default cache durations (can be overridden with `cache_seconds`):
 - **Repository Card**: 10 days (864000 seconds)
 - **Gist Card**: 2 days (172800 seconds)
 - **WakaTime Card**: 24 hours (86400 seconds)
+- **Contribution Calendar Cards** (streak, sparkline, heatmap): 24 hours (86400 seconds)
 
 Minimum cache duration: 12 hours (43200 seconds)  
 Maximum cache duration: 10 days (864000 seconds)
@@ -323,7 +324,108 @@ Plain text suitable for LLM context injection, including rank explanation and la
 
 ---
 
-### 7. Status - Uptime Check
+### 7. Streak Card
+
+Display GitHub contribution streak statistics with **current streak** as the hero metric.
+
+**Endpoint:** `GET /api/streak`
+
+**Required Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `username` | string | GitHub username |
+
+**Optional Parameters:**
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `mode` | string | Streak granularity (`daily`, `weekly`) | `daily` |
+| `hide_total` | boolean | Hide total contributions footer | `false` |
+| `hide_current` | boolean | Hide current streak hero | `false` |
+| `hide_longest` | boolean | Hide longest streak footer | `false` |
+| `starting_year` | number | Limit calendar from January 1 of this year | - |
+| `hide_title` | boolean | Hide card title | `false` |
+| `custom_title` | string | Custom card title | `GitHub Streak` |
+| `card_width` | number | Card width in pixels | `300` |
+| `disable_animations` | boolean | Disable animations | `false` |
+
+Plus all [common parameters](#common-parameters).
+
+**Example Request:**
+
+```
+GET /api/streak?username=NAME&theme=radical&mode=weekly&hide_longest=true
+```
+
+---
+
+### 8. Sparkline Card
+
+Render a cumulative line chart of **default-branch commits** for a single repository over the last N days (default 30), similar to star-history charts. Baseline is the commit total before the window.
+
+**Endpoint:** `GET /api/sparkline`
+
+**Required Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `username` | string | Repository owner (user or org login) |
+| `repo` | string | Repository name |
+
+**Optional Parameters:**
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `days` | number | Last N days to plot (1–90); baseline is commit total before the window | `30` |
+| `starting_year` | number | Limit history from January 1 of this year | - |
+| `card_width` | number | Card width in pixels | `300` |
+| `card_height` | number | Card height in pixels | `165` |
+| `hide_title` | boolean | Hide card title | `false` |
+| `custom_title` | string | Custom card title | Repository `owner/name` |
+
+Plus all [common parameters](#common-parameters).
+
+**Example Request:**
+
+```
+GET /api/sparkline?username=OWNER&repo=REPO_NAME&days=14&theme=default
+```
+
+---
+
+### 9. Heatmap Card
+
+Render a GitHub-style contribution heatmap grid.
+
+**Endpoint:** `GET /api/heatmap`
+
+**Required Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `username` | string | GitHub username |
+
+**Optional Parameters:**
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `heatmap_colors` | string | Comma-separated five hex colors (no `#`) for levels 0–4 | GitHub green preset |
+| `starting_year` | number | Limit calendar from January 1 of this year | - |
+| `hide_title` | boolean | Hide card title | `false` |
+| `custom_title` | string | Custom card title | `Contribution Heatmap` |
+
+Plus all [common parameters](#common-parameters).
+
+**Example Request:**
+
+```
+GET /api/heatmap?username=NAME&heatmap_colors=161b22,0e4429,006d32,26a641,39d353
+```
+
+---
+
+### 10. Status - Uptime Check
 
 Check if the Personal Access Tokens (PATs) are still functional.
 
@@ -366,7 +468,7 @@ GET /api/status/up?type=json
 
 ---
 
-### 8. Status - PAT Information
+### 11. Status - PAT Information
 
 Get detailed information about Personal Access Tokens status.
 
