@@ -113,26 +113,27 @@ export function generateReadmeSamples(outDir = OUT) {
   mkdirSync(outDir, { recursive: true });
 
   const { stats, langs, repo, gist, wakatime } = readmeSampleMock;
+  const preview = { theme: "radical", disable_animations: true };
 
   const files = {
     "stats-sample.svg": renderStatsCard(stats, {
-      theme: "radical",
+      ...preview,
       show_icons: true,
     }),
     "top-langs-sample.svg": renderTopLanguages(langs, {
+      ...preview,
       layout: "compact",
-      theme: "radical",
     }),
     "pin-sample.svg": renderRepoCard(repo, {
-      theme: "radical",
+      ...preview,
       show_owner: true,
     }),
     "gist-sample.svg": renderGistCard(gist, {
-      theme: "radical",
+      ...preview,
       show_owner: true,
     }),
     "wakatime-sample.svg": renderWakatimeCard(wakatime, {
-      theme: "radical",
+      ...preview,
       layout: "compact",
     }),
   };

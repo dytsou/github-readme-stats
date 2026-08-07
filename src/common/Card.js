@@ -256,7 +256,12 @@ class Card {
           ${process.env.NODE_ENV === "test" ? "" : this.getAnimations()}
           ${
             this.animations === false
-              ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
+              ? `
+      * { animation-duration: 0s !important; animation-delay: 0s !important; }
+      .stagger { opacity: 1 !important; }
+      #rect-mask rect { animation: none !important; }
+      .lang-progress { animation: none !important; }
+    `
               : ""
           }
         </style>
