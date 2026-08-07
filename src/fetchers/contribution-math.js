@@ -125,7 +125,7 @@ const computeWeeklyStreakStats = (days, today) => {
     return { total: 0, current: 0, longest: 0 };
   }
 
-  const sorted = [...weeks.keys()].sort();
+  const sorted = [...weeks.keys()].sort((a, b) => a.localeCompare(b));
   let longest = 0;
   let run = 0;
   /** @type {string | null} */

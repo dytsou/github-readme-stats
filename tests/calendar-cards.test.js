@@ -176,6 +176,6 @@ describe("calendar cards", () => {
     const points = queryByTestId(document.body, "sparkline")?.getAttribute(
       "points",
     );
-    expect(points?.split(" ").length).toBe(91);
+    expect(points?.split(" ")).toHaveLength(91);
   });
 });

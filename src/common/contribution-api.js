@@ -118,7 +118,7 @@ const createContributionHandler =
       setCacheHeaders(res, cacheSeconds);
 
       const options = buildContributionRenderOptions(access.colorOptions, rest);
-      return res.send(render(data, { ...options, ...rest }));
+      return res.send(render(data, options));
     } catch (err) {
       return handleApiError({
         res,

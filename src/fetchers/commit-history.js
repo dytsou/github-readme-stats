@@ -53,6 +53,9 @@ const parseWindowDays = (rawDays) => {
   if (rawDays === undefined || rawDays === null || rawDays === "") {
     return DEFAULT_WINDOW_DAYS;
   }
+  if (typeof rawDays !== "string" && typeof rawDays !== "number") {
+    return DEFAULT_WINDOW_DAYS;
+  }
   const n = Number.parseInt(String(rawDays), 10);
   if (!Number.isFinite(n)) {
     return DEFAULT_WINDOW_DAYS;
@@ -83,12 +86,13 @@ const aggregateCommitDatesByDay = (committedDates) => {
 const fillDailyCommitSeries = (byDay, fromDate, toDate) => {
   /** @type {ContributionDay[]} */
   const days = [];
-  const cursor = new Date(`${fromDate}T12:00:00Z`);
-  const end = new Date(`${toDate}T12:00:00Z`);
-  while (cursor <= end) {
-    const dateStr = cursor.toISOString().slice(0, 10);
+  let cursorMs = new Date(`${fromDate}T12:00:00Z`).getTime();
+  const endMs = new Date(`${toDate}T12:00:00Z`).getTime();
+  const dayMs = 86_400_000;
+  while (cursorMs <= endMs) {
+    const dateStr = new Date(cursorMs).toISOString().slice(0, 10);
     days.push({ date: dateStr, count: byDay.get(dateStr) ?? 0 });
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
+    cursorMs += dayMs;
   }
   return days;
 };
@@ -132,6 +136,52 @@ const historyFetcher = (variables, token) =>
   );
 
 /**
+ * @param {object | null | undefined} repository GraphQL repository payload.
+ * @param {number} page Zero-based pagination index.
+ * @returns {{
+ *   nameWithOwner?: string,
+ *   totalCommits?: number,
+ *   dates: string[],
+ *   nextCursor: string | null,
+ *   stop: boolean,
+ * }}
+ */
+const readCommitHistoryPage = (repository, page) => {
+  if (!repository) {
+    throw new CustomError("Repository not found", "USER_NOT_FOUND");
+  }
+  if (repository.isPrivate) {
+    throw new Error("Repository Not found");
+  }
+
+  const commit = repository.defaultBranchRef?.target;
+  if (!commit) {
+    return { dates: [], nextCursor: null, stop: true };
+  }
+
+  const recent = commit.recentCommits;
+  const totalCommits =
+    page === 0 ? (commit.history?.totalCount ?? 0) : undefined;
+  if (!recent?.nodes?.length) {
+    return {
+      nameWithOwner: repository.nameWithOwner,
+      totalCommits,
+      dates: [],
+      nextCursor: null,
+      stop: true,
+    };
+  }
+
+  return {
+    nameWithOwner: repository.nameWithOwner,
+    totalCommits,
+    dates: recent.nodes.map((node) => node.committedDate),
+    nextCursor: recent.pageInfo?.hasNextPage ? recent.pageInfo.endCursor : null,
+    stop: !recent.pageInfo?.hasNextPage,
+  };
+};
+
+/**
  * Fetches daily commit counts for one repository's default branch (star-history style).
  *
  * @param {string} owner Repository owner (user or org login).
@@ -172,35 +222,18 @@ const fetchRepoCommitHistory = async (owner, repo, options = {}) => {
     });
     throwIfGraphQLErrors(res);
 
-    const repository = res.data.data.repository;
-    if (!repository) {
-      throw new CustomError("Repository not found", "USER_NOT_FOUND");
+    const pageData = readCommitHistoryPage(res.data.data.repository, page);
+    if (pageData.nameWithOwner) {
+      nameWithOwner = pageData.nameWithOwner;
     }
-    if (repository.isPrivate) {
-      throw new Error("Repository Not found");
+    if (pageData.totalCommits !== undefined) {
+      totalCommits = pageData.totalCommits;
     }
-
-    nameWithOwner = repository.nameWithOwner ?? nameWithOwner;
-    const commit = repository.defaultBranchRef?.target;
-    if (!commit) {
+    committedDates.push(...pageData.dates);
+    if (pageData.stop) {
       break;
     }
-
-    if (page === 0) {
-      totalCommits = commit.history?.totalCount ?? 0;
-    }
-
-    const recent = commit.recentCommits;
-    if (!recent?.nodes?.length) {
-      break;
-    }
-
-    committedDates.push(...recent.nodes.map((node) => node.committedDate));
-
-    if (!recent.pageInfo?.hasNextPage) {
-      break;
-    }
-    after = recent.pageInfo.endCursor;
+    after = pageData.nextCursor;
   }
 
   const byDay = aggregateCommitDatesByDay(committedDates);

@@ -20,6 +20,9 @@ const parseSparklineWindowDays = (rawDays) => {
   if (rawDays === undefined || rawDays === null || rawDays === "") {
     return DEFAULT_SPARKLINE_DAYS;
   }
+  if (typeof rawDays !== "string" && typeof rawDays !== "number") {
+    return DEFAULT_SPARKLINE_DAYS;
+  }
   const n = Number.parseInt(String(rawDays), 10);
   if (!Number.isFinite(n)) {
     return DEFAULT_SPARKLINE_DAYS;
@@ -54,18 +57,20 @@ const buildSparklineGeometry = (values, width, height) => {
   }));
 
   const linePoints = coords.map((c) => `${c.x},${c.y}`).join(" ");
+  const first = coords[0];
+  const last = coords.at(-1);
   const areaPath =
-    `M ${coords[0].x},${coords[0].y} ` +
+    `M ${first.x},${first.y} ` +
     coords
       .slice(1)
       .map((c) => `L ${c.x},${c.y}`)
       .join(" ") +
-    ` L ${coords[coords.length - 1].x},${chartBottom} L ${coords[0].x},${chartBottom} Z`;
+    ` L ${last.x},${chartBottom} L ${first.x},${chartBottom} Z`;
 
   return {
     linePoints,
     areaPath,
-    last: coords[coords.length - 1],
+    last,
     total,
     max: maxVal,
     min: minVal,
