@@ -6,6 +6,9 @@ import topLangsHandler from "../api/top-langs.js";
 import wakatimeHandler from "../api/wakatime.js";
 import gistHandler from "../api/gist.js";
 import profileContextHandler from "../api/profile-context.js";
+import streakHandler from "../api/streak.js";
+import sparklineHandler from "../api/sparkline.js";
+import heatmapHandler from "../api/heatmap.js";
 import { setupWorkerEnv } from "./common/worker-env.js";
 import {
   adaptExpressHandler,
@@ -29,6 +32,9 @@ const cardRoutes = [
   ["/api/wakatime", wakatimeHandler],
   ["/api/gist", gistHandler],
   ["/api/profile/context", profileContextHandler],
+  ["/api/streak", streakHandler],
+  ["/api/sparkline", sparklineHandler],
+  ["/api/heatmap", heatmapHandler],
 ];
 
 /**

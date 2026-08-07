@@ -5,6 +5,9 @@ import langCard from "./api/top-langs.js";
 import wakatimeCard from "./api/wakatime.js";
 import gistCard from "./api/gist.js";
 import profileContext from "./api/profile-context.js";
+import streakCard from "./api/streak.js";
+import sparklineCard from "./api/sparkline.js";
+import heatmapCard from "./api/heatmap.js";
 import express from "express";
 
 const app = express();
@@ -17,6 +20,9 @@ router.get("/top-langs", langCard);
 router.get("/wakatime", wakatimeCard);
 router.get("/gist", gistCard);
 router.get("/profile/context", profileContext);
+router.get("/streak", streakCard);
+router.get("/sparkline", sparklineCard);
+router.get("/heatmap", heatmapCard);
 
 app.use("/api", router);
 
