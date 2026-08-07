@@ -14,7 +14,11 @@ export default defineConfig({
       // Note: tempDirectory may not be fully supported by v8 provider
       // Ensure .coverage-tmp directory exists before running tests
     },
-    exclude: ["**/node_modules/**", "**/tests/e2e/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/tests/e2e/**",
+      "scripts/generate-readme-samples.gen.test.js",
+    ],
     testTimeout: 10000,
   },
 });

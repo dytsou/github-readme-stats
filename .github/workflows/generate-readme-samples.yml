@@ -1,23 +1,29 @@
-name: Test
+name: Generate readme sample SVGs
+
 on:
   push:
     branches:
       - main
       - master
-  pull_request:
-    branches:
-      - main
-      - master
+    paths:
+      - "src/cards/**"
+      - "src/common/Card.js"
+      - "src/common/color.js"
+      - "src/common/render.js"
+      - "scripts/generate-readme-samples.js"
+      - "themes/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: read
-  actions: read
 
 jobs:
-  build:
-    name: Perform tests
+  generate:
+    if: github.repository == 'dytsou/github-readme-stats'
+    name: Regenerate and commit readme preview SVGs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       matrix:
         node-version: [22.x]
@@ -42,21 +48,17 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+        env:
+          CI: true
 
       - name: Generate readme sample SVGs
         run: pnpm run generate-readme-samples
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Run ESLint
-        run: pnpm lint
-
-      - name: Run bench tests
-        run: pnpm bench
-
-      - name: Run Prettier
-        run: pnpm format
-
-      - name: Code Coverage
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - name: Commit sample SVGs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/assets/readme/*.svg
+          git diff --staged --quiet && echo "No SVG changes" && exit 0
+          git commit --no-verify -m "chore: regenerate readme sample SVGs"
+          git push
