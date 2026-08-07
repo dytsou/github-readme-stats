@@ -46,11 +46,11 @@ _(make sure you already have a [Vercel](https://vercel.com/) account)_
 We're currently paused addition of new themes to decrease maintenance efforts. All pull requests related to new themes will be closed.
 
 > [!NOTE]
-> If you are considering contributing your theme just because you are using it personally, then instead of adding it to our theme collection, you can use card [customization options](./readme.md#customization).
+> If you are considering contributing your theme just because you are using it personally, then instead of adding it to our theme collection, you can use card [customization options](./README.md#configuration).
 
 ## Translations Contribution
 
-GitHub Readme Stats supports multiple languages, if we are missing your language, you can contribute it! You can check the currently supported languages [here](./readme.md#available-locales).
+GitHub Readme Stats supports multiple languages, if we are missing your language, you can contribute it! You can check the currently supported languages [here](./README.md#locales).
 
 To contribute your language you need to edit the [src/translations.js](./src/translations.js) file and add new property to each object where the key is the language code in [ISO 639-1 standard](https://www.andiamo.co.uk/resources/iso-language-codes/) and the value is the translated string.
 

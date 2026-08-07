@@ -588,4 +588,4 @@ Configure your instance using these environment variables:
 
 ## Deployment
 
-See the main [README.md](readme.md) for deployment instructions.
+See the main [README.md](README.md) for deployment instructions.

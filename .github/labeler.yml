@@ -12,7 +12,8 @@ card-i18n:
 documentation:
   - changed-files:
       - any-glob-to-any-file:
-          - readme.md
+          - README.md
+          - README-zh.md
           - CONTRIBUTING.md
           - CODE_OF_CONDUCT.md
           - SECURITY.md
