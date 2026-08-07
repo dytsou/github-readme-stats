@@ -215,7 +215,11 @@ const fetchRepoCommitHistory = async (owner, repo, options = {}) => {
 
 // ponytail: assert-based self-check — run with node src/fetchers/commit-history.js
 import { fileURLToPath } from "node:url";
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (
+  import.meta.url &&
+  typeof process !== "undefined" &&
+  process.argv?.[1] === fileURLToPath(import.meta.url)
+) {
   const byDay = aggregateCommitDatesByDay([
     "2026-08-05T10:00:00Z",
     "2026-08-05T18:00:00Z",

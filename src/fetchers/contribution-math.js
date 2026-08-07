@@ -242,7 +242,11 @@ const buildSparklineCumulativeSeries = (days, windowDays) => {
 
 // ponytail: assert-based self-check — run with node src/fetchers/contribution-math.js
 import { fileURLToPath } from "node:url";
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (
+  import.meta.url &&
+  typeof process !== "undefined" &&
+  process.argv?.[1] === fileURLToPath(import.meta.url)
+) {
   const sample = [
     { date: "2026-08-01", count: 3 },
     { date: "2026-08-02", count: 1 },
