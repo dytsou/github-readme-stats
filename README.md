@@ -2,6 +2,8 @@
 
 Dynamically generated GitHub stats cards for your README.
 
+![Powered by Cloudflare Workers](https://img.shields.io/badge/Powered%20by-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)
+
 [English](README.md) · [繁體中文](README-zh.md)
 
 ## Table of contents

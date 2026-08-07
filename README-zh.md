@@ -2,9 +2,9 @@
 
 在 README 中動態產生 GitHub 統計卡片。
 
-[English](README.md) · [繁體中文](README-zh.md)
-
 ![Powered by Cloudflare Workers](https://img.shields.io/badge/Powered%20by-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)
+
+[English](README.md) · [繁體中文](README-zh.md)
 
 ## 目錄
 
@@ -25,8 +25,7 @@
 
 1. **部署你的執行個體** — 依 [部署](#部署) 完成 Cloudflare Workers 部署，並在瀏覽器驗證：
 
-   `https://YOUR-INSTANCE.WORKERS.DEV/api?username=YOUR_USERNAME`
-
+  `https://YOUR-INSTANCE.WORKERS.DEV/api?username=YOUR_USERNAME`
 2. **貼到 README**（將預留位置換成你的 Workers 網域與 GitHub 使用者名稱）：
 
 ```markdown
@@ -178,11 +177,13 @@
 
 ### 環境變數
 
-| 變數 | 說明 |
-| --- | --- |
-| `GITHUB_PAT` | GitHub PAT（必填）；可新增 `GITHUB_PAT_2` 等以提高配額 |
-| `WHITELIST` | 允許的使用者名稱，以逗號分隔 |
-| `CACHE_SECONDS` | 預設快取秒數（`0` 表示關閉） |
+
+| 變數              | 說明                                       |
+| --------------- | ---------------------------------------- |
+| `GITHUB_PAT`    | GitHub PAT（必填）；可新增 `GITHUB_PAT_2` 等以提高配額 |
+| `WHITELIST`     | 允許的使用者名稱，以逗號分隔                           |
+| `CACHE_SECONDS` | 預設快取秒數（`0` 表示關閉）                         |
+
 
 完整列表：[API.md — Environment Variables](API.md#environment-variables)。
 
@@ -228,13 +229,15 @@
 
 多數失敗會回傳 **錯誤 SVG**（非 JSON）：
 
-| 現象 | 可能原因 |
-| --- | --- |
-| 缺少 username / 參數錯誤 | URL 中未帶 `username`（或 `repo`、`id`） |
-| User not found | GitHub 使用者名稱拼錯，或誤用組織名稱作為 `username` |
-| 速率限制 / 服務不可用 | GitHub API 配額用盡 — 新增 `GITHUB_PAT_2`、收緊 `WHITELIST` 或稍候再試 |
-| No tokens / PAT 相關提示 | Worker 未設定 `GITHUB_PAT` secret |
-| WakaTime user not found | WakaTime 個人檔案或可見性設定（見 [WakaTime 卡片](#wakatime-卡片)） |
+
+| 現象                      | 可能原因                                                     |
+| ----------------------- | -------------------------------------------------------- |
+| 缺少 username / 參數錯誤      | URL 中未帶 `username`（或 `repo`、`id`）                        |
+| User not found          | GitHub 使用者名稱拼錯，或誤用組織名稱作為 `username`                      |
+| 速率限制 / 服務不可用            | GitHub API 配額用盡 — 新增 `GITHUB_PAT_2`、收緊 `WHITELIST` 或稍候再試 |
+| No tokens / PAT 相關提示    | Worker 未設定 `GITHUB_PAT` secret                           |
+| WakaTime user not found | WakaTime 個人檔案或可見性設定（見 [WakaTime 卡片](#wakatime-卡片)）       |
+
 
 完整錯誤格式：[API.md — Error Handling](API.md#error-handling)。
 
@@ -249,3 +252,4 @@
 
 > [!WARNING]
 > 預設僅統計**公開儲存庫**。若要包含私人儲存庫資料，須以與 `username` **同一使用者**的 PAT 部署自有執行個體。私人儲存庫彙總仍透過**公開卡片 URL** 提供 — 請視為有意公開，以 `WHITELIST` 限制執行個體，勿在需保密的場合嵌入該 URL。組織或 SSO 限制的私人儲存庫即使有 PAT 也可能無法顯示。
+
