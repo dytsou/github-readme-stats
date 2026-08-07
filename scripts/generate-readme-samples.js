@@ -7,7 +7,11 @@ import { renderWakatimeCard } from "../src/cards/wakatime.js";
 
 const OUT = "docs/assets/readme";
 
-/** @param {string} [outDir] */
+/**
+ * Write static readme preview SVGs.
+ * @param {string} [outDir] Output directory (default: docs/assets/readme).
+ * @returns {Record<string, string>} Map of filename to SVG markup.
+ */
 export function generateReadmeSamples(outDir = OUT) {
   mkdirSync(outDir, { recursive: true });
 
