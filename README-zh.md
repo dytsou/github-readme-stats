@@ -9,11 +9,16 @@
 ## 目錄
 
 - [快速開始](#快速開始)
-- [GitHub 統計卡片](#github-統計卡片)
-- [常用語言卡片](#常用語言卡片)
-- [儲存庫卡片](#儲存庫卡片)
+- [使用者卡片](#使用者卡片)
+  - [GitHub 統計卡片](#github-統計卡片)
+  - [常用語言卡片](#常用語言卡片)
+  - [Streak 卡片](#streak-卡片)
+  - [Heatmap 卡片](#heatmap-卡片)
+  - [WakaTime 卡片](#wakatime-卡片)
+- [儲存庫類卡片](#儲存庫類卡片)
+  - [儲存庫 Pin 卡片](#儲存庫-pin-卡片)
+  - [Sparkline 卡片](#sparkline-卡片)
 - [Gist 卡片](#gist-卡片)
-- [WakaTime 卡片](#wakatime-卡片)
 - [部署](#部署)
 - [設定](#設定)
 - [API 文件](#api-文件)
@@ -32,7 +37,11 @@
 ![GitHub Stats](https://YOUR-INSTANCE.WORKERS.DEV/api?username=YOUR_USERNAME)
 ```
 
-## GitHub 統計卡片
+## 使用者卡片
+
+以 GitHub `username` 為參數的卡片。
+
+### GitHub 統計卡片
 
 顯示 Stars、Commits、Pull Requests 等 GitHub 統計資料。
 
@@ -69,7 +78,7 @@
 
 完整主題列表見 [themes/README.md](themes/README.md)。全部參數：[API.md — Stats Card](API.md#1-stats-card)。
 
-## 常用語言卡片
+### 常用語言卡片
 
 顯示最常使用的程式語言。
 
@@ -97,47 +106,57 @@
 
 全部參數：[API.md — Top Languages Card](API.md#2-top-languages-card)。
 
-## 儲存庫卡片
+### Streak 卡片
 
-突破 GitHub 個人頁 6 個釘選儲存庫的限制，額外顯示儲存庫。
+顯示 GitHub 貢獻連續天數／週數，以「目前 streak」為主視覺。
 
-![範例儲存庫卡片](docs/assets/readme/pin-sample.svg)
-
-### 基本用法
-
-```markdown
-![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=REPO_NAME)
-```
-
-### 範例
-
-```markdown
-![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=github-readme-stats&show_owner=true)
-```
-
-全部參數：[API.md — Repository Card](API.md#3-repository-card)。
-
-## Gist 卡片
-
-在 README 中顯示 GitHub Gist。
-
-![範例 Gist 卡片](docs/assets/readme/gist-sample.svg)
+![範例 streak 卡片](docs/assets/readme/streak-sample.svg)
 
 ### 基本用法
 
 ```markdown
-![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=GIST_ID)
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME)
 ```
 
 ### 範例
 
+**週 streak 模式：**
+
 ```markdown
-![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=bbfce31e0217a3689c8d961a356cb10d&show_owner=true)
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME&mode=weekly&theme=radical)
 ```
 
-全部參數：[API.md — Gist Card](API.md#4-gist-card)。
+**隱藏最長 streak：**
 
-## WakaTime 卡片
+```markdown
+![GitHub Streak](https://YOUR-INSTANCE.WORKERS.DEV/api/streak?username=YOUR_USERNAME&hide_longest=true)
+```
+
+全部參數：[API.md — Streak Card](API.md#7-streak-card)。
+
+### Heatmap 卡片
+
+顯示 GitHub 風格的貢獻熱力圖。
+
+![範例 heatmap 卡片](docs/assets/readme/heatmap-sample.svg)
+
+### 基本用法
+
+```markdown
+![Contribution Heatmap](https://YOUR-INSTANCE.WORKERS.DEV/api/heatmap?username=YOUR_USERNAME)
+```
+
+### 範例
+
+**自訂色階：**
+
+```markdown
+![Contribution Heatmap](https://YOUR-INSTANCE.WORKERS.DEV/api/heatmap?username=YOUR_USERNAME&heatmap_colors=161b22,0e4429,006d32,26a641,39d353)
+```
+
+全部參數：[API.md — Heatmap Card](API.md#9-heatmap-card)。
+
+### WakaTime 卡片
 
 顯示 WakaTime 程式撰寫統計。
 
@@ -159,6 +178,70 @@
 ```
 
 全部參數：[API.md — WakaTime Card](API.md#5-waka-time-card)。
+
+## 儲存庫類卡片
+
+以儲存庫擁有者與名稱（`username` + `repo`）為參數的卡片。
+
+### 儲存庫 Pin 卡片
+
+突破 GitHub 個人頁 6 個釘選儲存庫的限制，額外顯示儲存庫。
+
+![範例儲存庫卡片](docs/assets/readme/pin-sample.svg)
+
+### 基本用法
+
+```markdown
+![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=REPO_NAME)
+```
+
+### 範例
+
+```markdown
+![Repository Card](https://YOUR-INSTANCE.WORKERS.DEV/api/pin?username=YOUR_USERNAME&repo=github-readme-stats&show_owner=true)
+```
+
+全部參數：[API.md — Repository Card](API.md#3-repository-card)。
+
+### Sparkline 卡片
+
+以折線圖顯示**單一儲存庫** default branch 的 commit 累進歷史（類似 star history），預設為最近 N 天（30 天）。
+
+![範例 sparkline 卡片](docs/assets/readme/sparkline-sample.svg)
+
+### 基本用法
+
+```markdown
+![Repo Commit Sparkline](https://YOUR-INSTANCE.WORKERS.DEV/api/sparkline?username=OWNER&repo=REPO_NAME)
+```
+
+### 範例
+
+```markdown
+![Repo Commit Sparkline](https://YOUR-INSTANCE.WORKERS.DEV/api/sparkline?username=OWNER&repo=REPO_NAME&days=14&theme=radical)
+```
+
+全部參數：[API.md — Sparkline Card](API.md#8-sparkline-card)。
+
+## Gist 卡片
+
+在 README 中顯示 GitHub Gist。
+
+![範例 Gist 卡片](docs/assets/readme/gist-sample.svg)
+
+### 基本用法
+
+```markdown
+![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=GIST_ID)
+```
+
+### 範例
+
+```markdown
+![Gist Card](https://YOUR-INSTANCE.WORKERS.DEV/api/gist?id=bbfce31e0217a3689c8d961a356cb10d&show_owner=true)
+```
+
+全部參數：[API.md — Gist Card](API.md#4-gist-card)。
 
 ## 部署
 

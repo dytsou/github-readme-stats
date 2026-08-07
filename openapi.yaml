@@ -710,6 +710,214 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/streak:
+    get:
+      tags:
+        - Cards
+      summary: Generate Streak Card
+      description: |
+        Display GitHub contribution streak statistics. Current streak is the hero metric.
+      operationId: getStreakCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly]
+            default: daily
+        - name: hide_total
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: hide_current
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: hide_longest
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: starting_year
+          in: query
+          schema:
+            type: integer
+        - name: card_width
+          in: query
+          schema:
+            type: integer
+            default: 300
+        - name: hide_title
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: custom_title
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Streak card SVG
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/sparkline:
+    get:
+      tags:
+        - Cards
+      summary: Generate Sparkline Card
+      description: |
+        Cumulative default-branch commit history for a single repository over
+        the last N days (default 30), similar to star-history charts.
+      operationId: getSparklineCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: Repository owner (user or organization login).
+          schema:
+            type: string
+        - name: repo
+          in: query
+          required: true
+          description: Repository name.
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: days
+          in: query
+          description:
+            Last N days (1–90); baseline is commit total before the window.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 90
+            default: 30
+        - name: starting_year
+          in: query
+          schema:
+            type: integer
+        - name: card_width
+          in: query
+          schema:
+            type: integer
+            default: 300
+        - name: card_height
+          in: query
+          schema:
+            type: integer
+            default: 165
+        - name: hide_title
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: custom_title
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sparkline card SVG
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/heatmap:
+    get:
+      tags:
+        - Cards
+      summary: Generate Heatmap Card
+      description:
+        GitHub-style contribution heatmap grid with optional custom colors.
+      operationId: getHeatmapCard
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Theme"
+        - $ref: "#/components/parameters/BgColor"
+        - $ref: "#/components/parameters/TitleColor"
+        - $ref: "#/components/parameters/TextColor"
+        - $ref: "#/components/parameters/BorderColor"
+        - $ref: "#/components/parameters/HideBorder"
+        - $ref: "#/components/parameters/BorderRadius"
+        - $ref: "#/components/parameters/CacheSeconds"
+        - $ref: "#/components/parameters/Locale"
+        - name: heatmap_colors
+          in: query
+          description: Comma-separated five hex colors (no #) for levels 0-4
+          schema:
+            type: string
+        - name: starting_year
+          in: query
+          schema:
+            type: integer
+        - name: hide_title
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: custom_title
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Heatmap card SVG
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/status/up:
     get:
       tags:
