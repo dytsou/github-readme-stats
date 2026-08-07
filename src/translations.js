@@ -1083,6 +1083,23 @@ const wakatimeCardLocales = {
   },
 };
 
+const localeFill = (en) =>
+  Object.fromEntries(
+    Object.keys(repoCardLocales["repocard.archived"]).map((locale) => [
+      locale,
+      en,
+    ]),
+  );
+
+const streakCardLocales = {
+  "streakcard.title": localeFill("GitHub Streak"),
+  "streakcard.current": localeFill("Current streak"),
+  "streakcard.total": localeFill("Total"),
+  "streakcard.longest": localeFill("Longest"),
+  "streakcard.days": localeFill("days"),
+  "streakcard.weeks": localeFill("weeks"),
+};
+
 const availableLocales = Object.keys(repoCardLocales["repocard.archived"]);
 
 /**
@@ -1101,5 +1118,6 @@ export {
   langCardLocales,
   repoCardLocales,
   statCardLocales,
+  streakCardLocales,
   wakatimeCardLocales,
 };
