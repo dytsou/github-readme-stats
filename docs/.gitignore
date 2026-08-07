@@ -1,6 +1,6 @@
-# Generated docs output (readme sample SVGs are committed via CI with git add -f).
+# Ignore generated docs output; readme preview SVGs are committed via CI PR.
 *
 !.gitignore
 !assets/
 !assets/readme/
-!assets/readme/README.md
+!assets/readme/**
