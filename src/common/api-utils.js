@@ -401,8 +401,8 @@ const parseNumericParam = (value, defaultValue, min, max) => {
 const applyOptionalBorderRadius = (
   renderOptions,
   border_radius,
-  max = 50,
   defaultValue,
+  max = 50,
 ) => {
   const radius = parseNumericParam(border_radius, defaultValue, 0, max);
   if (radius !== undefined) {

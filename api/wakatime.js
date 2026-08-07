@@ -106,7 +106,7 @@ export default async function wakatimeCardHandler(req, res) {
       display_format,
       disable_animations: parseBoolean(disable_animations),
     };
-    applyOptionalBorderRadius(renderOptions, border_radius, 20, 4.5);
+    applyOptionalBorderRadius(renderOptions, border_radius, 4.5, 20);
 
     return res.send(renderWakatimeCard(stats, renderOptions));
   } catch (err) {

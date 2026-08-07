@@ -144,7 +144,7 @@ const historyFetcher = (variables, token) =>
  *   dates: string[],
  *   nextCursor: string | null,
  *   stop: boolean,
- * }}
+ * }} Parsed commit page payload for sparkline aggregation.
  */
 const readCommitHistoryPage = (repository, page) => {
   if (!repository) {
