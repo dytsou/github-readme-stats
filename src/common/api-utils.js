@@ -14,7 +14,6 @@ import {
 } from "./error.js";
 import { setErrorCacheHeaders } from "./cache.js";
 import { guardAccess } from "./access.js";
-import { clampValue } from "./ops.js";
 import { isLocaleAvailable } from "../translations.js";
 import githubUsernameRegex from "github-username-regex";
 
@@ -364,29 +363,50 @@ const resolveRequestLocale = (rawLocale) => {
 };
 
 /**
- * Sanitize an optional border_radius query value for SVG cards.
+ * Parses and validates a numeric parameter with bounds checking.
  *
- * @param {unknown} border_radius Raw border radius from the query string.
- * @returns {number|undefined} Clamped radius, or undefined when invalid/missing.
+ * @param {string|undefined} value - The value to parse.
+ * @param {number|undefined} defaultValue - Default value if parsing fails.
+ * @param {number} [min] - Minimum allowed value.
+ * @param {number} [max] - Maximum allowed value.
+ * @returns {number|undefined} The parsed and clamped value.
  */
-const sanitizeOptionalBorderRadius = (border_radius) => {
-  const borderRadiusNum = Number(border_radius);
-  return Number.isFinite(borderRadiusNum) && border_radius !== undefined
-    ? clampValue(borderRadiusNum, 0, 50)
-    : undefined;
+const parseNumericParam = (value, defaultValue, min, max) => {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
+  const parsed = Number.parseFloat(value);
+  if (Number.isNaN(parsed)) {
+    return defaultValue;
+  }
+  let result = parsed;
+  if (min !== undefined) {
+    result = Math.max(min, result);
+  }
+  if (max !== undefined) {
+    result = Math.min(max, result);
+  }
+  return result;
 };
 
 /**
- * Apply a sanitized border_radius to render options when valid.
+ * Set border_radius on render options when the query value parses cleanly.
  *
  * @param {Record<string, unknown>} renderOptions Card render options.
  * @param {unknown} border_radius Raw border radius from the query string.
+ * @param {number} [max=50] Upper clamp for SVG corner radius.
+ * @param {number} [defaultValue] Fallback when the query value is missing or invalid.
  * @returns {Record<string, unknown>} The same render options object.
  */
-const applyOptionalBorderRadius = (renderOptions, border_radius) => {
-  const sanitizedBorderRadius = sanitizeOptionalBorderRadius(border_radius);
-  if (sanitizedBorderRadius !== undefined) {
-    renderOptions.border_radius = sanitizedBorderRadius;
+const applyOptionalBorderRadius = (
+  renderOptions,
+  border_radius,
+  max = 50,
+  defaultValue,
+) => {
+  const radius = parseNumericParam(border_radius, defaultValue, 0, max);
+  if (radius !== undefined) {
+    renderOptions.border_radius = radius;
   }
   return renderOptions;
 };
@@ -426,33 +446,6 @@ const prepareUsernameSvgAccess = ({ res, username, colorParams }) => {
   return { ok: true, colorOptions, safeUsername };
 };
 
-/**
- * Parses and validates a numeric parameter with bounds checking.
- *
- * @param {string|undefined} value - The value to parse.
- * @param {number|undefined} defaultValue - Default value if parsing fails.
- * @param {number} [min] - Minimum allowed value.
- * @param {number} [max] - Maximum allowed value.
- * @returns {number|undefined} The parsed and clamped value.
- */
-const parseNumericParam = (value, defaultValue, min, max) => {
-  if (value === undefined || value === null) {
-    return defaultValue;
-  }
-  const parsed = Number.parseFloat(value);
-  if (Number.isNaN(parsed)) {
-    return defaultValue;
-  }
-  let result = parsed;
-  if (min !== undefined) {
-    result = Math.max(min, result);
-  }
-  if (max !== undefined) {
-    result = Math.min(max, result);
-  }
-  return result;
-};
-
 export {
   createValidatedColorOptions,
   handleApiError,
@@ -463,11 +456,9 @@ export {
   setSvgContentType,
   setJsonContentType,
   setTextContentType,
-  parseNumericParam,
   sanitizeGithubUsername,
   sendInvalidGithubUsernameError,
   resolveRequestLocale,
-  sanitizeOptionalBorderRadius,
   applyOptionalBorderRadius,
   prepareUsernameSvgAccess,
 };

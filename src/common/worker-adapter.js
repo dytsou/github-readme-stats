@@ -65,6 +65,39 @@ const serializeResponseBody = (body) => {
   return "";
 };
 
+const headersToResponse = (headers, body, statusCode) => {
+  const contentType = resolveResponseContentType(headers, body);
+  const responseHeaders = new Headers();
+  responseHeaders.set("Content-Type", contentType);
+
+  const cacheControl = headers["Cache-Control"] || headers["cache-control"];
+  if (cacheControl) {
+    responseHeaders.set("Cache-Control", String(cacheControl));
+  } else if (contentType === DEFAULT_SVG_CONTENT_TYPE) {
+    responseHeaders.set("Cache-Control", "public, max-age=3600");
+  }
+
+  for (const [name, value] of Object.entries(headers)) {
+    const lowerName = name.toLowerCase();
+    if (lowerName !== "content-type" && lowerName !== "cache-control") {
+      responseHeaders.set(name, String(value));
+    }
+  }
+
+  return new Response(serializeResponseBody(body), {
+    status: statusCode,
+    headers: responseHeaders,
+  });
+};
+
+export const svgErrorResponse = (message, status = 500, label = "Error") => {
+  const safeMessage = encodeHTML(String(message || "Unknown error"));
+  return new Response(
+    `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">${label}: ${safeMessage}</text></svg>`,
+    { status, headers: { "Content-Type": DEFAULT_SVG_CONTENT_TYPE } },
+  );
+};
+
 /**
  * Creates a mock Express response object that works with Hono context.
  *
@@ -89,31 +122,7 @@ export function createMockResponse() {
     send: (body) => {
       responseSent = true;
       responseBody = body;
-
-      const contentType = resolveResponseContentType(headers, body);
-      const responseBodyText = serializeResponseBody(body);
-
-      const responseHeaders = new Headers();
-      responseHeaders.set("Content-Type", contentType);
-
-      const cacheControl = headers["Cache-Control"] || headers["cache-control"];
-      if (cacheControl) {
-        responseHeaders.set("Cache-Control", String(cacheControl));
-      } else if (contentType === DEFAULT_SVG_CONTENT_TYPE) {
-        responseHeaders.set("Cache-Control", "public, max-age=3600");
-      }
-
-      Object.entries(headers).forEach(([name, value]) => {
-        const lowerName = name.toLowerCase();
-        if (lowerName !== "content-type" && lowerName !== "cache-control") {
-          responseHeaders.set(name, String(value));
-        }
-      });
-
-      return new Response(responseBodyText, {
-        status: statusCode,
-        headers: responseHeaders,
-      });
+      return headersToResponse(headers, body, statusCode);
     },
     _wasSent: () => responseSent,
     _getBody: () => responseBody,
@@ -143,30 +152,10 @@ export function createMockRequest(c) {
 const buildFallbackResponse = (res) => {
   const body = res._getBody();
   if (body !== null) {
-    const headers = res._getHeaders();
-    const contentType = resolveResponseContentType(headers, body);
-    const responseBodyText = serializeResponseBody(body);
-    const responseHeaders = new Headers();
-    responseHeaders.set("Content-Type", contentType);
-
-    const cacheControl = headers["Cache-Control"] || headers["cache-control"];
-    if (cacheControl) {
-      responseHeaders.set("Cache-Control", String(cacheControl));
-    } else if (contentType === DEFAULT_SVG_CONTENT_TYPE) {
-      responseHeaders.set("Cache-Control", "public, max-age=3600");
-    }
-
-    return new Response(responseBodyText, {
-      status: res._getStatusCode(),
-      headers: responseHeaders,
-    });
+    return headersToResponse(res._getHeaders(), body, res._getStatusCode());
   }
 
-  const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">No response generated</text></svg>`;
-  return new Response(errorSvg, {
-    status: 500,
-    headers: { "Content-Type": DEFAULT_SVG_CONTENT_TYPE },
-  });
+  return svgErrorResponse("No response generated");
 };
 
 /**
@@ -205,12 +194,7 @@ export function adaptExpressHandler(expressHandler) {
       console.error("Request URL:", c.req.url);
       console.error("Request query:", c.req.query());
 
-      const safeMessage = encodeHTML(String(error.message || "Unknown error"));
-      const errorSvg = `<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="50" font-family="Arial" font-size="16" fill="red">Error: ${safeMessage}</text></svg>`;
-      return new Response(errorSvg, {
-        status: 500,
-        headers: { "Content-Type": DEFAULT_SVG_CONTENT_TYPE },
-      });
+      return svgErrorResponse(error.message || "Unknown error");
     }
   };
 }

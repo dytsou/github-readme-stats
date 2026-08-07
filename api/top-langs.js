@@ -7,7 +7,7 @@ import {
   handleApiError,
   sendValidationError,
   setSvgContentType,
-  parseNumericParam,
+  applyOptionalBorderRadius,
   resolveRequestLocale,
 } from "../src/common/api-utils.js";
 import {
@@ -61,7 +61,6 @@ export default async function topLangsCardHandler(req, res) {
     stats_format,
   } = req.query;
 
-  // Only allow supported locales - validate and sanitize to prevent XSS
   const locale = resolveRequestLocale(rawLocale);
 
   // Create validated color options once for reuse
@@ -138,31 +137,28 @@ export default async function topLangsCardHandler(req, res) {
 
     setCacheHeaders(res, cacheSeconds);
 
-    return res.send(
-      renderTopLanguages(topLangs, {
-        // Validate custom_title is a string (prevents array from duplicate query params)
-        // Card.js handles HTML encoding internally
-        custom_title:
-          typeof custom_title === "string" ? custom_title : undefined,
-        hide_title: parseBoolean(hide_title),
-        hide_border: parseBoolean(hide_border),
-        card_width: Number.parseInt(card_width, 10),
-        hide: parseArray(hide),
-        title_color: colorOptions.title_color,
-        text_color: colorOptions.text_color,
-        bg_color: colorOptions.bg_color,
-        // @ts-ignore - validateTheme returns a validated theme name
-        theme: colorOptions.theme,
-        layout,
-        langs_count,
-        border_radius: parseNumericParam(border_radius, undefined, 0, 50),
-        border_color: colorOptions.border_color,
-        locale,
-        disable_animations: parseBoolean(disable_animations),
-        hide_progress: parseBoolean(hide_progress),
-        stats_format,
-      }),
-    );
+    const renderOptions = {
+      custom_title: typeof custom_title === "string" ? custom_title : undefined,
+      hide_title: parseBoolean(hide_title),
+      hide_border: parseBoolean(hide_border),
+      card_width: Number.parseInt(card_width, 10),
+      hide: parseArray(hide),
+      title_color: colorOptions.title_color,
+      text_color: colorOptions.text_color,
+      bg_color: colorOptions.bg_color,
+      // @ts-ignore - validateTheme returns a validated theme name
+      theme: colorOptions.theme,
+      layout,
+      langs_count,
+      border_color: colorOptions.border_color,
+      locale,
+      disable_animations: parseBoolean(disable_animations),
+      hide_progress: parseBoolean(hide_progress),
+      stats_format,
+    };
+    applyOptionalBorderRadius(renderOptions, border_radius);
+
+    return res.send(renderTopLanguages(topLangs, renderOptions));
   } catch (err) {
     return handleApiError({ res, error: err, colorOptions });
   }
