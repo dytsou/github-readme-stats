@@ -10,6 +10,13 @@ updates:
     commit-message:
       prefix: "build(deps)"
       prefix-development: "build(deps-dev)"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      # Keep interdependent dev tools (e.g. vitest/happy-dom/jsdom/vite)
+      # in one PR so peer-dep ranges stay in sync
+      development-dependencies:
+        dependency-type: "development"
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: github-actions
@@ -20,6 +27,10 @@ updates:
     commit-message:
       prefix: "ci(deps)"
       prefix-development: "ci(deps-dev)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # Maintain dependencies for Devcontainers
   - package-ecosystem: devcontainers
