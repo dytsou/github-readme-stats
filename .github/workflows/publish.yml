@@ -112,6 +112,8 @@ jobs:
         if: steps.check-npmjs.outputs.exists == 'false'
         id: publish-npmjs
         run: |
+          SCOPE="${{ steps.package-name.outputs.scope }}"
+          npm config set $SCOPE:registry https://registry.npmjs.org
           npm config set registry https://registry.npmjs.org
           npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN"
           PACKAGE_NAME="${{ steps.package-name.outputs.name }}"
