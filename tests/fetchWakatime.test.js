@@ -114,6 +114,7 @@ describe("WakaTime fetcher", () => {
 
     const repo = await fetchWakatimeStats({ username });
     expect(repo).toStrictEqual(wakaTimeData.data);
+    expect(mock.history.get[0].fetchOptions).toEqual({ cache: "no-store" });
   });
 
   it("should fetch correct WakaTime data with custom api_domain", async () => {

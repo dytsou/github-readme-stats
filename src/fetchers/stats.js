@@ -9,7 +9,7 @@ import { logger } from "../common/log.js";
 import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
 import { throwIfGraphQLErrors } from "../common/graphql.js";
-import { request } from "../common/http.js";
+import { cloudflareFetchOptions, request } from "../common/http.js";
 import { isCloudflareWorkers } from "../common/worker-env.js";
 
 // Only load dotenv if not in Cloudflare Workers (where env vars come from wrangler.toml)
@@ -186,6 +186,7 @@ const fetchTotalCommits = (variables, token) => {
       Accept: "application/vnd.github.cloak-preview",
       Authorization: `token ${token}`,
     },
+    fetchOptions: cloudflareFetchOptions,
   });
 };
 

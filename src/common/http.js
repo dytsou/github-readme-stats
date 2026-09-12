@@ -2,6 +2,10 @@
 
 import axios from "axios";
 
+// Cloudflare Workers supports `no-store` and `no-cache`, but rejects the
+// default Fetch cache mode when Axios creates a subrequest.
+const cloudflareFetchOptions = { cache: "no-store" };
+
 /**
  * Send GraphQL request to GitHub API.
  *
@@ -17,8 +21,9 @@ const request = (data, headers) => {
       "User-Agent": "github-readme-stats",
       ...headers,
     },
+    fetchOptions: cloudflareFetchOptions,
     data,
   });
 };
 
-export { request };
+export { cloudflareFetchOptions, request };
