@@ -207,6 +207,7 @@ describe("Test fetchStats", () => {
       .reply(200, { total_count: 1000 });
 
     let stats = await fetchStats("anuraghazra", true);
+    expect(mock.history.get[0].fetchOptions).toEqual({ cache: "no-store" });
     const rank = calculateRank({
       all_commits: true,
       commits: 1000,

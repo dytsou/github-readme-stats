@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import { CustomError, MissingParamError } from "../common/error.js";
+import { cloudflareFetchOptions } from "../common/http.js";
 
 /**
  * Allowed WakaTime API domains whitelist.
@@ -88,7 +89,9 @@ const fetchWakatimeStats = async ({ username, api_domain }) => {
   const apiUrl = `https://${domain}/api/v1/users/${encodedUsername}/stats?is_including_today=true`;
 
   try {
-    const { data } = await axios.get(apiUrl);
+    const { data } = await axios.get(apiUrl, {
+      fetchOptions: cloudflareFetchOptions,
+    });
 
     return data.data;
   } catch (err) {
