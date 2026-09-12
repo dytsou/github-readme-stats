@@ -120,6 +120,7 @@
       "@actions/github>undici": "7.29.0",
       "@actions/http-client@4.0.1>undici": "7.29.0",
       "miniflare>undici": "7.29.0",
+      "sharp": ">=0.35.4",
       "vite": "8.0.16",
       "launch-editor": ">=2.14.1"
     },
