@@ -4,6 +4,8 @@ Dynamically generated GitHub stats cards for your README.
 
 ![Powered by Cloudflare Workers](https://img.shields.io/badge/Powered%20by-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dytsou/github-readme-stats)
+
 [English](README.md) · [繁體中文](README-zh.md)
 
 ## Table of contents
