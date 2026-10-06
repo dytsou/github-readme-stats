@@ -1,6 +1,6 @@
 {
   "name": "@dytsou/github-readme-stats",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "packageManager": "pnpm@12.9.1+sha512.06b055fff5cd20dc12781de173ced3310ce0951bf2ec620211a16045d5444d5c93a663210764ef29a653a610459ba0368f0e74f84d80c54723cf95aae7bc0d6d",
   "description": "Dynamically generate stats for your GitHub readme",
   "keywords": [
