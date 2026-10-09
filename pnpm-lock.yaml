@@ -214,7 +214,7 @@ importers:
         version: 9.1.1
       '@redocly/cli':
         specifier: ^2.58.1
-        version: 2.58.1
+        version: 2.59.0
       '@testing-library/dom':
         specifier: ^10.4.2
         version: 10.4.2
@@ -265,7 +265,7 @@ importers:
         version: 9.1.7
       js-yaml:
         specifier: '>=5.2.2'
-        version: 5.4.2
+        version: 5.4.3
       jsdom:
         specifier: ^30.1.2
         version: 30.1.2
@@ -936,8 +936,8 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@redocly/cli@2.58.1':
-    resolution: {integrity: sha512-4il9drzgTc+sudGS8QrTy3rU5xb4dPi+m//9CzbDLerkGAahViKuYxbAwG/T52vubzAM7nEdRinQqwhSFYHySQ==}
+  '@redocly/cli@2.59.0':
+    resolution: {integrity: sha512-eHdpcIqPzeof36ibjOBYSTb9dkWNa5F/Ql8xr2ArdiFYHjB0y/DX6G6PMVVjhyiggU3MNf4CnoLqFf0DVbTJ+w==}
     engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
     hasBin: true
 
@@ -1710,8 +1710,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@5.4.2:
-    resolution: {integrity: sha512-m+aqu+LwO1O6sIopafj8HUVl5aawITwZQe/yHpMCKjaWBaA/d07B/QdMb3529REftiU+RMMHL3Vlsw3hON7vWg==}
+  js-yaml@5.4.3:
+    resolution: {integrity: sha512-yzzNtgczwgoVHNigCyKTXcQJU4Y8t/ikU4UxXW0BvrLfHTGWZhsNcOT2s/a7vn81/4KqVnNmHjaUEPlvWnNwVw==}
     hasBin: true
 
   jsdoc-type-pratt-parser@9.2.2:
@@ -2929,7 +2929,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@redocly/cli@2.58.1': {}
+  '@redocly/cli@2.59.0': {}
 
   '@rolldown/binding-android-arm64@1.0.3':
     optional: true
@@ -3714,7 +3714,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@5.4.2:
+  js-yaml@5.4.3:
     dependencies:
       argparse: 2.0.1
 
