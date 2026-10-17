@@ -27,56 +27,5 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Ensure main has commits after latest tag
-        run: |
-          set -euo pipefail
-          git fetch origin main --tags
-
-          if ! git rev-parse --verify origin/main >/dev/null 2>&1; then
-            echo "::error::Could not resolve origin/main"
-            exit 1
-          fi
-
-          LATEST_TAG="$(git tag --merged origin/main --sort=-version:refname | head -n1 || true)"
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No tags on main's history yet; continuing (no baseline tag to compare)."
-            exit 0
-          fi
-
-          COUNT="$(git rev-list --count "${LATEST_TAG}"..origin/main)"
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::error::main has no commits after tag '${LATEST_TAG}'. Merge or push changes before bumping the patch version."
-            exit 1
-          fi
-
-          echo "main is ${COUNT} commit(s) ahead of tag '${LATEST_TAG}'."
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-
-      - name: Setup Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-
-      - name: Bump patch version
-        id: bump
-        run: |
-          npm version patch --no-git-tag-version
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "New version: $VERSION"
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          commit-message:
-            "chore: bump version to ${{ steps.bump.outputs.version }}"
-          branch: "chore/bump-patch-version-${{ github.run_id }}"
-          delete-branch: true
-          title: "chore: bump version to ${{ steps.bump.outputs.version }}"
-          body: |
-            This PR bumps the **patch** version in `package.json` (via `npm version patch --no-git-tag-version`).
-
-            Triggered manually from [bump-patch-version](https://github.com/${{ github.repository }}/actions/workflows/bump-patch-version.yml).
-
-            After merge, the [Publish](https://github.com/${{ github.repository }}/actions/workflows/publish.yml) workflow can publish the new version when it runs on `main`.
-          labels: "ci, maintenance"
+      - name: Bump patch version and open PR
+        uses: dytsou/bump-patch-version@c701135f6aa39a1e849b52a385816e8ec465c2bc # v1.0.0 (@v1)
