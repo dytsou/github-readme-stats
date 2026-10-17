@@ -81,7 +81,7 @@
     "eslint-plugin-jsdoc": "^65.1.0",
     "express": "^5.2.1",
     "globals": "^17.13.0",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.1",
     "hjson": "^3.2.2",
     "husky": "^9.1.7",
     "js-yaml": "^5.4.3",
