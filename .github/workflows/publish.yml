@@ -24,7 +24,7 @@ jobs:
       id-token: write
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -35,13 +35,13 @@ jobs:
 
       - name: Publish to npmjs
         id: npmjs
-        uses: dytsou/release/npm-publish@f4ac7961c8c67fc6887ce2265a19d01929960ce5 # v1.3.5 (@v1)
+        uses: dytsou/release/npm-publish@98055479dc1f0015d278ecd26b54ec6897d85eed # v1.3.5 (@v1)
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to GitHub Packages
         id: ghpkg
-        uses: dytsou/release/github-packages@f4ac7961c8c67fc6887ce2265a19d01929960ce5 # v1.3.5 (@v1)
+        uses: dytsou/release/github-packages@98055479dc1f0015d278ecd26b54ec6897d85eed # v1.3.5 (@v1)
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Skip reinstall when npmjs already installed deps in this job.
@@ -54,7 +54,7 @@ jobs:
         if:
           steps.npmjs.outputs.published == 'true' ||
           steps.ghpkg.outputs.published == 'true'
-        uses: dytsou/release/github@f4ac7961c8c67fc6887ce2265a19d01929960ce5 # v1.3.5 (@v1)
+        uses: dytsou/release/github@98055479dc1f0015d278ecd26b54ec6897d85eed # v1.3.5 (@v1)
         with:
           from-package-json: "true"
           move-major-tag: "false"
