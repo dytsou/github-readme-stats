@@ -2,6 +2,7 @@ name: Update supported languages
 on:
   schedule:
     - cron: "0 0 */30 * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
