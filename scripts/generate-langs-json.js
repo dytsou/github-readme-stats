@@ -1,6 +1,6 @@
 import axios from "axios";
 import fs from "node:fs";
-import jsYaml from "js-yaml";
+import { load } from "js-yaml";
 
 const LANGS_FILEPATH = "./src/common/languageColors.json";
 
@@ -11,7 +11,7 @@ const response = await axios.get(
 );
 
 //and convert them to a JS Object
-const languages = jsYaml.load(response.data);
+const languages = load(response.data);
 
 const languageColors = {};
 
