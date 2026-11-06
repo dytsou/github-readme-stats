@@ -28,4 +28,4 @@ jobs:
           fetch-tags: true
 
       - name: Bump patch version and open PR
-        uses: dytsou/release/bump-patch-version@98055479dc1f0015d278ecd26b54ec6897d85eed # v1.3.5 (@v1)
+        uses: dytsou/release/bump-patch-version@5e57b611c89f8a8629e5b7d662e261a92ae071e7 # v1.3.5 (@v1)
