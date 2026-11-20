@@ -35,13 +35,13 @@ jobs:
 
       - name: Publish to npmjs
         id: npmjs
-        uses: dytsou/release/npm-publish@8f7fea93ecc68f2c18d5d51a9d194bbb19b49004 # v1.3.5 (@v1)
+        uses: dytsou/release/npm-publish@291dd276baf77a9770947c5b4149e6fc866b8120 # v1.3.5 (@v1)
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to GitHub Packages
         id: ghpkg
-        uses: dytsou/release/github-packages@8f7fea93ecc68f2c18d5d51a9d194bbb19b49004 # v1.3.5 (@v1)
+        uses: dytsou/release/github-packages@291dd276baf77a9770947c5b4149e6fc866b8120 # v1.3.5 (@v1)
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Skip reinstall when npmjs already installed deps in this job.
@@ -54,7 +54,7 @@ jobs:
         if:
           steps.npmjs.outputs.published == 'true' ||
           steps.ghpkg.outputs.published == 'true'
-        uses: dytsou/release/github@8f7fea93ecc68f2c18d5d51a9d194bbb19b49004 # v1.3.5 (@v1)
+        uses: dytsou/release/github@291dd276baf77a9770947c5b4149e6fc866b8120 # v1.3.5 (@v1)
         with:
           from-package-json: "true"
           move-major-tag: "false"
