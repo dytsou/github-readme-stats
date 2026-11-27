@@ -18,6 +18,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Must match the environment name in the npm Trusted Publisher configuration.
+    environment: npm
     permissions:
       contents: write
       packages: write
@@ -35,13 +37,11 @@ jobs:
 
       - name: Publish to npmjs
         id: npmjs
-        uses: dytsou/release/npm-publish@291dd276baf77a9770947c5b4149e6fc866b8120 # v1.3.5 (@v1)
-        with:
-          npm-token: ${{ secrets.NPM_TOKEN }}
+        uses: dytsou/release/npm-publish@2cd0db49a208aa8c039390cfc94f9ca8222ff86e # v1.4.1
 
       - name: Publish to GitHub Packages
         id: ghpkg
-        uses: dytsou/release/github-packages@291dd276baf77a9770947c5b4149e6fc866b8120 # v1.3.5 (@v1)
+        uses: dytsou/release/github-packages@2cd0db49a208aa8c039390cfc94f9ca8222ff86e # v1.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Skip reinstall when npmjs already installed deps in this job.
